@@ -41,7 +41,7 @@ INSTALLATION
   code should run as is, without any additional installation.
 
 DOWNLOAD
-  <<website here>>
+  https://github.com/basp-group/sopt
 
 SUPPORT
   If you have any questions or comments, feel free to contact Rafael
