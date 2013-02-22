@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_fwdcurvelet</title>
+  <meta name="keywords" content="sopt_mltb_fwdcurvelet">
+  <meta name="description" content="sopt_mltb_fwdcurvelet - Forward curvelet transform">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">matlab</a> &gt; <a href="index.html">misc</a> &gt; sopt_mltb_fwdcurvelet.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_fwdcurvelet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_fwdcurvelet - Forward curvelet transform</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function coef = sopt_mltb_fwdcurvelet(im,real) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_fwdcurvelet - Forward curvelet transform
+
+ Compute the forward curvelet transform of an image and stores it in
+ vector coef.
+
+ Inputs:
+
+   - im: Input image.
+
+   - real: Flag indicating if the transform is real or complex (1 = real,  
+       0 = complex).
+
+ Outputs:
+
+   - coef: Curvelet coefficients.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function coef = sopt_mltb_fwdcurvelet(im,real)</a>
+0002 <span class="comment">% sopt_mltb_fwdcurvelet - Forward curvelet transform</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Compute the forward curvelet transform of an image and stores it in</span>
+0005 <span class="comment">% vector coef.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   - im: Input image.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   - real: Flag indicating if the transform is real or complex (1 = real,</span>
+0012 <span class="comment">%       0 = complex).</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Outputs:</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%   - coef: Curvelet coefficients.</span>
+0017 
+0018 C = fdct_usfft(im,real); 
+0019 
+0020 <span class="comment">% Compute vector version of curvelets coeffcients</span>
+0021 coef = [];
+0022 
+0023 <span class="keyword">for</span> s=1:length(C)
+0024   <span class="keyword">for</span> w=1:length(C{s})
+0025     A = C{s}{w};
+0026     coef= [coef; A(:)];
+0027   <span class="keyword">end</span>
+0028 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

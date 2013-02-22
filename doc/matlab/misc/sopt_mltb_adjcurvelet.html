@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_adjcurvelet</title>
+  <meta name="keywords" content="sopt_mltb_adjcurvelet">
+  <meta name="description" content="sopt_mltb_adjcurvelet - Adjoint curvelet transform">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">matlab</a> &gt; <a href="index.html">misc</a> &gt; sopt_mltb_adjcurvelet.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_adjcurvelet
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_adjcurvelet - Adjoint curvelet transform</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function restim = sopt_mltb_adjcurvelet(coef, Mod, real) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_adjcurvelet - Adjoint curvelet transform
+
+ Compute the adjoint curvelet transform from the curvelet
+ coefficient vector.
+
+ Inputs:
+
+   - coef: Input curvelet coefficient vector.
+
+   - Mod: Data structure that stores sizes of the curvelet transform 
+       generated from the CurveLab toolbox.
+
+   - real: Flag indicating if the transform is real or complex (1 = real,  
+       0 = complex).
+
+ Outputs:
+
+   - restim: Estimated image from the Curvelet coefficients.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function restim = sopt_mltb_adjcurvelet(coef, Mod, real)</a>
+0002 <span class="comment">% sopt_mltb_adjcurvelet - Adjoint curvelet transform</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Compute the adjoint curvelet transform from the curvelet</span>
+0005 <span class="comment">% coefficient vector.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Inputs:</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   - coef: Input curvelet coefficient vector.</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   - Mod: Data structure that stores sizes of the curvelet transform</span>
+0012 <span class="comment">%       generated from the CurveLab toolbox.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%   - real: Flag indicating if the transform is real or complex (1 = real,</span>
+0015 <span class="comment">%       0 = complex).</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% Outputs:</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%   - restim: Estimated image from the Curvelet coefficients.</span>
+0020 
+0021 CR=cell(size(Mod));
+0022 marker=0;
+0023 
+0024 <span class="keyword">for</span> s=1:length(Mod)
+0025    CR{s} = cell(size(Mod{s}));
+0026    <span class="keyword">for</span> w=1:length(Mod{s})
+0027      m=Mod{s}{w}(1);
+0028      n=Mod{s}{w}(2);
+0029      CR{s}{w}=reshape(coef(marker+1:marker+(m*n)),m,n);
+0030      marker=marker+m*n;
+0031    <span class="keyword">end</span>
+0032 <span class="keyword">end</span>
+0033  
+0034 <span class="comment">% Apply adjoint curvelet transform</span>
+0035 restim = ifdct_usfft(CR,real);</pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

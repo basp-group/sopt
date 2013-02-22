@@ -1,0 +1,151 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_prox_TV</title>
+  <meta name="keywords" content="sopt_mltb_prox_TV">
+  <meta name="description" content="sopt_mltb_prox_TV - Total variation proximal operator">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">matlab</a> &gt; <a href="index.html">prox_operators</a> &gt; sopt_mltb_prox_TV.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/prox_operators&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_prox_TV
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_prox_TV - Total variation proximal operator</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function sol = sopt_mltb_prox_TV(x, lambda, param) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_prox_TV - Total variation proximal operator
+
+ Compute the TV proximal operator, i.e. solve
+
+   min_{z} ||x - z||_2^2 + lambda * ||z||_{TV}
+
+ where x is the input vector and the solution z* is returned as sol.  
+ The structure param should contain the following fields:
+
+   - max_iter: Maximum number of iterations (default = 200).
+
+   - rel_obj: Minimum relative change of the objective value 
+       (default = 1e-4).  The algorithm stops if
+           | ||x(t)||_TV - ||x(t-1)||_TV | / ||x(t)||_TV &lt; rel_obj,
+       where x(t) is the estimate of the solution at iteration t.
+
+   - verbose: Verbosity level (0 = no log, 1 = summary at convergence, 
+       2 = print main steps; default = 1).
+
+ Reference:
+ [1] A. Beck and  M. Teboulle, &quot;Fast gradient-based algorithms for
+ constrained Total Variation Image Denoising and Deblurring Problems&quot;, 
+ IEEE Transactions on Image Processing, VOL. 18, NO. 11, 2419-2434, 
+ November 2009.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sol = sopt_mltb_prox_TV(x, lambda, param)</a>
+0002 <span class="comment">% sopt_mltb_prox_TV - Total variation proximal operator</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Compute the TV proximal operator, i.e. solve</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   min_{z} ||x - z||_2^2 + lambda * ||z||_{TV}</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% where x is the input vector and the solution z* is returned as sol.</span>
+0009 <span class="comment">% The structure param should contain the following fields:</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   - max_iter: Maximum number of iterations (default = 200).</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%   - rel_obj: Minimum relative change of the objective value</span>
+0014 <span class="comment">%       (default = 1e-4).  The algorithm stops if</span>
+0015 <span class="comment">%           | ||x(t)||_TV - ||x(t-1)||_TV | / ||x(t)||_TV &lt; rel_obj,</span>
+0016 <span class="comment">%       where x(t) is the estimate of the solution at iteration t.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%   - verbose: Verbosity level (0 = no log, 1 = summary at convergence,</span>
+0019 <span class="comment">%       2 = print main steps; default = 1).</span>
+0020 <span class="comment">%</span>
+0021 <span class="comment">% Reference:</span>
+0022 <span class="comment">% [1] A. Beck and  M. Teboulle, &quot;Fast gradient-based algorithms for</span>
+0023 <span class="comment">% constrained Total Variation Image Denoising and Deblurring Problems&quot;,</span>
+0024 <span class="comment">% IEEE Transactions on Image Processing, VOL. 18, NO. 11, 2419-2434,</span>
+0025 <span class="comment">% November 2009.</span>
+0026 
+0027 <span class="comment">% Optional input arguments</span>
+0028 <span class="keyword">if</span> ~isfield(param, <span class="string">'rel_obj'</span>), param.rel_obj = 1e-4; <span class="keyword">end</span>
+0029 <span class="keyword">if</span> ~isfield(param, <span class="string">'verbose'</span>), param.verbose = 1; <span class="keyword">end</span>
+0030 <span class="keyword">if</span> ~isfield(param, <span class="string">'max_iter'</span>), param.max_iter = 200; <span class="keyword">end</span>
+0031 
+0032 <span class="comment">% Initializations</span>
+0033 [r, s] = sopt_mltb_gradient_op(x*0);
+0034 pold = r; qold = s;
+0035 told = 1; prev_obj = 0;
+0036 
+0037 <span class="comment">% Main iterations</span>
+0038 <span class="keyword">if</span> param.verbose &gt; 1
+0039     fprintf(<span class="string">'  Proximal TV operator:\n'</span>);
+0040 <span class="keyword">end</span>
+0041 <span class="keyword">for</span> iter = 1:param.max_iter
+0042     
+0043     <span class="comment">% Current solution</span>
+0044     sol = x - lambda*sopt_mltb_div_op(r, s);
+0045     
+0046     <span class="comment">% Objective function value</span>
+0047     obj = .5*norm(x(:)-sol(:), 2)^2 + lambda * sopt_mltb_TV_norm(sol, 0);
+0048     rel_obj = abs(obj-prev_obj)/obj;
+0049     prev_obj = obj;
+0050     
+0051     <span class="comment">% Stopping criterion</span>
+0052     <span class="keyword">if</span> param.verbose&gt;1
+0053         fprintf(<span class="string">'   Iter %i, obj = %e, rel_obj = %e\n'</span>, <span class="keyword">...</span>
+0054             iter, obj, rel_obj);
+0055     <span class="keyword">end</span>
+0056     <span class="keyword">if</span> rel_obj &lt; param.rel_obj
+0057         crit_TV = <span class="string">'TOL_EPS'</span>; <span class="keyword">break</span>;
+0058     <span class="keyword">end</span>
+0059     
+0060     <span class="comment">% Udpate divergence vectors and project</span>
+0061     [dx, dy] = sopt_mltb_gradient_op(sol);
+0062     r = r - 1/(8*lambda) * dx; s = s - 1/(8*lambda) * dy;
+0063     weights = max(1, sqrt(abs(r).^2+abs(s).^2));
+0064     p = r./weights; q = s./weights;
+0065     
+0066     <span class="comment">% FISTA update</span>
+0067     t = (1+sqrt(4*told^2))/2;
+0068     r = p + (told-1)/t * (p - pold); pold = p;
+0069     s = q + (told-1)/t * (q - qold); qold = q;
+0070     told = t;
+0071     
+0072 <span class="keyword">end</span>
+0073 
+0074 <span class="comment">% Log after the minimization</span>
+0075 <span class="keyword">if</span> ~exist(<span class="string">'crit_TV'</span>, <span class="string">'var'</span>), crit_TV = <span class="string">'MAX_IT'</span>; <span class="keyword">end</span>
+0076 <span class="keyword">if</span> param.verbose &gt;= 1
+0077     fprintf([<span class="string">'  Prox_TV: obj = %e, rel_obj = %e,'</span> <span class="keyword">...</span>
+0078         <span class="string">' %s, iter = %i\n'</span>], obj, rel_obj, crit_TV, iter);
+0079 <span class="keyword">end</span>
+0080 
+0081 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
