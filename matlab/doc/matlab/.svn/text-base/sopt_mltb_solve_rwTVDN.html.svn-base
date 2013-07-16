@@ -1,0 +1,177 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_solve_rwTVDN</title>
+  <meta name="keywords" content="sopt_mltb_solve_rwTVDN">
+  <meta name="description" content="sopt_mltb_solve_rwTVDN - Solve reweighted TVDN problem">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">matlab</a> &gt; sopt_mltb_solve_rwTVDN.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_solve_rwTVDN
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_solve_rwTVDN - Solve reweighted TVDN problem</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function sol = sopt_mltb_solve_rwTVDN(y, epsilon, A, At, paramT,sigma, tol, maxiter, initsol) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_solve_rwTVDN - Solve reweighted TVDN problem
+
+ Solve the reweighted TV minimization function using an homotopy
+ continuation method to approximate the L0 norm of the magnitude of the 
+ gradient.  At each iteration the following problem is solved:
+
+   min_x ||W x||_TV   s.t.  ||y-A x||_2 &lt; epsilon
+
+ where W is a diagonal matrix with diagonal elements given by esentially
+ the inverse of the graident.
+   
+ The input parameters are defined as follows.
+
+   - y: Input data (measurements).
+
+   - epsilon: Noise bound.
+
+   - A: Forward measurement operator.
+
+   - At: Adjoint measurement operator.
+
+   - paramT: Structure containing parameters for the TV solver (see 
+       documentation for sopt_mltb_solve_TVDN).  
+
+   - sigma: Noise standard deviation in the analysis domain.
+
+   - tol: Minimum relative change in the solution.
+       The algorithm stops if 
+           ||x(t)-x(t-1)||_2/||x(t-1)||_2 &lt; tol.
+       where x(t) is the estimate of the solution at iteration t.
+
+   - maxiter: Maximum number of iterations of the reweighted algorithm.
+
+   - initsol: Initial solution for a warmstart.
+
+ References:
+ [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-Ph. Thiran, and 
+ Y. Wiaux. Sparsity averaging for compressive imaging. IEEE Sig. Proc. 
+ Let., in press, 2013.
+ [2] R. E. Carrillo, J. D. McEwen, and Y. Wiaux. Sparsity Averaging 
+ Reweighted Analysis (SARA): a novel algorithm for radio-interferometric 
+ imaging. Mon. Not. Roy. Astron. Soc., 426(2):1223-1234, 2012.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="sopt_mltb_solve_TVDNoA.html" class="code" title="function sol = sopt_mltb_solve_TVDNoA(y, epsilon, A, At, S, St, param)">sopt_mltb_solve_TVDNoA</a>	sopt_mltb_solve_TVDNoA - Solve augmented TVDN problem</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Experiment1.html" class="code" title="">Experiment1</a>	% Experiment1</li><li><a href="Experiment2.html" class="code" title="">Experiment2</a>	% Experiment2</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sol = sopt_mltb_solve_rwTVDN(y, epsilon, A, At, paramT, </a><span class="keyword">...</span>
+0002   sigma, tol, maxiter, initsol)
+0003 <span class="comment">% sopt_mltb_solve_rwTVDN - Solve reweighted TVDN problem</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Solve the reweighted TV minimization function using an homotopy</span>
+0006 <span class="comment">% continuation method to approximate the L0 norm of the magnitude of the</span>
+0007 <span class="comment">% gradient.  At each iteration the following problem is solved:</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">%   min_x ||W x||_TV   s.t.  ||y-A x||_2 &lt; epsilon</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% where W is a diagonal matrix with diagonal elements given by esentially</span>
+0012 <span class="comment">% the inverse of the graident.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% The input parameters are defined as follows.</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%   - y: Input data (measurements).</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%   - epsilon: Noise bound.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%   - A: Forward measurement operator.</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   - At: Adjoint measurement operator.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%   - paramT: Structure containing parameters for the TV solver (see</span>
+0025 <span class="comment">%       documentation for sopt_mltb_solve_TVDN).</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%   - sigma: Noise standard deviation in the analysis domain.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%   - tol: Minimum relative change in the solution.</span>
+0030 <span class="comment">%       The algorithm stops if</span>
+0031 <span class="comment">%           ||x(t)-x(t-1)||_2/||x(t-1)||_2 &lt; tol.</span>
+0032 <span class="comment">%       where x(t) is the estimate of the solution at iteration t.</span>
+0033 <span class="comment">%</span>
+0034 <span class="comment">%   - maxiter: Maximum number of iterations of the reweighted algorithm.</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">%   - initsol: Initial solution for a warmstart.</span>
+0037 <span class="comment">%</span>
+0038 <span class="comment">% References:</span>
+0039 <span class="comment">% [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-Ph. Thiran, and</span>
+0040 <span class="comment">% Y. Wiaux. Sparsity averaging for compressive imaging. IEEE Sig. Proc.</span>
+0041 <span class="comment">% Let., in press, 2013.</span>
+0042 <span class="comment">% [2] R. E. Carrillo, J. D. McEwen, and Y. Wiaux. Sparsity Averaging</span>
+0043 <span class="comment">% Reweighted Analysis (SARA): a novel algorithm for radio-interferometric</span>
+0044 <span class="comment">% imaging. Mon. Not. Roy. Astron. Soc., 426(2):1223-1234, 2012.</span>
+0045 
+0046 Psit = @(x) x; Psi=@(x) x;
+0047 
+0048 param=paramT;
+0049 iter=0;
+0050 rel_dist=1;
+0051 
+0052 <span class="keyword">if</span> nargin&lt;9
+0053     fprintf(<span class="string">'RW iteration: %i\n'</span>, iter);
+0054     sol = sopt_mltb_solve_TVoA_B2(y, epsilon, A, At, Psi, Psit, param);
+0055 <span class="keyword">else</span>
+0056     sol = initsol;
+0057 <span class="keyword">end</span>
+0058 
+0059 
+0060 delta=std(sol(:));
+0061 
+0062 <span class="keyword">while</span> (rel_dist&gt;tol &amp;&amp; iter&lt;maxiter)
+0063   
+0064     iter=iter+1;
+0065     delta=max(sigma/10,delta);
+0066     fprintf(<span class="string">'RW iteration: %i\n'</span>, iter);
+0067     fprintf(<span class="string">'delta = %e\n'</span>, delta);
+0068     
+0069     <span class="comment">%Warm start</span>
+0070     param.initsol=sol;
+0071     sol1=sol;
+0072     
+0073     <span class="comment">% Weights</span>
+0074     [param.weights_dx_TV param.weights_dy_TV] = sopt_mltb_gradient_op(real(sol));
+0075     param.weights_dx_TV = delta./(abs(param.weights_dx_TV)+delta);
+0076     param.weights_dy_TV = delta./(abs(param.weights_dy_TV)+delta);
+0077     param.identical_weights_flag_TV = 0;
+0078     param.gamma=1e-1*max(abs(sol1(:)));
+0079     
+0080     <span class="comment">%Weighted TV problem</span>
+0081     sol = <a href="sopt_mltb_solve_TVDNoA.html" class="code" title="function sol = sopt_mltb_solve_TVDNoA(y, epsilon, A, At, S, St, param)">sopt_mltb_solve_TVDNoA</a>(y, epsilon, A, At, Psi, Psit, param);
+0082 
+0083     <span class="comment">%Relative distance</span>
+0084     rel_dist=norm(sol(:)-sol1(:))/norm(sol1(:)); 
+0085     fprintf(<span class="string">'relative distance = %e\n\n'</span>, rel_dist);
+0086     delta = delta/10;
+0087     
+0088 <span class="keyword">end</span>
+0089</pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

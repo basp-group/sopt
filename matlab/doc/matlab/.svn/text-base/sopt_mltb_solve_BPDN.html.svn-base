@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_solve_BPDN</title>
+  <meta name="keywords" content="sopt_mltb_solve_BPDN">
+  <meta name="description" content="sopt_mltb_solve_BPDN - Solve BPDN problem">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">matlab</a> &gt; sopt_mltb_solve_BPDN.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_solve_BPDN
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_solve_BPDN - Solve BPDN problem</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function sol = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_solve_BPDN - Solve BPDN problem
+
+ Solve the Basis Pursuit Denoising (BPDN) problem
+
+   min ||Psit x||_1   s.t.  ||y-A x||_2 &lt; epsilon
+
+ where y contains the measurements, A is the forward measurement operator 
+ and At the associated adjoint operator, Psit is a sparfying transform and
+ Psi its adjoint. The structure param should contain the following fields:
+
+   General parameters:
+ 
+   - verbose: Verbosity level (0 = no log, 1 = summary at convergence, 
+       2 = print main steps; default = 1).
+
+   - max_iter: Maximum number of iterations (default = 200).
+
+   - rel_obj: Minimum relative change of the objective value 
+       (default = 1e-4).  The algorithm stops if
+           | ||x(t)||_1 - ||x(t-1)||_1 | / ||x(t)||_1 &lt; rel_obj,
+       where x(t) is the estimate of the solution at iteration t.
+
+   - gamma: Convergence speed (weighting of L1 norm when solving for
+       L1 proximal operator) (default = 1e-1).
+
+   - initsol: Initial solution for a warmstart.
+ 
+   Projection onto the L2-ball:
+
+   - param.tight_B2: 1 if A is a tight frame or 0 otherwise (default = 1).
+ 
+   - nu_B2: Bound on the norm of the operator A, i.e.
+       ||A x||^2 &lt;= nu * ||x||^2 (default = 1).
+
+   - tol_B2: Tolerance for the projection onto the L2 ball. The algorithms
+       stops if
+         epsilon/(1-tol) &lt;= ||y - A z||_2 &lt;= epsilon/(1+tol)
+       (default = 1e-3).
+
+   - max_iter_B2: Maximum number of iterations for the projection onto the
+       L2 ball (default = 200).
+
+   - pos_B2: Positivity flag (1 to impose positivity, 0 otherwise;
+       default = 0).
+
+   - real_B2: Reality flag (1 to impose reality, 0 otherwise;
+       default = 0).
+ 
+   Proximal L1 operator:
+
+   - rel_obj_L1: Used as stopping criterion for the proximal L1
+       operator. Minimum relative change of the objective value between
+       two successive estimates.
+
+   - max_iter_L1: Used as stopping criterion for the proximal L1
+       operator. Maximun number of iterations.
+ 
+   - param.nu_L1: Bound on the norm^2 of the operator Psi, i.e.
+       ||Psi x||^2 &lt;= nu * ||x||^2 (default = 1).
+ 
+   - param.tight_L1: 1 if Psit is a tight frame, 0 otherwise 
+       (default = 1).
+ 
+   - param.weights: Weights for a weighted L1-norm defined
+       by sum_i{weights_i.*abs(x_i)} (default = 1). 
+
+   - pos_l1: Positivity flag (1 to impose positivity, 0 otherwise;
+       default = 0).
+
+ References:
+ [1] P. L. Combettes and J-C. Pesquet, &quot;A Douglas-Rachford Splitting 
+ Approach to Nonsmooth Convex Variational Signal Recovery&quot;, IEEE Journal
+ of Selected Topics in Signal Processing, vol. 1, no. 4, pp. 564-574, 2007.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="Example_BPDN.html" class="code" title="">Example_BPDN</a>	% Example_BPDN</li><li><a href="Example_weighted_BPDN.html" class="code" title="">Example_weighted_BPDN</a>	% Exampled_weighted_L1</li><li><a href="Experiment1.html" class="code" title="">Experiment1</a>	% Experiment1</li><li><a href="Experiment2.html" class="code" title="">Experiment2</a>	% Experiment2</li><li><a href="Experiment3.html" class="code" title="">Experiment3</a>	% Experiement3</li><li><a href="sopt_mltb_solve_rwBPDN.html" class="code" title="function sol = sopt_mltb_solve_rwBPDN(y, epsilon, A, At, Psi, Psit,paramT, sigma, tol, maxiter, initsol)">sopt_mltb_solve_rwBPDN</a>	sopt_mltb_solve_rwBPDN - Solve reweighted BPDN problem</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sol = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param)</a>
+0002 <span class="comment">% sopt_mltb_solve_BPDN - Solve BPDN problem</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Solve the Basis Pursuit Denoising (BPDN) problem</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   min ||Psit x||_1   s.t.  ||y-A x||_2 &lt; epsilon</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% where y contains the measurements, A is the forward measurement operator</span>
+0009 <span class="comment">% and At the associated adjoint operator, Psit is a sparfying transform and</span>
+0010 <span class="comment">% Psi its adjoint. The structure param should contain the following fields:</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%   General parameters:</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">%   - verbose: Verbosity level (0 = no log, 1 = summary at convergence,</span>
+0015 <span class="comment">%       2 = print main steps; default = 1).</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%   - max_iter: Maximum number of iterations (default = 200).</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%   - rel_obj: Minimum relative change of the objective value</span>
+0020 <span class="comment">%       (default = 1e-4).  The algorithm stops if</span>
+0021 <span class="comment">%           | ||x(t)||_1 - ||x(t-1)||_1 | / ||x(t)||_1 &lt; rel_obj,</span>
+0022 <span class="comment">%       where x(t) is the estimate of the solution at iteration t.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%   - gamma: Convergence speed (weighting of L1 norm when solving for</span>
+0025 <span class="comment">%       L1 proximal operator) (default = 1e-1).</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%   - initsol: Initial solution for a warmstart.</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">%   Projection onto the L2-ball:</span>
+0030 <span class="comment">%</span>
+0031 <span class="comment">%   - param.tight_B2: 1 if A is a tight frame or 0 otherwise (default = 1).</span>
+0032 <span class="comment">%</span>
+0033 <span class="comment">%   - nu_B2: Bound on the norm of the operator A, i.e.</span>
+0034 <span class="comment">%       ||A x||^2 &lt;= nu * ||x||^2 (default = 1).</span>
+0035 <span class="comment">%</span>
+0036 <span class="comment">%   - tol_B2: Tolerance for the projection onto the L2 ball. The algorithms</span>
+0037 <span class="comment">%       stops if</span>
+0038 <span class="comment">%         epsilon/(1-tol) &lt;= ||y - A z||_2 &lt;= epsilon/(1+tol)</span>
+0039 <span class="comment">%       (default = 1e-3).</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">%   - max_iter_B2: Maximum number of iterations for the projection onto the</span>
+0042 <span class="comment">%       L2 ball (default = 200).</span>
+0043 <span class="comment">%</span>
+0044 <span class="comment">%   - pos_B2: Positivity flag (1 to impose positivity, 0 otherwise;</span>
+0045 <span class="comment">%       default = 0).</span>
+0046 <span class="comment">%</span>
+0047 <span class="comment">%   - real_B2: Reality flag (1 to impose reality, 0 otherwise;</span>
+0048 <span class="comment">%       default = 0).</span>
+0049 <span class="comment">%</span>
+0050 <span class="comment">%   Proximal L1 operator:</span>
+0051 <span class="comment">%</span>
+0052 <span class="comment">%   - rel_obj_L1: Used as stopping criterion for the proximal L1</span>
+0053 <span class="comment">%       operator. Minimum relative change of the objective value between</span>
+0054 <span class="comment">%       two successive estimates.</span>
+0055 <span class="comment">%</span>
+0056 <span class="comment">%   - max_iter_L1: Used as stopping criterion for the proximal L1</span>
+0057 <span class="comment">%       operator. Maximun number of iterations.</span>
+0058 <span class="comment">%</span>
+0059 <span class="comment">%   - param.nu_L1: Bound on the norm^2 of the operator Psi, i.e.</span>
+0060 <span class="comment">%       ||Psi x||^2 &lt;= nu * ||x||^2 (default = 1).</span>
+0061 <span class="comment">%</span>
+0062 <span class="comment">%   - param.tight_L1: 1 if Psit is a tight frame, 0 otherwise</span>
+0063 <span class="comment">%       (default = 1).</span>
+0064 <span class="comment">%</span>
+0065 <span class="comment">%   - param.weights: Weights for a weighted L1-norm defined</span>
+0066 <span class="comment">%       by sum_i{weights_i.*abs(x_i)} (default = 1).</span>
+0067 <span class="comment">%</span>
+0068 <span class="comment">%   - pos_l1: Positivity flag (1 to impose positivity, 0 otherwise;</span>
+0069 <span class="comment">%       default = 0).</span>
+0070 <span class="comment">%</span>
+0071 <span class="comment">% References:</span>
+0072 <span class="comment">% [1] P. L. Combettes and J-C. Pesquet, &quot;A Douglas-Rachford Splitting</span>
+0073 <span class="comment">% Approach to Nonsmooth Convex Variational Signal Recovery&quot;, IEEE Journal</span>
+0074 <span class="comment">% of Selected Topics in Signal Processing, vol. 1, no. 4, pp. 564-574, 2007.</span>
+0075 
+0076 <span class="comment">% Optional input arguments</span>
+0077 <span class="keyword">if</span> ~isfield(param, <span class="string">'verbose'</span>), param.verbose = 1; <span class="keyword">end</span>
+0078 <span class="keyword">if</span> ~isfield(param, <span class="string">'rel_obj'</span>), param.rel_obj = 1e-4; <span class="keyword">end</span>
+0079 <span class="keyword">if</span> ~isfield(param, <span class="string">'max_iter'</span>), param.max_iter = 200; <span class="keyword">end</span>
+0080 <span class="keyword">if</span> ~isfield(param, <span class="string">'gamma'</span>), param.gamma = 1e-2; <span class="keyword">end</span>
+0081 <span class="keyword">if</span> ~isfield(param, <span class="string">'pos_l1'</span>), param.pos_l1 = 0; <span class="keyword">end</span>
+0082 
+0083 <span class="comment">% Input arguments for projection onto the L2 ball</span>
+0084 param_B2.A = A; param_B2.At = At;
+0085 param_B2.y = y; param_B2.epsilon = epsilon;
+0086 param_B2.verbose = param.verbose;
+0087 <span class="keyword">if</span> isfield(param, <span class="string">'nu_B2'</span>), param_B2.nu = param.nu_B2; <span class="keyword">end</span>
+0088 <span class="keyword">if</span> isfield(param, <span class="string">'tol_B2'</span>), param_B2.tol = param.tol_B2; <span class="keyword">end</span>
+0089 <span class="keyword">if</span> isfield(param, <span class="string">'tight_B2'</span>), param_B2.tight = param.tight_B2; <span class="keyword">end</span>
+0090 <span class="keyword">if</span> isfield(param, <span class="string">'max_iter_B2'</span>)
+0091     param_B2.max_iter = param.max_iter_B2;
+0092 <span class="keyword">end</span>
+0093 <span class="keyword">if</span> isfield(param,<span class="string">'pos_B2'</span>), param_B2.pos=param.pos_B2; <span class="keyword">end</span>
+0094 <span class="keyword">if</span> isfield(param,<span class="string">'real_B2'</span>), param_B2.real=param.real_B2; <span class="keyword">end</span>
+0095 
+0096 <span class="comment">% Input arguments for prox L1</span>
+0097 param_L1.Psi = Psi; param_L1.Psit = Psit; param_L1.pos = param.pos_l1;
+0098 param_L1.verbose = param.verbose; 
+0099 <span class="comment">%param_L1.verbose = 2;</span>
+0100 param_L1.rel_obj = param.rel_obj;
+0101 <span class="keyword">if</span> isfield(param, <span class="string">'nu_L1'</span>)
+0102     param_L1.nu = param.nu_L1;
+0103 <span class="keyword">end</span>
+0104 <span class="keyword">if</span> isfield(param, <span class="string">'tight_L1'</span>)
+0105     param_L1.tight = param.tight_L1;
+0106 <span class="keyword">end</span>
+0107 <span class="keyword">if</span> isfield(param, <span class="string">'max_iter_L1'</span>)
+0108     param_L1.max_iter = param.max_iter_L1;
+0109 <span class="keyword">end</span>
+0110 <span class="keyword">if</span> isfield(param, <span class="string">'rel_obj_L1'</span>)
+0111     param_L1.rel_obj = param.rel_obj_L1;
+0112 <span class="keyword">end</span>
+0113 <span class="keyword">if</span> isfield(param, <span class="string">'weights'</span>)
+0114     param_L1.weights = param.weights;
+0115 <span class="keyword">else</span>
+0116     param_L1.weights = 1;
+0117 <span class="keyword">end</span>
+0118 
+0119 <span class="comment">% Initialization</span>
+0120 <span class="keyword">if</span> isfield(param,<span class="string">'initsol'</span>)
+0121     xhat = param.initsol;
+0122 <span class="keyword">else</span>
+0123     xhat = At(y); 
+0124 <span class="keyword">end</span>
+0125 
+0126 iter = 1; prev_norm = 0;
+0127 
+0128 <span class="comment">% Main loop</span>
+0129 <span class="keyword">while</span> 1
+0130     
+0131     <span class="keyword">if</span> param.verbose &gt;= 1
+0132         fprintf(<span class="string">'Iteration %i:\n'</span>, iter);
+0133     <span class="keyword">end</span>
+0134     
+0135     <span class="comment">% Projection onto the L2-ball</span>
+0136     [sol, param_B2.u] = sopt_mltb_fast_proj_B2(xhat, param_B2);
+0137     
+0138     <span class="comment">% Global stopping criterion</span>
+0139     dummy = Psit(sol);
+0140     curr_norm = sum(param_L1.weights(:).*abs(dummy(:)));    
+0141     rel_norm = abs(curr_norm - prev_norm)/curr_norm;
+0142     <span class="keyword">if</span> param.verbose &gt;= 1
+0143         fprintf(<span class="string">'  ||x||_1 = %e, rel_norm = %e\n'</span>, <span class="keyword">...</span>
+0144             curr_norm, rel_norm);
+0145     <span class="keyword">end</span>
+0146     <span class="keyword">if</span> (rel_norm &lt; param.rel_obj)
+0147         crit_BPDN = <span class="string">'REL_NORM'</span>;
+0148         <span class="keyword">break</span>;
+0149     <span class="keyword">elseif</span> iter &gt;= param.max_iter
+0150         crit_BPDN = <span class="string">'MAX_IT'</span>;
+0151         <span class="keyword">break</span>;
+0152     <span class="keyword">end</span>
+0153     
+0154     <span class="comment">% Proximal L1 operator</span>
+0155     xhat = 2*sol - xhat;
+0156     temp = sopt_mltb_prox_L1(xhat, param.gamma, param_L1);
+0157     xhat = temp + sol - xhat;
+0158     
+0159     <span class="comment">% Update variables</span>
+0160     iter = iter + 1;
+0161     prev_norm = curr_norm;
+0162     
+0163 <span class="keyword">end</span>
+0164 
+0165 <span class="comment">% Log</span>
+0166 <span class="keyword">if</span> param.verbose &gt;= 1
+0167   
+0168     <span class="comment">% L1 norm</span>
+0169     fprintf(<span class="string">'\n Solution found:\n'</span>);
+0170     fprintf(<span class="string">' Final L1 norm: %e\n'</span>, curr_norm);
+0171     
+0172     <span class="comment">% Residual</span>
+0173     dummy = A(sol); res = norm(y(:)-dummy(:), 2);
+0174     fprintf(<span class="string">' epsilon = %e, ||y-Ax||_2=%e\n'</span>, epsilon, res);
+0175     
+0176     <span class="comment">% Stopping criterion</span>
+0177     fprintf(<span class="string">' %i iterations\n'</span>, iter);
+0178     fprintf(<span class="string">' Stopping criterion: %s \n\n'</span>, crit_BPDN);
+0179     
+0180 <span class="keyword">end</span>
+0181 
+0182 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

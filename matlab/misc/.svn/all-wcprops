@@ -1,0 +1,77 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/sopt/!svn/ver/227/trunk/matlab/misc
+END
+sopt_mltb_gradient_op_sphere.m
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/sopt/!svn/ver/220/trunk/matlab/misc/sopt_mltb_gradient_op_sphere.m
+END
+sopt_mltb_modifypdf.m
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/sopt/!svn/ver/227/trunk/matlab/misc/sopt_mltb_modifypdf.m
+END
+sopt_mltb_struct2size.m
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_struct2size.m
+END
+sopt_mltb_SNR.m
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_SNR.m
+END
+sopt_mltb_TV_norm.m
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/sopt/!svn/ver/220/trunk/matlab/misc/sopt_mltb_TV_norm.m
+END
+sopt_mltb_genmask.m
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_genmask.m
+END
+sopt_mltb_div_op_sphere.m
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/sopt/!svn/ver/220/trunk/matlab/misc/sopt_mltb_div_op_sphere.m
+END
+sopt_mltb_adjcurvelet.m
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_adjcurvelet.m
+END
+sopt_mltb_vdsmask.m
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_vdsmask.m
+END
+sopt_mltb_fwdcurvelet.m
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/sopt/!svn/ver/225/trunk/matlab/misc/sopt_mltb_fwdcurvelet.m
+END
+sopt_mltb_gradient_op.m
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/sopt/!svn/ver/220/trunk/matlab/misc/sopt_mltb_gradient_op.m
+END
+sopt_mltb_div_op.m
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/sopt/!svn/ver/220/trunk/matlab/misc/sopt_mltb_div_op.m
+END

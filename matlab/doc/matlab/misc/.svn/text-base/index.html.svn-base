@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Index for Directory matlab/misc</title>
+  <meta name="keywords" content="matlab/misc">
+  <meta name="description" content="Index for Directory matlab/misc">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>
+
+<h1>Index for matlab/misc</h1>
+
+<h2>Matlab files in this directory:</h2>
+<table>
+<tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_SNR.html">sopt_mltb_SNR</a></td><td>SNR - Compute the SNR between two images </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_TV_norm.html">sopt_mltb_TV_norm</a></td><td>sopt_mltb_TV_norm - Compute TV norm </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_adjcurvelet.html">sopt_mltb_adjcurvelet</a></td><td>sopt_mltb_adjcurvelet - Adjoint curvelet transform </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_div_op.html">sopt_mltb_div_op</a></td><td>sopt_mltb_div_op - Compute divergence </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_div_op_sphere.html">sopt_mltb_div_op_sphere</a></td><td>sopt_mltb_div_op_sphere - Compute divergence on sphere </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_fwdcurvelet.html">sopt_mltb_fwdcurvelet</a></td><td>sopt_mltb_fwdcurvelet - Forward curvelet transform </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_genmask.html">sopt_mltb_genmask</a></td><td>sopt_mltb_genmask - Generate mask </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_gradient_op.html">sopt_mltb_gradient_op</a></td><td>sopt_mltb_gradient_op - Compute gradient </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_gradient_op_sphere.html">sopt_mltb_gradient_op_sphere</a></td><td>sopt_mltb_gradient_op_sphere - Compute gradient on sphere </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_modifypdf.html">sopt_mltb_modifypdf</a></td><td>sopt_mltb_modifypdf - Modify PDF of sampling profile </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_struct2size.html">sopt_mltb_struct2size</a></td><td>sopt_mltb_struct2size - Compute curvelet data structure </td></tr><tr><td><img src="../../matlabicon.gif" alt="" border="">&nbsp;<a href="sopt_mltb_vdsmask.html">sopt_mltb_vdsmask</a></td><td>sopt_mltb_vdsmask - Create variable density sampling profile </td></tr></table>
+
+
+
+
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

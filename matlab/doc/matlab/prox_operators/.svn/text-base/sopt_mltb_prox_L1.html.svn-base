@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_prox_L1</title>
+  <meta name="keywords" content="sopt_mltb_prox_L1">
+  <meta name="description" content="sopt_mltb_prox_L1 - Proximal operator with L1 norm">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">matlab</a> &gt; <a href="index.html">prox_operators</a> &gt; sopt_mltb_prox_L1.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/prox_operators&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_prox_L1
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_prox_L1 - Proximal operator with L1 norm</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function sol = sopt_mltb_prox_L1(x, lambda, param) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_prox_L1 - Proximal operator with L1 norm
+
+ Compute the L1 proximal operator, i.e. solve
+
+   min_{z} 0.5*||x - z||_2^2 + lambda * ||Psit x||_1 ,
+
+ where x is the input vector and the solution z* is returned as sol.  
+ The structure param should contain the following fields:
+
+   - Psit: Sparsifying transform (default = Identity).
+
+   - Psi: Adjoint of Psit (default = Identity).
+
+   - tight: 1 if Psit is a tight frame or 0 otherwise (default = 1).
+
+   - nu: Bound on the norm^2 of the operator Psi, i.e.
+       ||Psi x||^2 &lt;= nu * ||x||^2 (default = 1).
+
+   - max_iter: Maximum number of iterations (default = 200).
+
+   - rel_obj: Minimum relative change of the objective value 
+       (default = 1e-4).  The algorithm stops if
+           | ||x(t)||_1 - ||x(t-1)||_1 | / ||x(t)||_1 &lt; rel_obj,
+       where x(t) is the estimate of the solution at iteration t.
+
+   - verbose: Verbosity level (0 = no log, 1 = summary at convergence, 
+       2 = print main steps; default = 1).
+
+   - weights: Weights for a weighted L1-norm (default = 1).
+
+   - pos: Positivity flag (1 = positive solution,
+       0 = general complex case; default = 0).
+
+ References:
+ [1] M.J. Fadili and J-L. Starck, &quot;Monotone operator splitting for
+ optimization problems in sparse recovery&quot; , IEEE ICIP, Cairo,
+ Egypt, 2009.
+ [2] Amir Beck and Marc Teboulle, &quot;A Fast Iterative Shrinkage-Thresholding
+ Algorithm for Linear Inverse Problems&quot;,  SIAM Journal on Imaging Sciences
+ 2 (2009), no. 1, 183--202.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sol = sopt_mltb_prox_L1(x, lambda, param)</a>
+0002 <span class="comment">% sopt_mltb_prox_L1 - Proximal operator with L1 norm</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% Compute the L1 proximal operator, i.e. solve</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">%   min_{z} 0.5*||x - z||_2^2 + lambda * ||Psit x||_1 ,</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% where x is the input vector and the solution z* is returned as sol.</span>
+0009 <span class="comment">% The structure param should contain the following fields:</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">%   - Psit: Sparsifying transform (default = Identity).</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">%   - Psi: Adjoint of Psit (default = Identity).</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">%   - tight: 1 if Psit is a tight frame or 0 otherwise (default = 1).</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">%   - nu: Bound on the norm^2 of the operator Psi, i.e.</span>
+0018 <span class="comment">%       ||Psi x||^2 &lt;= nu * ||x||^2 (default = 1).</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">%   - max_iter: Maximum number of iterations (default = 200).</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   - rel_obj: Minimum relative change of the objective value</span>
+0023 <span class="comment">%       (default = 1e-4).  The algorithm stops if</span>
+0024 <span class="comment">%           | ||x(t)||_1 - ||x(t-1)||_1 | / ||x(t)||_1 &lt; rel_obj,</span>
+0025 <span class="comment">%       where x(t) is the estimate of the solution at iteration t.</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">%   - verbose: Verbosity level (0 = no log, 1 = summary at convergence,</span>
+0028 <span class="comment">%       2 = print main steps; default = 1).</span>
+0029 <span class="comment">%</span>
+0030 <span class="comment">%   - weights: Weights for a weighted L1-norm (default = 1).</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">%   - pos: Positivity flag (1 = positive solution,</span>
+0033 <span class="comment">%       0 = general complex case; default = 0).</span>
+0034 <span class="comment">%</span>
+0035 <span class="comment">% References:</span>
+0036 <span class="comment">% [1] M.J. Fadili and J-L. Starck, &quot;Monotone operator splitting for</span>
+0037 <span class="comment">% optimization problems in sparse recovery&quot; , IEEE ICIP, Cairo,</span>
+0038 <span class="comment">% Egypt, 2009.</span>
+0039 <span class="comment">% [2] Amir Beck and Marc Teboulle, &quot;A Fast Iterative Shrinkage-Thresholding</span>
+0040 <span class="comment">% Algorithm for Linear Inverse Problems&quot;,  SIAM Journal on Imaging Sciences</span>
+0041 <span class="comment">% 2 (2009), no. 1, 183--202.</span>
+0042 
+0043 <span class="comment">% Optional input arguments</span>
+0044 <span class="keyword">if</span> ~isfield(param, <span class="string">'verbose'</span>), param.verbose = 1; <span class="keyword">end</span>
+0045 <span class="keyword">if</span> ~isfield(param, <span class="string">'Psit'</span>), param.Psi = @(x) x; param.Psit = @(x) x; <span class="keyword">end</span>
+0046 <span class="keyword">if</span> ~isfield(param, <span class="string">'tight'</span>), param.tight = 1; <span class="keyword">end</span>
+0047 <span class="keyword">if</span> ~isfield(param, <span class="string">'nu'</span>), param.nu = 1; <span class="keyword">end</span>
+0048 <span class="keyword">if</span> ~isfield(param, <span class="string">'rel_obj'</span>), param.rel_obj = 1e-4; <span class="keyword">end</span>
+0049 <span class="keyword">if</span> ~isfield(param, <span class="string">'max_iter'</span>), param.max_iter = 200; <span class="keyword">end</span>
+0050 <span class="keyword">if</span> ~isfield(param, <span class="string">'Psit'</span>), param.Psit = @(x) x; <span class="keyword">end</span>
+0051 <span class="keyword">if</span> ~isfield(param, <span class="string">'Psi'</span>), param.Psi = @(x) x; <span class="keyword">end</span>
+0052 <span class="keyword">if</span> ~isfield(param, <span class="string">'weights'</span>), param.weights = 1; <span class="keyword">end</span>
+0053 <span class="keyword">if</span> ~isfield(param, <span class="string">'pos'</span>), param.pos = 0; <span class="keyword">end</span>
+0054 
+0055 <span class="comment">% Useful functions</span>
+0056 soft = @(z, T) sign(z).*max(abs(z)-T, 0);
+0057 
+0058 <span class="comment">% Projection</span>
+0059 <span class="keyword">if</span> param.tight &amp;&amp; ~param.pos <span class="comment">% TIGHT FRAME CASE</span>
+0060     
+0061     temp = param.Psit(x);
+0062     sol = x + 1/param.nu * param.Psi(soft(temp, <span class="keyword">...</span>
+0063         lambda*param.nu*param.weights)-temp);
+0064     crit_L1 = <span class="string">'REL_OBJ'</span>; iter_L1 = 1;
+0065     dummy = param.Psit(sol);
+0066     norm_l1 = sum(param.weights(:).*abs(dummy(:)));
+0067     
+0068 <span class="keyword">else</span> <span class="comment">% NON TIGHT FRAME CASE OR CONSTRAINT INVOLVED</span>
+0069     
+0070     <span class="comment">% Initializations</span>
+0071     u_l1 = zeros(size(param.Psit(x)));
+0072     sol = x - param.Psi(u_l1);
+0073     prev_l1 = 0; iter_L1 = 0;
+0074     
+0075     <span class="comment">% Soft-thresholding</span>
+0076     <span class="comment">% Init</span>
+0077     <span class="keyword">if</span> param.verbose &gt; 1
+0078         fprintf(<span class="string">'  Proximal l1 operator:\n'</span>);
+0079     <span class="keyword">end</span>
+0080     <span class="keyword">while</span> 1
+0081         
+0082         <span class="comment">% L1 norm of the estimate</span>
+0083         dummy = param.Psit(sol);
+0084         
+0085         norm_l1 = .5*norm(x(:) - sol(:), 2)^2 + lambda * <span class="keyword">...</span>
+0086             sum(param.weights(:).*abs(dummy(:)));
+0087         rel_l1 = abs(norm_l1-prev_l1)/norm_l1;
+0088         
+0089         <span class="comment">% Log</span>
+0090         <span class="keyword">if</span> param.verbose&gt;1
+0091             fprintf(<span class="string">'   Iter %i, ||Psit x||_1 = %e, rel_l1 = %e\n'</span>, <span class="keyword">...</span>
+0092                 iter_L1, norm_l1, rel_l1);
+0093         <span class="keyword">end</span>
+0094         
+0095         <span class="comment">% Stopping criterion</span>
+0096         <span class="keyword">if</span> (rel_l1 &lt; param.rel_obj)
+0097             crit_L1 = <span class="string">'REL_OB'</span>; <span class="keyword">break</span>;
+0098         <span class="keyword">elseif</span> iter_L1 &gt;= param.max_iter
+0099             crit_L1 = <span class="string">'MAX_IT'</span>; <span class="keyword">break</span>;
+0100         <span class="keyword">end</span>
+0101         
+0102         <span class="comment">% Soft-thresholding</span>
+0103         res = u_l1*param.nu + param.Psit(sol);
+0104         dummy = soft(res, lambda*param.nu*param.weights);
+0105         <span class="keyword">if</span> param.pos
+0106             dummy = real(dummy); dummy(dummy&lt;0) = 0;
+0107         <span class="keyword">end</span>
+0108         u_l1 = 1/param.nu * (res - dummy);
+0109         sol = x - param.Psi(u_l1);
+0110         
+0111         <span class="comment">% Update</span>
+0112         prev_l1 = norm_l1;
+0113         iter_L1 = iter_L1 + 1;
+0114         
+0115     <span class="keyword">end</span>
+0116 <span class="keyword">end</span>
+0117 
+0118 <span class="comment">% Log after the projection onto the L2-ball</span>
+0119 <span class="keyword">if</span> param.verbose &gt;= 1
+0120     fprintf([<span class="string">'  prox_L1: ||Psi x||_1 = %e,'</span>, <span class="keyword">...</span>
+0121         <span class="string">' %s, iter = %i\n'</span>], norm_l1, crit_L1, iter_L1);
+0122 <span class="keyword">end</span>
+0123 
+0124 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

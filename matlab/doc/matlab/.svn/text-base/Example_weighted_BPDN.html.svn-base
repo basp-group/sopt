@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Example_weighted_BPDN</title>
+  <meta name="keywords" content="Example_weighted_BPDN">
+  <meta name="description" content="% Exampled_weighted_L1">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">matlab</a> &gt; Example_weighted_BPDN.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>Example_weighted_BPDN
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>% Exampled_weighted_L1</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">% Exampled_weighted_L1
+ Example to demonstrate use of BPDN solver when incorporating weights
+ (performs one re-weighting of previous solution).</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="sopt_mltb_solve_BPDN.html" class="code" title="function sol = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param)">sopt_mltb_solve_BPDN</a>	sopt_mltb_solve_BPDN - Solve BPDN problem</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%% Exampled_weighted_L1</span>
+0002 <span class="comment">% Example to demonstrate use of BPDN solver when incorporating weights</span>
+0003 <span class="comment">% (performs one re-weighting of previous solution).</span>
+0004 
+0005 
+0006 <span class="comment">%% Clear workspace</span>
+0007 clc;
+0008 clear;
+0009 
+0010 <span class="comment">%% Define paths</span>
+0011 addpath misc/
+0012 addpath prox_operators/
+0013 
+0014 <span class="comment">%% Parameters</span>
+0015 N = 64;
+0016 input_snr = 30; <span class="comment">% Noise level (on the measurements)</span>
+0017 randn(<span class="string">'seed'</span>, 1); rand(<span class="string">'seed'</span>, 1);
+0018 
+0019 <span class="comment">%% Create an image with few spikes</span>
+0020 im = zeros(N); ind = randperm(N^2); im(ind(1:100)) = 1;
+0021 <span class="comment">%</span>
+0022 figure(1);
+0023 subplot(221), imagesc(im); axis image; axis off;
+0024 colormap gray; title(<span class="string">'Original image'</span>); drawnow;
+0025 
+0026 <span class="comment">%% Create a mask</span>
+0027 <span class="comment">% Mask</span>
+0028 mask = rand(size(im)) &lt; 0.095; ind = find(mask==1);
+0029 <span class="comment">% Masking matrix (sparse matrix in matlab)</span>
+0030 Ma = sparse(1:numel(ind), ind, ones(numel(ind), 1), numel(ind), numel(im));
+0031 <span class="comment">% Masking operator</span>
+0032 A = @(x) Ma*x(:);
+0033 At = @(x) reshape(Ma'*x(:), size(im));
+0034 
+0035 <span class="comment">%% Reconstruct from a few Fourier measurements</span>
+0036 
+0037 <span class="comment">% Composition (Masking o Fourier)</span>
+0038 A = @(x) Ma*reshape(fft2(x)/sqrt(numel(im)), numel(x), 1);
+0039 At = @(x) ifft2(reshape(Ma'*x(:), size(im))*sqrt(numel(im)));
+0040 
+0041 <span class="comment">% Sparsity operator</span>
+0042 Psit = @(x) x; Psi = Psit;
+0043 
+0044 <span class="comment">% Select 33% of Fourier coefficients</span>
+0045 y = A(im);
+0046 
+0047 <span class="comment">% Add Gaussian i.i.d. noise</span>
+0048 sigma_noise = 10^(-input_snr/20)*std(im(:));
+0049 y = y + (randn(size(y)) + 1i*randn(size(y)))*sigma_noise/sqrt(2);
+0050 
+0051 <span class="comment">% Display the downsampled image</span>
+0052 figure(1);
+0053 subplot(222); imagesc(real(At(y))); axis image; axis off;
+0054 colormap gray; title(<span class="string">'Measured image'</span>); drawnow;
+0055 
+0056 <span class="comment">% Tolerance on noise</span>
+0057 epsilon = sqrt(chi2inv(0.99, 2*numel(ind))/2)*sigma_noise;
+0058 
+0059 <span class="comment">% Parameters for BPDN</span>
+0060 param.verbose = 1; <span class="comment">% Print log or not</span>
+0061 param.gamma = 1e-1; <span class="comment">% Converge parameter</span>
+0062 param.rel_obj = 1e-4; <span class="comment">% Stopping criterion for the TVDN problem</span>
+0063 param.max_iter = 300; <span class="comment">% Max. number of iterations for the TVDN problem</span>
+0064 param.nu_B2 = 1; <span class="comment">% Bound on the norm of the operator A</span>
+0065 param.tol_B2 = 1e-4; <span class="comment">% Tolerance for the projection onto the L2-ball</span>
+0066 param.tight_B2 = 1; <span class="comment">% Indicate if A is a tight frame (1) or not (0)</span>
+0067 param.tight_L1 = 1; <span class="comment">% Indicate if Psit is a tight frame (1) or not (0)</span>
+0068 param.pos_l1 = 1; <span class="comment">%</span>
+0069 
+0070 <span class="comment">% Solve BPDN problem (without weights)</span>
+0071 sol = <a href="sopt_mltb_solve_BPDN.html" class="code" title="function sol = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param)">sopt_mltb_solve_BPDN</a>(y, epsilon, A, At, Psi, Psit, param);
+0072 
+0073 <span class="comment">% Show reconstructed image</span>
+0074 figure(1);
+0075 subplot(223); imagesc(real(sol)); axis image; axis off;
+0076 colormap gray; title([<span class="string">'First estimate - '</span>, <span class="keyword">...</span>
+0077     num2str(sopt_mltb_SNR(im, real(sol))), <span class="string">'dB'</span>]); drawnow;
+0078 
+0079 <span class="comment">% Refine the estimate</span>
+0080 param.weights = 1./(abs(sol)+1e-5);
+0081 sol = <a href="sopt_mltb_solve_BPDN.html" class="code" title="function sol = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param)">sopt_mltb_solve_BPDN</a>(y, epsilon, A, At, Psi, Psit, param);
+0082 
+0083 <span class="comment">% Show reconstructed image</span>
+0084 figure(1);
+0085 subplot(224); imagesc(real(sol)); axis image; axis off;
+0086 colormap gray; title([<span class="string">'Second estimate - '</span>, <span class="keyword">...</span>
+0087     num2str(sopt_mltb_SNR(im, real(sol))), <span class="string">'dB'</span>]); drawnow;</pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

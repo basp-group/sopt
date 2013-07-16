@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sopt_mltb_gradient_op_sphere</title>
+  <meta name="keywords" content="sopt_mltb_gradient_op_sphere">
+  <meta name="description" content="sopt_mltb_gradient_op_sphere - Compute gradient on sphere">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">matlab</a> &gt; <a href="index.html">misc</a> &gt; sopt_mltb_gradient_op_sphere.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for matlab/misc&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>sopt_mltb_gradient_op_sphere
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>sopt_mltb_gradient_op_sphere - Compute gradient on sphere</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dx, dy] = sopt_mltb_gradient_op_sphere(I, includeNorthpole,weights_dx, weights_dy) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> sopt_mltb_gradient_op_sphere - Compute gradient on sphere
+
+ Compute the gradientof a signal on the sphere.  The phi direction (x) is
+ periodic, while the theta direction (y) is not.
+
+ Inputs:
+
+   - I: Input two dimesional signal on the sphere.
+
+   - includeNorthPole: Flag indicating whether the North pole is included
+       in the sampling grid (1 = North pole included, 0 = North pole not
+       included).
+
+   - weights_dx: Weights in the x (phi) direction.
+
+   - weights_dy: Weights in the y (theta) direction.
+
+ Outputs:
+ 
+   - dx: Gradient in x (phi) direction.
+ 
+   - dy: Gradient in y (theta) direction.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="sopt_mltb_TV_norm.html" class="code" title="function y = sopt_mltb_TV_norm(u, sphere_flag,incNP, weights_dx, weights_dy)">sopt_mltb_TV_norm</a>	sopt_mltb_TV_norm - Compute TV norm</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dx, dy] = sopt_mltb_gradient_op_sphere(I, includeNorthpole, </a><span class="keyword">...</span>
+0002   weights_dx, weights_dy)
+0003 <span class="comment">% sopt_mltb_gradient_op_sphere - Compute gradient on sphere</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Compute the gradientof a signal on the sphere.  The phi direction (x) is</span>
+0006 <span class="comment">% periodic, while the theta direction (y) is not.</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Inputs:</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">%   - I: Input two dimesional signal on the sphere.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">%   - includeNorthPole: Flag indicating whether the North pole is included</span>
+0013 <span class="comment">%       in the sampling grid (1 = North pole included, 0 = North pole not</span>
+0014 <span class="comment">%       included).</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">%   - weights_dx: Weights in the x (phi) direction.</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">%   - weights_dy: Weights in the y (theta) direction.</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% Outputs:</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">%   - dx: Gradient in x (phi) direction.</span>
+0023 <span class="comment">%</span>
+0024 <span class="comment">%   - dy: Gradient in y (theta) direction.</span>
+0025 
+0026 dx = zeros(size(I, 1),size(I, 2));
+0027 I_big = zeros(size(I, 1)+2,size(I, 2));
+0028 I_big(2:end-1, 1:end) = I;
+0029 
+0030 <span class="comment">% Theta direction</span>
+0031 <span class="keyword">if</span>(includeNorthpole)
+0032     dx = [I(2:<span class="keyword">end</span>, :)-I(1:end-1, :) ; zeros(1, size(I, 2))];
+0033     dx(1,:) = zeros();
+0034 <span class="keyword">else</span>
+0035     dx = [I(2:<span class="keyword">end</span>, :)-I(1:end-1, :) ; zeros(1, size(I, 2))];
+0036 <span class="keyword">end</span>
+0037 
+0038 <span class="comment">% Phi direction</span>
+0039 <span class="keyword">if</span>(includeNorthpole)
+0040     dy = [I(:, 2:end)-I(:, 1:end-1) , I(:, 1)-I(:, end)];
+0041 <span class="keyword">else</span>
+0042     dy = [I(:, 2:end)-I(:, 1:end-1) , I(:, 1)-I(:, end)];
+0043 <span class="keyword">end</span>
+0044 
+0045 <span class="keyword">if</span> nargin&gt;2
+0046     dx = dx .* weights_dx;
+0047     dy = dy .* weights_dy;
+0048 <span class="keyword">end</span>
+0049 
+0050 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Fri 22-Feb-2013 15:54:47 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
