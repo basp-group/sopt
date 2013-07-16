@@ -7,7 +7,8 @@ DESCRIPTION
   This is a C implementation of the SARA algorithm presented in:
     [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
     and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, in press, 2013 (arXiv:1208.2330).
+    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
+    (arXiv:1208.2330).
 
 AUTHORS
   R. E. Carrillo (http://people.epfl.ch/rafael.carrillo)
@@ -25,7 +26,8 @@ REFERENCES
   When referencing this code, please cite our related paper:
     [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
     and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, in press, 2013 (arXiv:1208.2330).
+    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
+    (arXiv:1208.2330).
 
 DOCUMENTATION
    See doc/index.html

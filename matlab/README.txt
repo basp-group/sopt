@@ -7,7 +7,8 @@ DESCRIPTION
   This is a Matlab implementation of the SARA algorithm presented in:
     [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
     and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, in press, 2013 (arXiv:1208.2330).
+    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
+    (arXiv:1208.2330).
 
 AUTHORS
   R. E. Carillo (http://people.epfl.ch/rafael.carrillo)
@@ -30,7 +31,8 @@ REFERENCES
   When referencing this code, please cite our related paper:
     [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
     and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, in press, 2013 (arXiv:1208.2330).
+    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
+    (arXiv:1208.2330).
 
 DOCUMENTATION
    See doc/index.html
@@ -50,7 +52,7 @@ SUPPORT
 NOTES
   The code is not optimized and is given for educational purpose.
   This is a first Matlab implementation of the code. A more general
-  and optimised C code is under development.
+  and optimised C code is found in the root folder.
 
 LICENSE
   SOPT: Sparse OPTimisation package
