@@ -12,7 +12,7 @@ CC      = gcc
 #          -DSOPT_BUILD=\"`svnversion -n .`\"
 
 #OPT	= -Wall -O3 -fopenmp 
-OPT	= -Wall -O3 \
+OPT	= -Wall -O3 -fopenmp\
           -DSOPT_VERSION=\"0.1\" \
           -DSOPT_BUILD=\"`git rev-parse HEAD`\"
 
