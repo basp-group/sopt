@@ -14,7 +14,7 @@ CC      = gcc
 #OPT	= -Wall -O3 -fopenmp 
 OPT	= -Wall -O3 \
           -DSOPT_VERSION=\"0.1\" \
-          -DSOPT_BUILD=\"`svnversion -n .`\"
+          -DSOPT_BUILD=\"`git rev-parse HEAD`\"
 
 ifeq ($(FFTW_INSTALLED),1)
   OPT += -DSOPT_FFTW_INSTALLED
@@ -137,7 +137,7 @@ SOPTHEADERS = sopt_error.h                 \
               sopt_sara.h                  \
               sopt_wavelet.h
 
-#SOPTPROGS = $(SOPTBIN)/sopt_test
+SOPTPROGS   = $(SOPTBIN)/sopt_about
 
 SOPTOBJSMAT = $(SOPTOBJMAT)/sopt_solver_l1_mex.o \
               $(SOPTOBJMAT)/sopt_solver_tv_mex.o 
@@ -155,12 +155,12 @@ $(SOPTOBJ)/%.o: %.c $(SOPTHEADERS)
 default: lib
 
 .PHONY: all
-all: lib test #prog
+all: lib test prog
 
-#.PHONY: prog
-#prog: $(SOPTPROGS)
-#$(SOPTBIN)/%: %.c $(SOPTLIB)/lib$(SOPTLIBNM).a
-#	$(CC) $(OPT) $(FFLAGS) $< -o $@ $(LDFLAGS)
+.PHONY: prog
+prog: $(SOPTPROGS)
+$(SOPTBIN)/%: %.c $(SOPTLIB)/lib$(SOPTLIBNM).a
+	$(CC) $(OPT) $(FFLAGS) $< -o $@ $(LDFLAGS)
 
 .PHONY: test
 test: $(SOPTBIN)/sopt_test
