@@ -7,11 +7,6 @@ FFTW_INSTALLED = 1
 # ======== COMPILER ========
 
 CC      = gcc
-#OPT	= -Wall -g \
-#          -DSOPT_VERSION=\"0.1\" \
-#          -DSOPT_BUILD=\"`svnversion -n .`\"
-
-#OPT	= -Wall -O3 -fopenmp 
 OPT	= -Wall -O3 -fopenmp\
           -DSOPT_VERSION=\"0.1\" \
           -DSOPT_BUILD=\"`git rev-parse HEAD`\"
@@ -155,7 +150,7 @@ $(SOPTOBJ)/%.o: %.c $(SOPTHEADERS)
 default: lib
 
 .PHONY: all
-all: lib test prog
+all: lib test prog demos
 
 .PHONY: prog
 prog: $(SOPTPROGS)
@@ -168,7 +163,7 @@ $(SOPTBIN)/sopt_test: $(SOPTOBJ)/sopt_test.c $(SOPTLIB)/lib$(SOPTLIBNM).a
 	$(CC) $(OPT) $(FFLAGS) $< -o $@ $(LDFLAGS) 
 
 .PHONY: demos
-demos: $(SOPTBIN)/sopt_demo2
+demos: $(SOPTBIN)/sopt_demo1 $(SOPTBIN)/sopt_demo2
 
 .PHONY: demo2
 demo2: $(SOPTBIN)/sopt_demo2
