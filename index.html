@@ -1,0 +1,308 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+<meta name="description" content="sopt: sparse optimization" />
+<meta name="keywords" content="purify, sopt, radio, interferometry,
+imaging, compressive, compressed, sensing, sampling, convex,
+optimization, optimisation, fourier, imaging, fast, algorithms,
+rafael, carrillo, jason, mcewen, yves, wiaux" />
+<meta name="author" content="Jason McEwen / Design by Andreas Viklund - http://andreasviklund.com/" />
+<link rel="stylesheet" type="text/css" href="style.css" title="1024px style" media="screen,projection" />
+<title>sopt</title>
+</head>
+
+<body>
+<div id="wrap">
+
+  
+<!--------------------------- HEADER --------------------------->
+<div id="header">
+
+  <p id="toplinks">
+  <a href="#introduction">Introduction</a> |
+  <a href="#download">Download</a> |
+  <a href="#installation">Installation</a> |
+  <a href="#matlab">Matlab</a> |
+  <a href="#referencing">Referencing</a> |  
+  <a href="#license">License</a> |
+  <a href="#authors">Authors</a> 
+  </p>
+
+  <table border="0" cellspacing="0">
+    <tr>
+      <td width=200 align="right" valign="top">
+	<img src="images/logo.png" width="140" height="140" border=0> 
+      </td>
+      <td width=500 align="left" valign="center">
+	<h1 class="title">sopt<span class="fade"></span></h1>
+	<p id="slogantitle">Sparse OPTimisation</p>
+      </td>			
+    </tr>
+  </table>
+
+</div>
+
+
+<!--------------------------- SIDEBAR --------------------------->
+<div id="sidebar">
+   
+<h2>News</h2>
+
+<ul>
+<li><strong>16 July 2013</strong><br />
+Public release of SOPT.
+</li>
+</ul>
+
+</div>
+
+
+<!--------------------------- CONTENT --------------------------->
+<div id="content">
+
+<!--------------------------------------------------------------->
+<a name="introduction"><h2>Introduction</h2></a>
+
+  <p> <strong>SOPT</strong> is an open-source code that provides
+  functionality to perform sparse optimisation using state-of-the-art
+  convex optimisation algorithms.  Furthermore, <strong>SOPT</strong>
+  implements the SARA algorithm, where the average sparsity of images
+  over a set of dictionaries is exploited.
+
+  <p> <strong>SOPT</strong> is written in C primarily but also
+  contains partial Matlab support.  <strong>SOPT</strong> is largely
+  provided to support the <a
+   href="http://basp-group.github.io/purify/">PURIFY</a> package, a
+  companion open-source code to perform radio interferometric imaging,
+  also written by the <a href="#authors">authors</a> of
+  <strong>SOPT</strong>.  For further background please see the
+  following <a href="#referencing">paper</a>.
+  
+  <p> This documentation outlines how to obtain <strong>SOPT</strong>,
+  before describing installation details, source code documentation
+  and Matlab support.  Reference, license and author information then
+  follows.
+
+  
+<!--------------------------------------------------------------->
+<a name="download"><h2>Download</h2></a>
+
+  <p><strong>SOPT</strong> is an open-source package
+  available under the license described <a
+   href="#license">below</a>.
+
+  <p>The <strong>SOPT</strong> code is hosted by github and
+  available <a href="https://github.com/basp-group/sopt/">here</a>.
+  </p>
+
+
+<!--------------------------------------------------------------->  
+<a name="installation"><h2>Installation</h2></a>
+
+  <p> The <strong>SOPT</strong> code is written largely in C, hence a
+   suitable C compiler will be required to build the main code.  In
+   the following the dependencies of <strong>SOPT</strong> are
+   described, before outlining instructions to compile, test,
+   self-document and clean the code.
+
+
+  <h4>Dependencies</h4>
+
+  <p> The <strong>SOPT</strong> library itself requires only the <a
+      href="http://www.libtiff.org/">LibTIFF</a> package.  However,
+     the <a href="http://www.fftw.org/">FFTW</a> package is required
+     to build the <strong>SOPT</strong> example programs.  Please
+     ensure the appropriate dependencies are installed on your system
+     before attempting to build <strong>SOPT</strong>.
+
+
+  <h4>Compiling</h4>
+
+  <p> A makefile is provided to build the code.  Before compiling you
+  will need to edit the makefile to specify your compiler and the
+  location where the dependencies are installed (if all dependencies
+  are installed in the same parent directory as <strong>SOPT</strong>
+  then it may not be necessary to edit the makefile).
+
+  <p> Once you have set the makefile up for your system,
+  <strong>SOPT</strong> may be compiled by running:
+
+  <pre> >> make all</pre> 
+
+
+  <p> This will build the library, test program, and demonstration programs.
+  If your system is configured to build all of these components then
+  you are done.  If you prefer to build only a subset of these
+  components then read on.
+
+  <p> You may alternatively build the individual components of
+  <strong>SOPT</strong>.  To build the library only run:
+  <pre> >> make lib</pre> 
+  <p> To build the test program run:
+  <pre> >> make test</pre> 
+  <p> To build the demonstration programs run:
+  <pre> >> make demos</pre>
+
+
+  <h4>Testing</h4>
+
+  <p> Run the test program to verify your installation.  A default
+  test may be performed by running: <pre> >> make runtest</pre> <p> If
+  <strong>SOPT</strong> is installed correctly the test program should
+  run and print test results to the terminal.
+
+  <p>Alternatively, you may run the test program directly by running:
+  <pre> >> ./bin/sopt_test </pre>
+
+  <p>To check the version number of your installation run:
+  <pre> >> ./bin/sopt_about </pre>
+
+  <h4>Documentation</h4>
+
+  <p>
+  The <strong>SOPT</strong> code is self-documenting.  Although
+  documentation should be available in a standard checkout of the
+  code, html source documentation can be generated by running:
+  <pre> >> make doc</pre>
+
+  <p> Documentation is generated using <a
+   href="http://www.doxygen.org">doxygen</a>, thus you must have doxygen
+  installed on your system to generate the source documentation.
+
+
+  <h4>Cleaning up</h4>
+
+  <p> To clean up your version of the <strong>SOPT</strong> code and
+  remove all builds run:
+  <pre> >> make clean</pre>
+
+  <p> To remove all source documentation run:
+  <pre> >> make cleandoc</pre>
+<br>
+
+
+<!--------------------------------------------------------------->
+<a name="matlab"><h2>Matlab</h2></a>
+
+  <p> A separate Matlab implementation is provided with
+  <strong>SOPT</strong>.  This implementation includes some (but not
+  all) of the optimisation algorithms implemented in the C code,
+  including the SARA algorithm.
+
+  <p>
+  The Matlab implementation is contained in the <code>matlab</code>
+  directory.  This is a stand-alone implementation and does not call
+  any of the C code.  In future, Matlab interfaces to the C code may
+  also be included in <strong>SOPT</strong>.
+
+  <p> See <code>matlab/README.txt</code> for an overview of the Matlab
+  implementation.  The stand-alone Matlab implementation is also
+  self-documenting; corresponding documentation can be found in
+  <code>matlab/doc</code>.  We thank Gilles Puy for contributing to this
+  Matlab implementation.
+
+
+<!--------------------------------------------------------------->
+<a name="referencing"><h2>Referencing</h2></a>
+
+  <p> If you use <strong>SOPT</strong> for work that results in
+  publication, please reference this site (<a
+   href="http://basp-group.github.io/sopt/">http://basp-group.github.io/sopt/</a>)
+  and our related academic paper:
+
+<blockquote>R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
+    and Y. Wiaux.  <a href="">Sparsity averaging for compressive imaging</a>, <i>IEEE
+    Sig. Proc. Lett.</i>, 20(6): 591-594, 2013 (<a
+   href="http://arxiv.org/abs/1208.2330">ArXiv</a> | <a
+   href="http://dx.doi.org/10.1109/LSP.2013.2259813">DOI</a>).
+</blockquote>
+
+
+
+<!--------------------------------------------------------------->
+<a name="license"><h2>License</h2></a>
+
+<blockquote>  
+<p>
+SOPT: Sparse OPTimisation<br>
+Copyright (C) 2013 Rafael Carrillo, Jason McEwen, Yves Wiaux
+
+<p>
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or (at
+your option) any later version.
+
+<p>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details (<a href="LICENSE.txt">LICENSE.txt</a>).
+
+<p> 
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
+</blockquote>
+
+<!--------------------------------------------------------------->
+<a name="authors"><h2>About the authors</h2></a>
+
+<p> <strong>SOPT</strong> has been developed by Rafael Carrillo,
+Jason McEwen and Yves Wiaux.  See the authors' web pages for more
+information.</p>
+
+  <p>
+  <img src="images/photo_rafael.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Dr Rafael Carrillo<br>
+  <a href="http://www.google.co.uk/search?q=Rafael Carrillo">Academic web page</a>
+  &raquo;</p>
+  </p>
+  
+  <br><br><br><br><br>
+  <br>
+
+  <p>
+  <img src="images/photo_jason.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Dr Jason McEwen<br>
+  <a href="http://www.jasonmcewen.org/">Academic web page</a>
+  &raquo;</p>
+  </p>
+  
+  <br><br><br><br><br>
+
+  <p>
+  <img src="images/photo_yves.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Dr Yves Wiaux<br>
+  <a href="http://www.google.co.uk/search?q=Yves Wiaux">Academic web page</a>
+  &raquo;</p>
+ 
+
+<br><br><br><br><br><br><br>
+
+</div>
+
+
+
+<!--------------------------- FOOTER --------------------------->
+<div id="footer">
+
+  <p>
+  <a href="#header">Back to top</a><br >
+  
+  <p>&copy; 2013 <a href="http://www.jasonmcewen.org">Jason McEwen</a> | Design by
+  <a href="http://andreasviklund.com/">Andreas Viklund</a> </p>
+
+
+
+</div>
+</body>
+</html>

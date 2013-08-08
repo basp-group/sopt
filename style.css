@@ -1,0 +1,262 @@
+/* 1024px - An open source xhtml/css website template by Andreas Viklund - http://andreasviklund.com . Free to use in any way and for any purpose as long as the proper credits are given to the original designer.
+
+Version: 1.0, March 29, 2006 */
+
+/******** General tags ********/
+body{
+font:76% Verdana,Tahoma,Arial,sans-serif;
+background:#ffffff url(images/background.gif) top center repeat-y;
+color:#404040;
+line-height:1.2em;
+margin:0 auto;
+padding:0;
+}
+
+a{
+text-decoration:none;
+color:#4088b8;
+font-weight:bold;
+}
+
+a:hover{text-decoration:underline;}
+a.selected{color:gray}
+a img{border:0;}
+p{margin:0 0 18px 10px;}
+ul,ol,dl{font-size:0.9em; margin:2px 0 16px 0px;}
+ul ul,ol ol{margin:4px 0 4px 35px;}
+
+
+h1{
+font-size:2.8em;
+letter-spacing:-3px;
+margin:0 0 2px 25px;
+color:#4088b8;
+}
+
+h1 a{text-transform:none; color:#4088b8;}
+
+h2{
+font-size:1.6em;
+color:#4088b8;
+border-bottom:4px solid #dadada;
+padding:0 2px 2px 5px;
+margin:0px 0 20px 0;
+letter-spacing:-1px;
+}
+
+h3{
+font-size:1.2em;
+font-weight:bold;
+color:#4088b8;
+border-bottom:2px solid #dadada;
+margin:10px 0 80px 0;
+padding:6px 2px 2px 3px;
+}
+
+h4{
+font-size:1.2em;
+font-weight:bold;
+color:gray;
+border-bottom:2px solid #dadada;
+margin:0px 0 5px 0;
+padding:6px 2px 2px 3px;
+}
+
+blockquote{
+font-size:0.9em;
+border:1px solid #dadada;
+border-radius: 5px; 
+margin:0px 10px 20px 80px;
+padding:8px;
+width: 70%; 
+}
+
+pre {
+       font-family: consolas, courier, monospace;
+       font-size: 1em;
+       line-height: 1.2em;
+       white-space: pre; 
+       background-color: #faf8f0; 
+       color: #000; 
+       border: 1px solid #ccc;
+       border-radius: 1em; 
+       padding: 1em;
+       margin: -1.2em 0em 1em 5em;
+       width: 70%; 
+       overflow: auto; /*--If the Code exceeds the width, a scrolling is available--*/
+       overflow-Y: hidden;  /*--Hides vertical scroll created by IE--*/
+}
+
+code {
+       font-family: consolas, courier, monospace;
+       font-size: 1em;      
+}
+
+
+/******** Main wrap ********/
+#wrap{
+color:#404040;
+width:970px;
+margin:10px auto;
+padding:0;
+}
+
+#header{margin:0;}
+
+#toplinks{text-align:right; padding:5px 2px 2px 3px;}
+
+#slogan{
+font-size:1.5em;
+color:#808080;
+font-weight:bold;
+letter-spacing:-1px;
+margin:15px 0px 30px 35px;
+line-height:1.2em;
+}
+
+#slogantitle{
+font-size:1.5em;
+color:#808080;
+font-weight:bold;
+letter-spacing:-1px;
+margin:25px 0px 30px 35px;
+line-height:1.2em;
+}
+
+/******** sidebar ********/
+#sidebar{
+float:left;
+width:195px;
+margin:0 0 5px 0;
+padding:1px 0 0 0;
+}
+
+#sidebar ul{
+list-style:none;
+font-size:0.9em;
+margin:0;
+padding:10px 0 15px 10px;
+}
+
+#sidebar li{
+list-style:none;
+margin:0 0 8px 0;
+padding:0;
+}
+
+#sidebar li a{
+font-size:0.95em;
+font-weight:bold;
+padding:2px;
+}
+
+#sidebar ul ul{
+margin:4px 0 3px 15px;
+line-height:1.2em;
+padding:0;
+}
+
+#sidebar ul ul li a{font-weight:normal;}
+#sidebar h1{
+font-size:1.0em;
+border-bottom:2px solid #dadada;
+letter-spacing:0px;
+margin:5px 0 8px 0px;
+color:#4088b8;
+}
+#sidebar h2{
+font-size:1.0em;
+border-bottom:2px solid #dadada;
+letter-spacing:0px;
+margin:5px 0 3px 0px;
+color:gray;
+}
+
+#sidebar blockquote{
+font-size:0.9em;
+border:1px solid #dadada;
+margin:10px 10px 20px 10px;
+padding:8px;
+width:158px;
+}
+
+
+/******** Content variations ********/
+#content{
+line-height:1.5em;
+width:750px;
+float:right;
+text-align:left;
+margin:0;
+padding:0;
+}
+
+#contentalt{
+line-height:1.5em;
+width:750px;
+float:left;
+text-align:left;
+padding:0;
+margin-right:20px;
+}
+
+#content h3, #contentalt h3{margin:10px 0 8px;}
+
+/******** Footer ********/
+#footer{
+clear:both;
+text-align:right;
+color:#808080;
+font-size:0.9em;
+border-top:4px solid #dadada;
+margin:0px auto;
+padding:8px 0;
+line-height:1.6em;
+}
+
+#footer p{margin:0; padding:0;}
+#footer a{color:#808080;}
+
+/******** Various classes ********/
+.box{
+color:#ffffff;
+font-size:0.9em;
+background-color:#4088b8;
+border:1px solid #c8c8c8;
+line-height:1.3em;
+padding:5px 5px 5px 8px;
+margin:0px 50px 30px 50px;		
+}
+
+.box a{color:#f0f0f0;}
+.left{float:left; margin:0 15px 4px 0;}
+.right{float:right; margin:0 0 4px 15px;}
+.textright{text-align:right;}
+.readmore{text-align:right; margin:-10px 10px 12px 0;}
+
+.center{text-align:center;}
+.blue{color:#4088b8;}
+.big{font-size:1.3em;}
+.small{font-size:0.8em;}
+.bold{font-weight:bold;}
+
+.clear{clear:both;}
+.hide{display:none;}
+.fade{color:#c8c8c8;}
+.title{font-size:4.0em;}
+.gray{color:#808080;}
+
+.photo{
+border:0px solid #bababa;
+padding:2px;
+background-color:#ffffff;
+margin:6px 18px 2px 5px;
+}
+
+.photobox{
+border:1px solid #bababa;
+padding:2px;
+background-color:#ffffff;
+margin:6px 18px 2px 5px;
+}
+
