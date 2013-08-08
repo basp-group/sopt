@@ -32,6 +32,9 @@ REFERENCES
 DOCUMENTATION
    See doc/html/index.html
 
+WEBPAGE
+   http://basp-group.github.io/sopt/
+
 INSTALLATION 
   To install the toolbox, the FFTW toolbox (www.fftw.org) and the 
   TIFF toolbox (www.remotesensning.org/libtiff/) must be installed.  
