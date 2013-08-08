@@ -30,13 +30,16 @@ REFERENCES
     (arXiv:1208.2330).
 
 DOCUMENTATION
-   See doc/index.html
+   See doc/html/index.html
 
 INSTALLATION 
   To install the toolbox, the FFTW toolbox (www.fftw.org) and the 
   TIFF toolbox (www.remotesensning.org/libtiff/) must be installed.  
-  Once these are installed you just need to type
-  
+  A makefile is provided to build the code. Before compiling you 
+  might need to edit the makefile to specify your compiler and the 
+  location where the dependencies are installed. Once these are 
+  installed you just need to type
+
   %make all
 
   to install the toolbox. 
@@ -46,7 +49,7 @@ SUPPORT
   Carrillo at: rafael {DOT} carrillo {AT} epfl {DOT} ch.
 
 NOTES
-  The code is not optimized and is given for educational purpose. For
+  The code is given for educational purpose. For
   the matlab version of the code see the folder matlab.
 
 LICENSE

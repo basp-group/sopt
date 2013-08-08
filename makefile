@@ -132,7 +132,9 @@ SOPTHEADERS = sopt_error.h                 \
               sopt_sara.h                  \
               sopt_wavelet.h
 
-SOPTPROGS   = $(SOPTBIN)/sopt_about
+SOPTPROGS   = $(SOPTBIN)/sopt_about        \
+              $(SOPTBIN)/sopt_demo1        \
+              $(SOPTBIN)/sopt_demo2
 
 SOPTOBJSMAT = $(SOPTOBJMAT)/sopt_solver_l1_mex.o \
               $(SOPTOBJMAT)/sopt_solver_tv_mex.o 
