@@ -13,7 +13,7 @@ DESCRIPTION
 AUTHORS
   R. E. Carrillo (http://people.epfl.ch/rafael.carrillo)
   J. D. McEwen (http://www.jasonmcewen.org)
-  Y. Wiaux (http://people.epfl.ch/yves.wiaux)
+  Y. Wiaux (http://basp.eps.hw.ac.uk)
 
 EXPERIMENTS
   To run an in-painting reconstruction example, run the

@@ -14,7 +14,7 @@ AUTHORS
   R. E. Carillo (http://people.epfl.ch/rafael.carrillo)
   G. Puy (http://people.epfl.ch/gilles.puy)
   J. D. McEwen (http://www.jasonmcewen.org)
-  Y. Wiaux (http://people.epfl.ch/yves.wiaux)
+  Y. Wiaux (http://basp.eps.hw.ac.uk)
 
 EXPERIMENTS
   To test a reconstruction with spread spectrum measurements, run the
