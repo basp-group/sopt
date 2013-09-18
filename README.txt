@@ -37,7 +37,7 @@ WEBPAGE
 
 INSTALLATION 
   To install the toolbox, the FFTW toolbox (www.fftw.org) and the 
-  TIFF toolbox (www.remotesensning.org/libtiff/) must be installed.  
+  TIFF toolbox (www.remotesensing.org/libtiff/) must be installed.  
   A makefile is provided to build the code. Before compiling you 
   might need to edit the makefile to specify your compiler and the 
   location where the dependencies are installed. Once these are 
