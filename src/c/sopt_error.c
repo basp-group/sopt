@@ -12,7 +12,7 @@
  *
  * \authors <a href="http://www.jasonmcewen.org">Jason McEwen</a>
  */
-inline void SOPT_ERROR_GENERIC(char *comment) {
+void SOPT_ERROR_GENERIC(char *comment) {
   printf("ERROR: %s.\n", comment);					
   printf("ERROR: %s <%s> %s %s %s %d.\n",				
 	 "Occurred in function",					
@@ -32,7 +32,7 @@ inline void SOPT_ERROR_GENERIC(char *comment) {
  *
  * \authors <a href="http://www.jasonmcewen.org">Jason McEwen</a>
  */
-inline void SOPT_ERROR_MEM_ALLOC_CHECK(void *pointer) {				
+void SOPT_ERROR_MEM_ALLOC_CHECK(void *pointer) {				
   if(pointer == NULL)
     SOPT_ERROR_GENERIC("Memory allocation failed");
 }
