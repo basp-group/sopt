@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(SOPT C)
+project(Sopt C)
 
 # Location of extra cmake includes for the project
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_files)
@@ -30,3 +30,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 # include exernal dependencies
 add_subdirectory(src/c)
 add_subdirectory(include)
+
+# Exports all Sopt so other packages can access it
+include(export_sopt)

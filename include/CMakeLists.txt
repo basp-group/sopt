@@ -5,4 +5,4 @@ set(HEADER_FILES
     sopt_wavelet.h
 )
 
-install(FILES ${HEADER_FILES} DESTINATION include/sopt COMPONENT DEV)
+install(FILES ${HEADER_FILES} DESTINATION include/sopt COMPONENT dev)
