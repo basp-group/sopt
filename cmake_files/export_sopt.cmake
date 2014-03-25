@@ -8,29 +8,20 @@ if(NOT NOEXPORT)
 endif()
 
 # First in binary dir
-set(ALL_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include"
-    "${BLAS_INCLUDE_DIR}"
-    "${FFTW3_INCLUDE_DIR}"
-    "${TIFF_INCLUDE_DIR}"
-)
+set(ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
 configure_File(cmake_files/SoptConfig.in.cmake
     "${PROJECT_BINARY_DIR}/SoptConfig.cmake" @ONLY
 )
 configure_File(cmake_files/SoptConfigVersion.in.cmake
-    "${PROJECT_BINARY_DIR}/SoptConfigVersion.cmake" @ONLY)
+    "${PROJECT_BINARY_DIR}/SoptConfigVersion.cmake" @ONLY
+)
 
 # Then for installation tree
 file(RELATIVE_PATH REL_INCLUDE_DIR
     "${CMAKE_INSTALL_PREFIX}/share/cmake/sopt"
     "${CMAKE_INSTALL_PREFIX}/include/sopt"
 )
-set(ALL_INCLUDE_DIRS
-    "\${Sopt_CMAKE_DIR}/@REL_INCLUDE_DIR@"
-    "${BLAS_INCLUDE_DIR}"
-    "${FFTW3_INCLUDE_DIR}"
-    "${TIFF_INCLUDE_DIR}"
-)
+set(ALL_INCLUDE_DIRS "\${Sopt_CMAKE_DIR}/@REL_INCLUDE_DIR@")
 configure_File(cmake_files/SoptConfig.in.cmake
     "${PROJECT_BINARY_DIR}/CMakeFiles/SoptConfig.cmake" @ONLY
 )
