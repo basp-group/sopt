@@ -10,13 +10,7 @@
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#ifdef __APPLE__
-#include <Accelerate/Accelerate.h>
-#elif __unix__
 #include <cblas.h>
-#else
-#include <cblas.h>
-#endif
 #include "sopt_error.h"
 #include "sopt_wavelet.h"
 #include "sopt_sara.h"

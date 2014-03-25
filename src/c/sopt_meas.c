@@ -9,13 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
-#ifdef __APPLE__
-  #include <Accelerate/Accelerate.h>
-#elif __unix__
-  #include <cblas.h>
-#else
-  #include <cblas.h>
-#endif
+#include <math.h>
+#include <cblas.h>
 #ifdef SOPT_FFTW_INSTALLED
   #include <fftw3.h>
 #endif

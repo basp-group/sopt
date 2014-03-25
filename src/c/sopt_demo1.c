@@ -16,13 +16,7 @@
 #ifdef _OPENMP 
   #include <omp.h>
 #endif 
-#ifdef __APPLE__
-  #include <Accelerate/Accelerate.h>
-#elif __unix__
-  #include <cblas.h>
-#else
-  #include <cblas.h>
-#endif
+#include <cblas.h>
 #include "sopt_utility.h"
 #include "sopt_error.h"
 #include "sopt_prox.h" 
