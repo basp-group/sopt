@@ -1,5 +1,6 @@
 #ifndef SOPT_L1
 #define SOPT_L1
+#include "sopt_config.h"
 
 #include "sopt_prox.h"
 

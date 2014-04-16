@@ -6,6 +6,7 @@
  *  Copyright 2012 EPFL. All rights reserved.
  *
  */
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,7 +18,7 @@
 #ifdef _OPENMP 
   #include <omp.h>
 #endif
-#include <cblas.h>
+#include SOPT_BLAS_H
 #include "sopt_utility.h"
 #include "sopt_error.h"
 #include "sopt_prox.h" 

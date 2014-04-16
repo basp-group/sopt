@@ -8,7 +8,10 @@ if(NOT NOEXPORT)
 endif()
 
 # First in binary dir
-set(ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
+set(ALL_INCLUDE_DIRS 
+    "${PROJECT_SOURCE_DIR}/include"
+    "${PROJECT_BINARY_DIR}/include"
+)
 configure_File(cmake_files/SoptConfig.in.cmake
     "${PROJECT_BINARY_DIR}/SoptConfig.cmake" @ONLY
 )

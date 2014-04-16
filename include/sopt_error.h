@@ -4,6 +4,7 @@
 
 #ifndef SOPT_ERROR
 #define SOPT_ERROR
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>

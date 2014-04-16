@@ -6,13 +6,14 @@
  *  Copyright 2012 EPFL. All rights reserved.
  *
  */
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h> 
 #include <string.h>
 #include <math.h>
-#include <cblas.h>
+#include SOPT_BLAS_H
 #include "sopt_error.h"
 #include "sopt_utility.h"
 

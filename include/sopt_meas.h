@@ -8,6 +8,7 @@
 
 #ifndef SOPT_MEAS
 #define SOPT_MEAS
+#include "sopt_config.h"
 
 #include <complex.h>
 /*!

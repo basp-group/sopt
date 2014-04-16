@@ -1,11 +1,11 @@
 # Look for external software
 find_package(FFTW3 COMPONENTS DOUBLE)
-find_package(BLAS REQUIRED)
+find_package(CBLAS REQUIRED)
 find_package(TIFF REQUIRED)
-
-# find_package blas does not look for cblas.h
-if(NOT EXISTS BLAS_INCLUDE_DIR)
-  find_path(BLAS_INCLUDE_DIR cblas.h)
+if(EXISTS "${BLAS_INCLUDE_DIR}/cblas.h")
+    set(SOPT_BLAS_H cblas.h)
+elseif(EXISTS "${BLAS_INCLUDE_DIR}/mkl.h")
+    set(SOPT_BLAS_H mkl.h)
 endif()
 
 # Adds include directories

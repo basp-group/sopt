@@ -24,8 +24,10 @@ if(tests)
   enable_testing()
 endif()
 
-
-include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(
+    "${PROJECT_SOURCE_DIR}/include"
+    "${PROJECT_BINARY_DIR}/include"
+)
 
 # include exernal dependencies
 add_subdirectory(src/c)
