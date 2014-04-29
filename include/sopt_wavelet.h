@@ -8,6 +8,7 @@
 
 #ifndef sopt_wavelet
 #define sopt_wavelet
+#include "sopt_config.h"
 
 /*!  
  * Options for the basis to be included in the

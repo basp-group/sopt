@@ -74,3 +74,5 @@ doc/c/sync_off.png
 doc/c/sync_on.png
 images/wavedec.tiff
 lib/*.a
+build/
+.*.swp

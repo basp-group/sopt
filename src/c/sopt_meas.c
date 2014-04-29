@@ -5,12 +5,13 @@
 //  Created by Rafael Carrillo on 9/4/12.
 //
 //
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <cblas.h>
+#include SOPT_BLAS_H
 #ifdef SOPT_FFTW_INSTALLED
   #include <fftw3.h>
 #endif

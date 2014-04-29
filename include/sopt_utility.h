@@ -9,6 +9,7 @@
 
 #ifndef SOPT_UTILITY
 #define SOPT_UTILITY
+#include "sopt_config.h"
 
 #include <complex.h>
 

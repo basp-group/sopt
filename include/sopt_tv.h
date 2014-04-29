@@ -2,6 +2,7 @@
 
 #ifndef SOPT_TV
 #define SOPT_TV
+#include "sopt_config.h"
 
 #include "sopt_prox.h"
 

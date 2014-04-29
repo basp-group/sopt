@@ -12,8 +12,9 @@ set(TEST_SOURCE sopt_test.c)
 
 
 # Creates library
-add_library(libsopt ${Sopt_SOURCES})
+add_library(libsopt SHARED ${Sopt_SOURCES})
 set_target_properties(libsopt PROPERTIES OUTPUT_NAME "sopt")
+target_link_libraries(libsopt ${DEPENDENCY_LIBRARIES})
 
 # Add each demo
 foreach(DEMO_SOURCE ${DEMO_SOURCES})
@@ -21,7 +22,7 @@ foreach(DEMO_SOURCE ${DEMO_SOURCES})
   get_filename_component(DEMO_NAME ${DEMO_SOURCE} NAME_WE)
   # then creates executable
   add_executable(${DEMO_NAME} ${DEMO_SOURCE})
-  target_link_libraries(${DEMO_NAME} libsopt ${DEPENDENCY_LIBRARIES})
+  target_link_libraries(${DEMO_NAME} libsopt)
 endforeach()
 
 # add test
@@ -41,7 +42,7 @@ set_target_properties(sopt_about PROPERTIES
   COMPILE_DEFINITIONS
      "SOPT_VERSION=\"${Sopt_VERSION}\";SOPT_BUILD=\"${Sopt_GITREF}\""
 )
-target_link_libraries(sopt_about libsopt ${TARGET_LIBRARIES})
+target_link_libraries(sopt_about libsopt)
 
 # install library and about
 install(TARGETS libsopt sopt_about

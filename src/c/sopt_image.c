@@ -2,6 +2,7 @@
  * \file sopt_image.c
  * Functionality to read and write image files.
  */
+#include "sopt_config.h"
 
 #include <stdlib.h>
 #include <tiffio.h>

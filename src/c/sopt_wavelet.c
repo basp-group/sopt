@@ -5,12 +5,13 @@
 //  Created by Rafael Carrillo on 10/17/12.
 //
 //
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <math.h>
-#include <cblas.h>
+#include SOPT_BLAS_H
 #include "sopt_error.h"
 #include "sopt_wavelet.h"
 
