@@ -1,12 +1,8 @@
 # Look for external software
 find_package(FFTW3 COMPONENTS DOUBLE)
 find_package(CBLAS REQUIRED)
+set(SOPT_BLAS_H "${BLAS_INCLUDE_FILENAME}")
 find_package(TIFF REQUIRED)
-if(EXISTS "${BLAS_INCLUDE_DIR}/cblas.h")
-    set(SOPT_BLAS_H cblas.h)
-elseif(EXISTS "${BLAS_INCLUDE_DIR}/mkl.h")
-    set(SOPT_BLAS_H mkl.h)
-endif()
 
 # On some (linux) machines we also need libm to compile sopt_demo*.c
 # Make a half-hearted attempt at finding it.
