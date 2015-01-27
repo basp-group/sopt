@@ -17,10 +17,10 @@ typedef struct {
   int verbose;
   /*! Maximum number of iterations for the global TV problem.*/
   int max_iter;
-  /*! Convergence parameter for the DR algorithm, gamma>0.*/
-  double gamma;
   /*! Convergence criteria. Minimum relative change of the objective value. */
   double rel_obj;
+  /*! Convergence parameter for the DR algorithm, gamma>0.*/
+  double gamma;
   /*! Radius of the L2 ball. */
   double epsilon;  
   /*! Flag for real output signal, i.e. real tv-prox. 
@@ -49,10 +49,10 @@ typedef struct {
   int verbose;
   /*! Maximum number of iterations for the global TV problem.*/
   int max_iter;
-  /*! Convergence parameter for the SDMM algorithm, gamma>0.*/
-  double gamma;
   /*! Convergence criteria. Minimum relative change of the objective value. */
   double rel_obj;
+  /*! Convergence parameter for the SDMM algorithm, gamma>0.*/
+  double gamma;
   /*! Radius of the L2 ball. */
   double epsilon; 
   /*! Relative tolerance on epsilon. Default 1e-3. */ 
