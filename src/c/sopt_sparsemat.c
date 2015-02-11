@@ -2,6 +2,7 @@
  * \file sopt_sparsemat.c
  * Functionality to perform operations with sparse matrices.
  */
+#include "sopt_config.h"
 
 #include <stdlib.h>
 #include "sopt_sparsemat.h"

@@ -8,6 +8,7 @@
 
 #ifndef SOPT_L2
 #define SOPT_L2
+#include "sopt_config.h"
 
 #include "sopt_prox.h"
 

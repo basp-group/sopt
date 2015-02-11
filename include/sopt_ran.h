@@ -1,6 +1,7 @@
 
 #ifndef SOPT_RAN
 #define SOPT_RAN
+#include "sopt_config.h"
 
 double sopt_ran_gasdev2(int idum);
 double sopt_ran_ran2(int idum);

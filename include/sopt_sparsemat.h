@@ -1,6 +1,7 @@
 
 #ifndef SOPT_SPARSEMAT
 #define SOPT_SPARSEMAT
+#include "sopt_config.h"
 
 #include <complex.h>
 

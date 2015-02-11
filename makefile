@@ -6,8 +6,11 @@ FFTW_INSTALLED = 1
 
 # ======== COMPILER ========
 
-CC      = gcc
-OPT	= -Wall -O3 -fopenmp\
+CC      = clang
+OPT	= -flax-vector-conversions -Wall -O3 -fopenmp\
+          -DSOPT_VERSION=\"0.1\" \
+          -DSOPT_BUILD=\"`git rev-parse HEAD`\"
+OPT	= -flax-vector-conversions -Wall -O3 -g \
           -DSOPT_VERSION=\"0.1\" \
           -DSOPT_BUILD=\"`git rev-parse HEAD`\"
 
@@ -34,13 +37,15 @@ ifeq ($(UNAME), Linux)
   FFTWDIR      = $(PROGDIR)/fftw-3.2.2_fPIC
 endif
 ifeq ($(UNAME), Darwin)
-  FFTWDIR      = $(PROGDIR)/fftw
+  FFTWDIR      = /usr/local/
+	#$(PROGDIR)/fftw
 endif
 FFTWINC	     = $(FFTWDIR)/include
 FFTWLIB      = $(FFTWDIR)/lib
 FFTWLIBNM    = fftw3
 
-TIFFDIR      = $(PROGDIR)/tiff
+TIFFDIR      = /usr/local
+#$(PROGDIR)/tiff
 TIFFINC	     = $(TIFFDIR)/include
 TIFFLIB      = $(TIFFDIR)/lib
 TIFFLIBNM    = tiff

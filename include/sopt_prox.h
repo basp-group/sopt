@@ -9,6 +9,7 @@
 
 #ifndef SOPT_PROX
 #define SOPT_PROX
+#include "sopt_config.h"
 
 #include <complex.h>
 
