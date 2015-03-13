@@ -4,6 +4,7 @@
 
 #ifndef SOPT_TYPES
 #define SOPT_TYPES
+#include "sopt_config.h"
 
 #define SOPT_STRLEN 256
 

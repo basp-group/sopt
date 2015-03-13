@@ -2,6 +2,7 @@
  * \file sopt_ran.c
  * Functionality to generate random deviates.
  */
+#include "sopt_config.h"
 
 #include <math.h>
 #include <stdlib.h>

@@ -8,6 +8,7 @@
 
 #ifndef sopt_sara
 #define sopt_sara
+#include "sopt_config.h"
 
 /*!  
  * Data structure containing the parameters for the

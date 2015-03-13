@@ -5,17 +5,13 @@
 //  Created by Rafael Carrillo on 9/4/12.
 //
 //
+#include "sopt_config.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <complex.h>
-#ifdef __APPLE__
-  #include <Accelerate/Accelerate.h>
-#elif __unix__
-  #include <cblas.h>
-#else
-  #include <cblas.h>
-#endif
+#include <math.h>
+#include SOPT_BLAS_H
 #ifdef SOPT_FFTW_INSTALLED
   #include <fftw3.h>
 #endif
