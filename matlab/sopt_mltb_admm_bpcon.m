@@ -137,7 +137,7 @@ for t = 1:param.max_iter
     
     %Prox L1 norm (global solution)
     prev_fval = fval;
-    [xsol, fval] = sopt_mltb_prox_L1v2(r, param.gamma*mu, param_L1);
+    [xsol, fval] = sopt_mltb_prox_L1(r, param.gamma*mu, param_L1);
     
     %Residual
     res = A(xsol) - y;
