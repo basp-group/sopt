@@ -92,20 +92,20 @@ typedef struct {
 } sopt_l1_rwparam;
 
 void sopt_l1_solver(void *xsol,
-                    int nx,
-                    void (*A)(void *out, void *in, void **data), 
-                    void **A_data,
-                    void (*At)(void *out, void *in, void **data), 
-                    void **At_data,
-                    void (*Psi)(void *out, void *in, void **data), 
-                    void **Psi_data,
-                    void (*Psit)(void *out, void *in, void **data), 
-                    void **Psit_data,
-                    int nr,
-                    void *y,
-                    int ny,
-                    double *weights,
-                    sopt_l1_param param);
+		    int nx,
+		    void (*A)(void *out, void *in, void **data), 
+		    void **A_data,
+		    void (*At)(void *out, void *in, void **data), 
+		    void **At_data,
+		    void (*Psi)(void *out, void *in, void **data), 
+		    void **Psi_data,
+		    void (*Psit)(void *out, void *in, void **data), 
+		    void **Psit_data,
+		    int nr,
+		    void *y,
+		    int ny,
+		    double *weights,
+		    sopt_l1_param param);
 
 void sopt_l1_rwmin(void *xsol,
                     int nx,
@@ -154,5 +154,21 @@ void sopt_l1_rwsdmm(void *xsol,
                     int ny,
                     sopt_l1_sdmmparam paraml1,
                     sopt_l1_rwparam paramrwl1);
+
+void sopt_l1_solver_aadmm(void *xsol,
+			  int nx,
+			  void (*A)(void *out, void *in, void **data), 
+			  void **A_data,
+			  void (*At)(void *out, void *in, void **data), 
+			  void **At_data,
+			  void (*Psi)(void *out, void *in, void **data), 
+			  void **Psi_data,
+			  void (*Psit)(void *out, void *in, void **data), 
+			  void **Psit_data,
+			  int nr,
+			  void *y,
+			  int ny,
+			  double *weights,
+			  sopt_l1_param param);
 
 #endif

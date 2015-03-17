@@ -549,15 +549,15 @@ void sopt_l1_solver(void *xsol,
  /*!
  * This function solves the problem:
  * \f[
- * \min_{x} ||W \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon and x \geq 0,
+ * \min_{x} ||W \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon\ \mbox{and}\ x \geq 0,
  * \f]
  * where \f$ \Psi \in C^{N_x \times N_r} \f$ is the sparsifying
  * operator, \f$ W  \in R_{+}^{N_x}\f$ is the diagonal weight matrix,
  * \f$A \in C^{N_y \times N_x}\f$ is the measurement operator,
  * \f$\epsilon\f$ is a noise tolerance and \f$y\in C^{N_y}\f$ is the
  * measurement vector.  The solution is denoted \f$x^\star \in
- * C^{N_x}\f$. It uses the Simultaneous Direction Method of Multipliers (SDMM)
- * to solve the optimization problem.
+ * C^{N_x}\f$. The Simultaneous Direction Method of Multipliers (SDMM)
+ * is used to solve the optimization problem.
  *
  * \note 
  * The solver can be used to solve the analysis based problem, as
@@ -1006,7 +1006,7 @@ void sopt_l1_sdmm(void *xsol,
  * continuation method to approximate the L0 norm. It solves at each
  * iteration the following problem::
  * \f[
- * \min_{x} ||W_t \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon and x \geq 0,
+ * \min_{x} ||W_t \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon\ \mbox{and}\ x \geq 0,
  * \f]
  * where \f$ \Psi \in C^{N_x \times N_r} \f$ is the sparsifying
  * operator, \f$ W  \in R_{+}^{N_x}\f$ is the diagonal weight matrix,
@@ -1014,9 +1014,10 @@ void sopt_l1_sdmm(void *xsol,
  * \f$\epsilon\f$ is a noise tolerance, \f$y\in C^{N_y}\f$ is the
  * measurement vector and \f$ W_t \f$ is a diagonal weight matrix that changes 
  * at every iteration. The solution is denoted \f$x^\star \in C^{N_x}\f$.
+ * The Simultaneous Direction Method of Multipliers (SDMM)
+ * is used to solve the optimization problem.
  *
- * \note 
- * It uses the sdmm algorithm to solve the weighted L1 problem.
+ * \note
  * The solver can be used to solve the analysis based problem, as
  * written, or the synthesis based problem by mapping \f$A \rightarrow
  * A \Psi\f$ and \f$\Psi^\dagger \rightarrow I\f$, where \f$I \f$ is
@@ -1050,7 +1051,6 @@ void sopt_l1_sdmm(void *xsol,
  * \param[in] paramrwl1 Data structure with the parameters for
  *            the reweighted L1 solver.
  */
-
  void sopt_l1_rwsdmm(void *xsol,
                     int nx,
                     void (*A)(void *out, void *in, void **data), 
@@ -1249,4 +1249,361 @@ void sopt_l1_sdmm(void *xsol,
 
 
 
+
+/*!
+ * This function solves the problem:
+ * \f[
+ * \min_{x} ||W \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon\ \mbox{and}\ x \geq 0,
+ * \f]
+ * where \f$ \Psi \in C^{N_x \times N_r} \f$ is the sparsifying
+ * operator, \f$ W \in R_{+}^{N_x}\f$ is the diagonal weight matrix,
+ * \f$A \in C^{N_y \times N_x}\f$ is the measurement operator,
+ * \f$\epsilon\f$ is a noise tolerance and \f$y\in C^{N_y}\f$ is the
+ * measurement vector.  The solution is denoted \f$x^\star \in
+ * C^{N_x}\f$. The Approximate Alternating Direction Method of
+ * Multipliers (AADMM) is used to solve the optimization problem.
+ *
+ * \note 
+ * The solver can be used to solve the analysis based problem, as
+ * written, or the synthesis based problem by mapping \f$A \rightarrow
+ * A \Psi\f$ and \f$\Psi^\dagger \rightarrow I\f$, where \f$I \f$ is
+ * the identity matrix.
+ *
+ * \param[in,out] xsol Solution (\f$ x^\star \f$). It stores the initial solution,
+ *               which should be set as an input to the function, 
+ *               and it is modified when the finall solution is found.
+ * \param[in] nx Dimension of the signal (\f$N_x\f$).
+ * \param[in] A Pointer to the measurement operator \f$A\f$.
+ * \param[in] A_data Data structure associated to measurement operator
+ * \f$A\f$.
+ * \param[in] At Pointer to the adjoint of the measurement operator
+ * \f$A^\dagger\f$.
+ * \param[in] At_data Data structure associated to the adjoint of the
+ * measurement operator \f$A^\dagger\f$.
+ * \param[in] Psi Pointer to the synthesis sparsity operator \f$\Psi\f$.
+ * \param[in] Psi_data Data structure associated to the synthesis
+ * sparsity operator \f$\Psi\f$.
+ * \param[in] Psit Pointer to the analysis sparsity operator
+ * \f$\Psi^\dagger\f$.
+ * \param[in] Psit_data Data structure associated to the analysis
+ * sparisty operator \f$\Psi^\dagger\f$.
+ * \param[in] nr Dimension of the signal in the representation domain
+ * (\f$\Psi^\dagger x\f$).
+ * \param[in] y Measurement vector (\f$y\f$).
+ * \param[in] ny Dimension of measurement vector, i.e. number of
+ *             measurements (\f$N_y\f$).
+ * \param[in] weights Weights for the weighted L1 problem. Vector storing
+ *            the main diagonal of \f$ W  \f$.
+ * \param[in] param Data structure with the parameters of
+ *            the optimization (including \f$\epsilon\f$).
+ */
+void sopt_l1_solver_aadmm(void *xsol,
+			  int nx,
+			  void (*A)(void *out, void *in, void **data), 
+			  void **A_data,
+			  void (*At)(void *out, void *in, void **data), 
+			  void **At_data,
+			  void (*Psi)(void *out, void *in, void **data), 
+			  void **Psi_data,
+			  void (*Psit)(void *out, void *in, void **data), 
+			  void **Psit_data,
+			  int nr,
+			  void *y,
+			  int ny,
+			  double *weights,
+			  sopt_l1_param param){
+    
+    int i;
+    int iter;
+    double obj;
+    double prev_ob;
+    double rel_ob;
+    char crit[8];
+    //complex double alpha;
+    double mu;
+    double beta;
+    double scale;
+    double norm_res;
+
+/*
+    // Local memory
+    void *dummy; // size nr
+    void *xhat;  // size nx
+    void *temp;  // size nx
+    void *res;   // size ny
+
+   
+
+    // Memory for L2b prox
+    void *u2;    // size ny
+    void *v2;    // size ny
+*/
+
+
+
+    void *z;
+    void *s;
+    void *res;
+    void *temp_y;
+    void *r;
+    void *dummy;
+
+    // Memory for L1 prox
+    void *sol1;  // size nx
+    void *u1;    // size nr
+    void *v1;    // size nr
+      
+
+
+    
+/*
+    if (param.real_out == 1){
+        //Local
+        dummy = malloc(nr * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+        xhat = malloc(nx * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(xhat);
+        //L1 prox
+        u1 = malloc(nr * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+        v1 = malloc(nr * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+    }
+    else{
+        //Local
+        dummy = malloc(nr * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+        xhat = malloc(nx * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(xhat);
+        //L1 prox
+        u1 = malloc(nr * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+        v1 = malloc(nr * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+    }
+
+    if (param.real_out == 1 && param.real_meas == 1) {
+        temp = malloc(nx * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(temp);
+        sol1 = malloc(nx * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+    }
+    else {
+        temp = malloc(nx * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(temp);
+        sol1 = malloc(nx * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+    }
+
+    if (param.real_meas == 1){
+        //Local
+        res = malloc(ny * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(res);
+        //L2b prox
+        u2 = malloc(ny * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(u2);
+        v2 = malloc(ny * sizeof(double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(v2); 
+    }
+    else{
+        //Local
+        res = malloc(ny * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(res);
+        //L2b prox
+        u2 = malloc(ny * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(u2);
+        v2 = malloc(ny * sizeof(complex double));
+        SOPT_ERROR_MEM_ALLOC_CHECK(v2);
+    }
+*/
+
+
+    beta = 0.9;
+    
+    z = calloc(ny, sizeof(double));  // Must be initalised to zero
+    SOPT_ERROR_MEM_ALLOC_CHECK(z);
+    
+    s = malloc(ny * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(s);
+    
+    res = malloc(ny * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(res);
+
+    temp_y = malloc(ny * sizeof(double)); 
+    SOPT_ERROR_MEM_ALLOC_CHECK(temp_y);
+
+    r = malloc(nx * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(r);
+    
+    dummy = malloc(nr * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+     
+    u1 = malloc(nr * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+    v1 = malloc(nr * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+    sol1 = malloc(nx * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+
+    
+
+    // Initialise solution: xsol =  1/param.nu*At(y)
+    At(xsol, y, At_data);
+    mu = 1.0 / param.paraml1.nu;
+// TODO: check nu != 0...
+    cblas_dscal(nx, mu, (double*)xsol, 1);
+
+    // Initalise residuals: res = A * x_sol - y.
+    A(res, xsol, A_data);
+    cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);    
+    /*
+    for (i = 0; i < ny; i++){
+      (double*)res[i] -= (double*)y[i];
+      *((double*)res + i) -= *((double*)y + i);
+    }
+    */
+
+    // Compute objective
+    // dummy = Psit * xsol
+    Psit(dummy, xsol, Psit_data);
+    obj = sopt_utility_l1normr((double*)dummy, weights, nr);
  
+    // Initializations
+    iter = 1;
+    prev_ob = 0.0;
+        
+    // Log
+    if (param.verbose > 1){
+        printf("L1 solver: \n ");
+    }
+    
+    while (1) {
+        // Log
+        if (param.verbose > 1){
+            printf("Iteration %i:\n ", iter);
+        }
+	
+	// Slack variable update
+	// s = z
+        cblas_dcopy(ny, (double*)z, 1, (double*)s, 1);	
+	// s = s + res
+	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
+	// s = -s
+	cblas_dscal(ny, -1.0, (double*)s, 1);
+	//  s = s*min(1.0, epsilon/norm(s))	   
+	scale = cblas_dnrm2(ny, (double*)s, 1);
+//TODO: check scale non-zero...	
+	scale = min(1.0, param.epsilon/scale);
+	cblas_dscal(ny, scale, (double*)s, 1);
+
+	// Gradient formulation
+	// temp_y = z + res + s
+	cblas_dcopy(ny, (double*)z, 1, (double*)temp_y, 1);
+	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)temp_y, 1);
+	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)temp_y, 1); 		
+	// r = At(z + res + s)
+	At(r, temp_y, At_data);
+
+	// Gradient descent
+	// r = xsol - mu * r
+	cblas_dscal(nx, -mu, (double*)r, 1);
+	cblas_daxpy(nx, 1.0, (double*)xsol, 1, (double*)r, 1);
+
+	// Prox L1 
+        sopt_prox_l1(xsol, r, nx, nr,
+                     Psi, Psi_data, Psit, Psit_data,
+//                     weights, param.gamma, param.real_out,
+		     weights, param.gamma * mu, param.real_out,
+                     param.paraml1, dummy, sol1, u1, v1);
+	
+//TODO: compute obj at same time as l1 prox
+	
+	// Compute objective
+	prev_ob = obj;
+	Psit(dummy, xsol, Psit_data);
+	obj = sopt_utility_l1normr((double*)dummy, weights, nr);    
+	/* QUESTION: this shouldn't be needed
+	if (obj > 0.0){
+            rel_ob = fabs(obj-prev_ob)/obj;
+        }
+        else if ((fabs(obj-prev_ob) == 0)&&(iter > 1)){
+            rel_ob = 0.0;
+        } 
+        else{
+            rel_ob = 1.0;
+        }
+	*/
+	
+	// Residual
+	A(res, xsol, A_data);
+	cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);    
+	norm_res = cblas_dnrm2(ny, (double*)res, 1);
+	
+        // Log
+        if (param.verbose > 1) {
+            printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
+	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
+        }
+	
+	// Lagrange multipliers update
+	// z = z + beta*(res + s);
+	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);    
+	cblas_dscal(ny, beta, (double*)res, 1);
+	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)z, 1);    	
+
+	// Check relative change of objective function   
+	rel_ob = abs(obj - prev_ob)/obj;
+	
+        // Stopping criteria
+// TODO: make 1.001 an input parameter	
+        if (rel_ob < param.rel_obj && norm_res <= param.epsilon * 1.001) {
+            strcpy(crit, "REL_OBJ");
+            break;
+        }
+        if (iter > param.max_iter) {
+            strcpy(crit, "MAX_ITE");
+            break;
+        }
+
+        // Update
+        iter++;
+        
+    }
+    
+    //Log
+    if (param.verbose > 0){
+        //L1 norm
+        printf("Solution found \n");
+        printf("Final L1 norm: %e\n ", obj);
+        //Residual        
+        printf("epsilon = %e, residual = %e\n", param.epsilon, norm_res);
+        //Stopping criteria
+        printf("%i iterations\n", iter);
+        printf("Stopping criterion: %s \n\n ", crit);
+    }
+    
+    //Free temporary memory
+
+    free(z);
+    free(s);
+    free(res);
+    free(temp_y);
+    free(r);
+    free(dummy);
+            
+    free(sol1);
+    free(u1);
+    free(v1);
+    
+
+    /*
+    free(dummy);
+    free(xhat);
+    free(temp);
+    free(res);
+
+
+    free(u2);
+    free(v2);
+    */
+}
