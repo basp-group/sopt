@@ -1,19 +1,21 @@
 
                      SOPT: Sparse OPTimisation
-                SARA algorithm for sparsity averaging
   ----------------------------------------------------------------
 
 DESCRIPTION
-  This is a C implementation of the SARA algorithm presented in:
-    [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
-    and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
-    (arXiv:1208.2330).
+  SOPT is a C package to perform Sparse OPTimisation.  It solves a
+  variety of sparse regularisation problems, including the SARA
+  algorithm.  Prototype Matlab implementations of various algorithms
+  are also included.  
 
-AUTHORS
-  R. E. Carrillo (http://people.epfl.ch/rafael.carrillo)
-  J. D. McEwen (http://www.jasonmcewen.org)
-  Y. Wiaux (http://basp.eps.hw.ac.uk)
+CREATORS
+  Rafael E. Carrillo (http://people.epfl.ch/rafael.carrillo)
+  Jason D. McEwen (http://www.jasonmcewen.org)
+  Yves Wiaux (http://basp.eps.hw.ac.uk)
+
+CONTRIBUTORS
+  Mayeul d'Avezac
+  Vijay Kartik
 
 EXPERIMENTS
   To run an in-painting reconstruction example, run the
@@ -35,25 +37,22 @@ DOCUMENTATION
 WEBPAGE
    http://basp-group.github.io/sopt/
 
-INSTALLATION 
-  To install the toolbox, the FFTW toolbox (www.fftw.org) and the 
-  TIFF toolbox (www.remotesensing.org/libtiff/) must be installed.  
-  A makefile is provided to build the code. Before compiling you 
-  might need to edit the makefile to specify your compiler and the 
-  location where the dependencies are installed. Once these are 
-  installed you just need to type
-
-  %make all
-
-  to install the toolbox. 
+INSTALLATION
+  SOPT requires the FFTW toolbox (www.fftw.org) and the TIFF toolbox
+  (www.remotesensing.org/libtiff/) and can be built using cmake, for
+  example, as follows:
+  > mkdir build; cd build
+  > cmake .. -DCMAKE_PREFIX_PATH='<fftw path>;<tiff path>'
+  > make
+  > make test
 
 SUPPORT
   If you have any questions or comments, feel free to contact Rafael
-  Carrillo at: rafael {DOT} carrillo {AT} epfl {DOT} ch.
+  Carrillo or Jason McEwen.
 
 NOTES
-  The code is given for educational purpose. For
-  the matlab version of the code see the folder matlab.
+  The code is given for educational purpose. For the matlab version of
+  the code see the folder matlab.
 
 LICENSE
   SOPT: Sparse OPTimisation package
