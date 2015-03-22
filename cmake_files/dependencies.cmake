@@ -6,6 +6,8 @@ if(EXISTS "${BLAS_INCLUDE_DIR}/cblas.h")
     set(SOPT_BLAS_H cblas.h)
 elseif(EXISTS "${BLAS_INCLUDE_DIR}/mkl.h")
     set(SOPT_BLAS_H mkl.h)
+elseif(EXISTS "${BLAS_INCLUDE_DIR}/Accelerate.h")
+    set(SOPT_BLAS_H Accelerate.h)
 endif()
 
 # On some (linux) machines we also need libm to compile sopt_demo*.c
