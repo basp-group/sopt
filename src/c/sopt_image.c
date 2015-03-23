@@ -25,7 +25,7 @@
  * \param[in] offset Offset to apply to image pixels (8 bit
  * values read from tiff file are mapped to (val-offset)*scale.
  */
-int spot_image_tiff_read(double **img, int *nx, int *ny, char *filename, 
+int sopt_image_tiff_read(double **img, int *nx, int *ny, char *filename, 
 			 double scale, double offset) {
 
   size_t npixels;
@@ -85,7 +85,7 @@ int spot_image_tiff_read(double **img, int *nx, int *ny, char *filename,
  * \param[in] offset Offset to apply to image pixels (8 bit
  * values written to tiff file are transformed by (img-offset)*scale.
  */
-int spot_image_tiff_write(double *img, int nx, int ny, char *filename, 
+int sopt_image_tiff_write(double *img, int nx, int ny, char *filename, 
 			  double scale, double offset) {
 
   size_t npixels;

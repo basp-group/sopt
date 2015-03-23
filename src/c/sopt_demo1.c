@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
     printf("**********************\n");
   
     //Read input image
-    fail = spot_image_tiff_read(&xin, &dim2, &dim1, "images/cameraman256.tiff", scale, offset);
+    fail = sopt_image_tiff_read(&xin, &dim2, &dim1, "images/cameraman256.tiff", scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error reading image");
     
@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
     sopt_meas_urandsampadj((void*)xout, (void*)y, datam);
 
     //Write Dirty image
-    fail = spot_image_tiff_write(xout, dim2, dim1, "images/cameraIP_Dirty_temp.tiff", 1.0/scale, offset);
+    fail = sopt_image_tiff_write(xout, dim2, dim1, "images/cameraIP_Dirty_temp.tiff", 1.0/scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
     mse = 20.0*log10(a/mse);
     printf("SNR: %f dB\n\n", mse);
 
-    fail = spot_image_tiff_write(xout, dim2, dim1, "images/cameraIP_TV_temp.tiff", 1.0/scale, offset);
+    fail = sopt_image_tiff_write(xout, dim2, dim1, "images/cameraIP_TV_temp.tiff", 1.0/scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 
@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
     printf("SNR: %f dB\n\n", mse);
 
     //Write output image
-    fail = spot_image_tiff_write(xout, dim2, dim1, "images/cameraIP_Db8_temp.tiff", 1.0/scale, offset);
+    fail = sopt_image_tiff_write(xout, dim2, dim1, "images/cameraIP_Db8_temp.tiff", 1.0/scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 

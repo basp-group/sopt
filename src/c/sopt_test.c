@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
     printf("**********************\n");
   
     //Read input image
-    fail = spot_image_tiff_read(&xin, &dim2, &dim1, "images/cameraman256.tiff", scale, offset);
+    fail = sopt_image_tiff_read(&xin, &dim2, &dim1, "images/cameraman256.tiff", scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error reading image");
     else
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 
     sopt_sara_analysisop((void*)image, (void*)xin, datas);
 
-    fail = spot_image_tiff_write(image, dim2, param5.ndict*dim1, "images/wavedec.tiff", 1.0/scale, offset);
+    fail = sopt_image_tiff_write(image, dim2, param5.ndict*dim1, "images/wavedec.tiff", 1.0/scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 
@@ -258,7 +258,7 @@ int main(int argc, char *argv[]) {
     printf("Backprojected image SNR: %f dB\n\n", mse);
 
     //Write Dirty image
-    fail = spot_image_tiff_write(xout, dim2, dim1, "images/cameraFS_Dirty.tiff", 1.0/scale, offset);
+    fail = sopt_image_tiff_write(xout, dim2, dim1, "images/cameraFS_Dirty.tiff", 1.0/scale, offset);
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
     else
