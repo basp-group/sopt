@@ -32,6 +32,7 @@ include_directories(
 # include exernal dependencies
 add_subdirectory(src/c)
 add_subdirectory(include)
+add_subdirectory(doc)
 
 # Exports all Sopt so other packages can access it
 include(export_sopt)

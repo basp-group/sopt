@@ -15,6 +15,8 @@ endif()
 # If it exists, it shouldn't be difficult.
 find_library(M_LIBRARY m)
 
+find_package(Doxygen)
+
 # Adds include directories
 include_directories(
   ${BLAS_INCLUDE_DIR}
@@ -37,3 +39,4 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
 if(FFTW3_DOUBLE_FOUND)
     add_definitions(-DSOPT_FFTW_INSTALLED)
 endif()
+
