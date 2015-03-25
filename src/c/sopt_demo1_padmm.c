@@ -249,8 +249,8 @@ int main(int argc, char *argv[]) {
     param6.max_iter = 50;
     param6.rel_obj = 0.01;
     param6.nu = 1;
-    param6.tight = 1;
-    param6.pos = 0;
+    param6.tight = 0;
+    param6.pos = 1;
     
     //Structure for the L1 solver    
     param7.verbose = 2;
@@ -264,7 +264,7 @@ int main(int argc, char *argv[]) {
 
     param7.epsilon_tol_scale = 1.001;
     param7.lagrange_update_scale = 0.9;
-      
+    param7.nu = 1.0;
       
     //param7.paraml2b = param3;
     

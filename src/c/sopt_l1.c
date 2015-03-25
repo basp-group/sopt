@@ -1431,8 +1431,8 @@ complex double alpha;
 
     // Initialise solution: xsol =  1/param.nu*At(y)
     At(xsol, y, At_data);
-    assert(fabs(param.paraml1.nu) > tol);
-    mu = 1.0 / param.paraml1.nu;
+    assert(fabs(param.nu) > tol);
+    mu = 1.0 / param.nu;
     if (param.real_out == 1) 
       cblas_dscal(nx, mu, (double*)xsol, 1);
     else
@@ -1551,18 +1551,6 @@ cblas_zaxpy(nx, (void*)&alpha, xsol, 1, r, 1);
 	  obj = sopt_utility_l1normr((double*)dummy, weights, nr);
 	else
 	  obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
-
-/* QUESTION: this shouldn't be needed
-	if (obj > 0.0){
-            rel_ob = fabs(obj-prev_ob)/obj;
-        }
-        else if ((fabs(obj-prev_ob) == 0)&&(iter > 1)){
-            rel_ob = 0.0;
-        } 
-        else{
-            rel_ob = 1.0;
-        }
-*/
 	
 	// Residual
 
@@ -1579,12 +1567,6 @@ cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
 	  norm_res = cblas_dznrm2(ny, res, 1);	 
 	}	
 	
-        // Log
-        if (param.verbose > 1) {
-            printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
-	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
-        }
-
 	// Lagrange multipliers update
 	// z = z + beta*(res + s);
 	if (param.real_meas == 1) {
@@ -1601,11 +1583,20 @@ cblas_zaxpy(ny, (void*)&alpha, res, 1, z, 1);
 //cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
 	}
 
-	// Check relative change of objective function   
-	rel_ob = abs(obj - prev_ob)/obj;
+	// Check relative change of objective function
+	if (obj > 0.0) 
+	  rel_ob = fabs(obj - prev_ob)/obj;
+	else
+	  rel_ob = fabs(obj - prev_ob);
+	
+        // Log
+        if (param.verbose > 1) {
+	    printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
+            printf("Objective: prev obj value = %e \n ", prev_ob);
+	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
+        }
 	
         // Stopping criteria
-
         if (rel_ob < param.rel_obj
 	    && norm_res <= param.epsilon * param.epsilon_tol_scale) {
             strcpy(crit, "REL_OBJ");

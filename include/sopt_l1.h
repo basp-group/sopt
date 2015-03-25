@@ -38,7 +38,7 @@ typedef struct {
 
 /*!  
  * Data structure containing the parameters for solving the l1
- * optimisation problem using the inexact ADMM algorithm.
+ * optimisation problem using the proximal ADMM algorithm.
  */
 typedef struct {
   /*! Verbose flag: 0 no log, 1 a summary at convergence, 
@@ -76,7 +76,10 @@ typedef struct {
 
   /*! Scale parameter when updating Lagrange multipliers (e.g. 0.9). */
   double lagrange_update_scale;
- 
+
+  /*!  Measurement opertor norm squared. */
+  double nu;
+  
 } sopt_l1_param_padmm;
 
 

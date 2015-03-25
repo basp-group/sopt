@@ -314,12 +314,12 @@ int main(int argc, char *argv[]) {
     param.rel_obj = 0.01;
     param.nu = 1;
     param.tight = 0;
-    param.pos = 0;
+    param.pos = 1;
     
     //Structure for the L1 solver    
     param2.verbose = 2;
     param2.max_iter = 200;
-    param2.gamma = 0.8;
+    param2.gamma = 0.01;
     param2.rel_obj = 0.0005;
     param2.epsilon = sqrt(Ny + 2*sqrt(Ny))*sigma;
     param2.real_out = 1;
@@ -329,7 +329,7 @@ int main(int argc, char *argv[]) {
     
     param2.epsilon_tol_scale = 1.001;
     param2.lagrange_update_scale = 0.9;
-
+    param2.nu = 1.0;
     
     //Weights
     for (i=0; i < Nr; i++) {
