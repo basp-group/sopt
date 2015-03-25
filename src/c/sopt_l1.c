@@ -1429,7 +1429,7 @@ complex double alpha;
 
     }
 
-    // Initialise solution: xsol =  1/param.nu*At(y)
+    // Initialise solution: sol1 =  1/param.nu*At(y)
     At(sol1, y, At_data);
     assert(fabs(param.nu) > tol);
     mu = 1.0 / param.nu;
@@ -1438,7 +1438,7 @@ complex double alpha;
     else
         cblas_zdscal(nx, mu, sol1, 1);
 
-    // Initalise residuals: res = A * x_sol - y.
+    // Initalise residuals: res = A * sol1 - y.
     A(res, sol1, A_data);
 alpha = -1.0 + 0.0*I;    
     if (param.real_meas == 1) 
@@ -1448,7 +1448,7 @@ alpha = -1.0 + 0.0*I;
 //cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 
     // Compute objective
-    // dummy = Psit * xsol
+    // dummy = Psit * sol1
     Psit(dummy, sol1, Psit_data);
     if (param.real_out == 1 && param.real_meas == 1)
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
