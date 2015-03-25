@@ -1343,9 +1343,12 @@ void sopt_l1_solver_padmm(void *xsol,
     const double tol = 1e-8;
 
 
+complex double alpha;
+
+    
 // TODO: make input parameter
-    double epsilon_tol_scale = 1.001;
-    double beta = 0.9;
+//    double epsilon_tol_scale = 1.001;
+//    double beta = 0.9;
     
 
 
@@ -1437,10 +1440,12 @@ void sopt_l1_solver_padmm(void *xsol,
 
     // Initalise residuals: res = A * x_sol - y.
     A(res, xsol, A_data);
+alpha = -1.0 + 0.0*I;    
     if (param.real_meas == 1) 
       cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
     else
-      cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
+      cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
+//cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 
     // Compute objective
     // dummy = Psit * xsol
@@ -1487,7 +1492,9 @@ void sopt_l1_solver_padmm(void *xsol,
 	  // s = z
 	  cblas_zcopy(ny, z, 1, s, 1);	 
 	  // s = s + res
-	  cblas_zaxpy(ny, &complex_unity, res, 1, s, 1);	  
+alpha = 1.0 + 0.0*I;    	  
+cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
+//cblas_zaxpy(ny, &complex_unity, res, 1, s, 1);	  
 	  // s = -s
 	  cblas_zdscal(ny, -1.0, s, 1);	    
 	  //  s = s*min(1.0, epsilon/norm(s))
@@ -1508,9 +1515,12 @@ void sopt_l1_solver_padmm(void *xsol,
 	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)y_temp, 1);
 	}
 	else {
+alpha = 1.0 + 0.0*I;    	  	  
 	  cblas_zcopy(ny, z, 1, y_temp, 1);	 
-	  cblas_zaxpy(ny, &complex_unity, res, 1, y_temp, 1);
-	  cblas_zaxpy(ny, &complex_unity, s, 1, y_temp, 1);
+cblas_zaxpy(ny, (void*)&alpha, res, 1, y_temp, 1);
+cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
+//cblas_zaxpy(ny, &complex_unity, res, 1, y_temp, 1);
+//cblas_zaxpy(ny, &complex_unity, s, 1, y_temp, 1);
 	}
 	// r = At(z + res + s)
 	At(r, y_temp, At_data);
@@ -1523,7 +1533,9 @@ void sopt_l1_solver_padmm(void *xsol,
 	}
 	else {
 	  cblas_zdscal(nx, -mu, r, 1);
-	  cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
+alpha = 1.0 + 0.0*I;    	  	  
+cblas_zaxpy(nx, (void*)&alpha, xsol, 1, r, 1);
+//cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
 	}
 
 	// Prox L1 
@@ -1561,7 +1573,9 @@ void sopt_l1_solver_padmm(void *xsol,
 	  norm_res = cblas_dnrm2(ny, (double*)res, 1);
 	}
 	else {
-	  cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
+alpha = -1.0 + 0.0*I;    	  	  
+cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
+//cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 	  norm_res = cblas_dznrm2(ny, res, 1);	 
 	}	
 	
@@ -1579,9 +1593,12 @@ void sopt_l1_solver_padmm(void *xsol,
 	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)z, 1);    	
 	}
 	else {
-	  cblas_zaxpy(ny, &complex_unity, s, 1, res, 1);
-	  cblas_zdscal(ny, beta, res, 1);
-	  cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
+alpha = 1.0 + 0.0*I;    	  	  
+cblas_zaxpy(ny, (void*)(&alpha), s, 1, res, 1);
+//cblas_zaxpy(ny, &complex_unity, s, 1, res, 1);
+	  cblas_zdscal(ny, param.lagrange_update_scale, res, 1);
+cblas_zaxpy(ny, (void*)&alpha, res, 1, z, 1);
+//cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
 	}
 
 	// Check relative change of objective function   
