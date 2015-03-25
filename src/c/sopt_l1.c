@@ -1475,8 +1475,10 @@ void sopt_l1_solver_padmm(void *xsol,
 	  cblas_dscal(ny, -1.0, (double*)s, 1);
 	  //  s = s*min(1.0, epsilon/norm(s))	   
 	  scale = cblas_dnrm2(ny, (double*)s, 1);
-	  assert(fabs(scale) > tol);	
-	  scale = min(1.0, param.epsilon/scale);
+	  if (fabs(scale) > tol) 	  
+	    scale = min(1.0, param.epsilon/scale);
+	  else
+	    scale = 1.0;	  
 	  cblas_dscal(ny, scale, (double*)s, 1);
 
 	}
@@ -1490,8 +1492,10 @@ void sopt_l1_solver_padmm(void *xsol,
 	  cblas_zdscal(ny, -1.0, s, 1);	    
 	  //  s = s*min(1.0, epsilon/norm(s))
 	  scale = cblas_dznrm2(ny, s, 1);	 
-	  assert(fabs(scale) > tol);
-	  scale = min(1.0, param.epsilon/scale);
+	  if (fabs(scale) > tol) 	  
+	    scale = min(1.0, param.epsilon/scale);
+	  else
+	    scale = 1.0;
 	  cblas_zdscal(ny, scale, s, 1);
 	  
 	}
