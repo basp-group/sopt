@@ -1,4 +1,4 @@
-set(DEMO_SOURCES sopt_demo1.c)
+set(DEMO_SOURCES sopt_demo1.c sopt_demo1_padmm.c)
 if(FFTW3_DOUBLE_FOUND)
     list(APPEND DEMO_SOURCES sopt_demo2.c)
 endif()
