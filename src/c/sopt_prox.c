@@ -45,9 +45,9 @@
  * \param[in] param Data structure with the parameters of
  *            the optimization.
  * \param[in] dummy Auxiliary vector. Dimension: nr.
- * \param[in] sol Auxiliary vector. Dimension: nx.
- * \param[in] u Auxiliary vector. Dimension: nr.
- * \param[in] v Auxiliary vector. Dimension: nr.
+ * \param[in] sol Auxiliary vector. Dimension: nx. Memory to be used internally and doesn't need to be initialized.
+ * \param[in] u Auxiliary vector. Dimension: nr. Memory to be used internally and doesn't need to be initialized.
+ * \param[in] v Auxiliary vector. Dimension: nr. Memory to be used internally and doesn't need to be initialized.
  */
 void sopt_prox_l1(void *xout, 
                   void *xin,

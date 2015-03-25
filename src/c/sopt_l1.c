@@ -1358,12 +1358,6 @@ complex double alpha;
 
     if (param.real_out == 1) {
 
-      r = malloc(nx * sizeof(double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(r);
-    
-      dummy = malloc(nr * sizeof(double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
-     
       u1 = malloc(nr * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(u1);
       v1 = malloc(nr * sizeof(double));
@@ -1371,12 +1365,6 @@ complex double alpha;
 
     }
     else {
-     
-      r = malloc(nx * sizeof(complex double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(r);
-    
-      dummy = malloc(nr * sizeof(complex double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
      
       u1 = malloc(nr * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(u1);
@@ -1390,11 +1378,23 @@ complex double alpha;
       sol1 = malloc(nx * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
 
+      r = malloc(nx * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(r);
+
+      dummy = malloc(nr * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+
     }
     else {
     
       sol1 = malloc(nx * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+
+      r = malloc(nx * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(r);
+
+      dummy = malloc(nr * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
 
     }
     
@@ -1430,16 +1430,16 @@ complex double alpha;
     }
 
     // Initialise solution: xsol =  1/param.nu*At(y)
-    At(xsol, y, At_data);
+    At(sol1, y, At_data);
     assert(fabs(param.nu) > tol);
     mu = 1.0 / param.nu;
-    if (param.real_out == 1) 
-      cblas_dscal(nx, mu, (double*)xsol, 1);
+    if (param.real_out == 1 && param.real_meas == 1)
+        cblas_dscal(nx, mu, (double*)sol1, 1);
     else
-      cblas_zdscal(nx, mu, xsol, 1);
+        cblas_zdscal(nx, mu, sol1, 1);
 
     // Initalise residuals: res = A * x_sol - y.
-    A(res, xsol, A_data);
+    A(res, sol1, A_data);
 alpha = -1.0 + 0.0*I;    
     if (param.real_meas == 1) 
       cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
@@ -1449,8 +1449,8 @@ alpha = -1.0 + 0.0*I;
 
     // Compute objective
     // dummy = Psit * xsol
-    Psit(dummy, xsol, Psit_data);
-    if (param.real_out == 1)
+    Psit(dummy, sol1, Psit_data);
+    if (param.real_out == 1 && param.real_meas == 1)
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
     else
       obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
@@ -1463,6 +1463,7 @@ alpha = -1.0 + 0.0*I;
     if (param.verbose > 1)
         printf("L1 solver: \n ");
     
+    //Main loop
     while (1) {
       
         // Log
@@ -1522,21 +1523,44 @@ cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
 //cblas_zaxpy(ny, &complex_unity, res, 1, y_temp, 1);
 //cblas_zaxpy(ny, &complex_unity, s, 1, y_temp, 1);
 	}
+    //Todo: can we eliminate y_temp
+
 	// r = At(z + res + s)
 	At(r, y_temp, At_data);
 
 	// Gradient descent
 	// r = xsol - mu * r
-	if (param.real_out == 1) {
+	if (param.real_out == 1 && param.real_meas == 1) {
 	  cblas_dscal(nx, -mu, (double*)r, 1);
-	  cblas_daxpy(nx, 1.0, (double*)xsol, 1, (double*)r, 1);
+	  cblas_daxpy(nx, 1.0, (double*)sol1, 1, (double*)r, 1);
 	}
 	else {
 	  cblas_zdscal(nx, -mu, r, 1);
 alpha = 1.0 + 0.0*I;    	  	  
-cblas_zaxpy(nx, (void*)&alpha, xsol, 1, r, 1);
+cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
 //cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
 	}
+
+    if (param.real_out == 1 && param.real_meas == 0){
+        for (i = 0; i < nx; i++){
+                *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
+        }
+    }
+    elseif (param.real_out == 1 && param.real_meas == 1){
+
+        for (i = 0; i < nx; i++){
+                *((double*)xsol + i) = *((double*)sol1 + i);
+        }
+
+    }
+    else{
+
+        for (i = 0; i < nx; i++){
+                *((complex double*)xsol + i) = *((complex double*)sol1 + i);
+        }
+
+    }
+
 
 	// Prox L1 
         sopt_prox_l1(xsol, r, nx, nr,
@@ -1554,8 +1578,29 @@ cblas_zaxpy(nx, (void*)&alpha, xsol, 1, r, 1);
 	
 	// Residual
 
+    //Copy xsol to sol1 for the different cases
+    if (param.real_out == 1 && param.real_meas == 0){
+        for (i = 0; i < nx; i++){
+                 *((complex double*)sol1 + i) = *((double*)xsol + i) +0.0*I;
+        }
+    }
+    elseif (param.real_out == 1 && param.real_meas == 1){
+
+        for (i = 0; i < nx; i++){
+                *((double*)sol1 + i) = *((double*)xsol + i);
+        }
+
+    }
+    else{
+
+        for (i = 0; i < nx; i++){
+                *((complex double*)sol1 + i) = *((complex double*)xsol + i);
+        }
+
+    }
+
 	// Compute residuals: res = A * x_sol - y.
-	A(res, xsol, A_data);
+	A(res, sol1, A_data);
 	if (param.real_meas == 1) {
 	  cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
 	  norm_res = cblas_dnrm2(ny, (double*)res, 1);
@@ -1592,7 +1637,6 @@ cblas_zaxpy(ny, (void*)&alpha, res, 1, z, 1);
         // Log
         if (param.verbose > 1) {
 	    printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
-            printf("Objective: prev obj value = %e \n ", prev_ob);
 	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
         }
 	
