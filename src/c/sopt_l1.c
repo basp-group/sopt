@@ -1353,21 +1353,31 @@ complex double alpha;
 
 
 
-    
+    /*Comment(Rafa): I change the memory allocation for dummy. Basically, dummy should be of the same data type as
+    xsol. Thus if param.real_out = 1 dummy is real (only this condition). Then, I also changed its use fro the first
+    time we computed the objective function */
     // Allocate memory
 
     if (param.real_out == 1) {
 
+      dummy = malloc(nr * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);  
+
       u1 = malloc(nr * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+
       v1 = malloc(nr * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(v1);
 
     }
     else {
+
+      dummy = malloc(nr * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);  
      
       u1 = malloc(nr * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+
       v1 = malloc(nr * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(v1);      
 
@@ -1381,9 +1391,6 @@ complex double alpha;
       r = malloc(nx * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(r);
 
-      dummy = malloc(nr * sizeof(double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
-
     }
     else {
     
@@ -1392,9 +1399,6 @@ complex double alpha;
 
       r = malloc(nx * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(r);
-
-      dummy = malloc(nr * sizeof(complex double));
-      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
 
     }
     
@@ -1447,13 +1451,25 @@ alpha = -1.0 + 0.0*I;
       cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
 //cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 
+    //There is another change here. We are now checking 3 conditions and use xsol
+    //as an auxiliary variable for the real-complex case
     // Compute objective
     // dummy = Psit * sol1
-    Psit(dummy, sol1, Psit_data);
-    if (param.real_out == 1 && param.real_meas == 1)
+    if (param.real_out == 1 && param.real_meas == 1){
+      Psit(dummy, sol1, Psit_data);  
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
-    else
-      obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
+    }
+    else if (param.real_out == 1 && param.real_meas == 0){
+      for (i = 0; i < nx; i++){
+                *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
+        } 
+      Psit(dummy, xsol, Psit_data);    
+      obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+    }
+    else{
+      Psit(dummy, sol1, Psit_data);  
+      obj = sopt_utility_l1normc((complex double*)dummy, weights, nr); 
+    }
     
     // Initializations
     iter = 1;
@@ -1529,7 +1545,7 @@ cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
 	At(r, y_temp, At_data);
 
 	// Gradient descent
-	// r = xsol - mu * r
+	// sol1 = sol1 - mu * r
 	if (param.real_out == 1 && param.real_meas == 1) {
 	  cblas_dscal(nx, -mu, (double*)r, 1);
 	  cblas_daxpy(nx, 1.0, (double*)sol1, 1, (double*)r, 1);
@@ -1540,6 +1556,8 @@ alpha = 1.0 + 0.0*I;
 cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
 //cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
 	}
+
+    //Copy sol1 to xsol
 
     if (param.real_out == 1 && param.real_meas == 0){
         for (i = 0; i < nx; i++){
@@ -1581,7 +1599,7 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
     //Copy xsol to sol1 for the different cases
     if (param.real_out == 1 && param.real_meas == 0){
         for (i = 0; i < nx; i++){
-                 *((complex double*)sol1 + i) = *((double*)xsol + i) +0.0*I;
+                 *((complex double*)sol1 + i) = *((double*)xsol + i) + 0.0*I;
         }
     }
     else if (param.real_out == 1 && param.real_meas == 1){
@@ -1611,20 +1629,21 @@ cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
 //cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 	  norm_res = cblas_dznrm2(ny, res, 1);	 
 	}	
-	
+	/*Change(Rafa): we need to keep res for the next iteration but not s,
+    thus I'm switcing res and s in the Lagrange multipliers update */
 	// Lagrange multipliers update
 	// z = z + beta*(res + s);
 	if (param.real_meas == 1) {
-	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);    
-	  cblas_dscal(ny, param.lagrange_update_scale, (double*)res, 1);
-	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)z, 1);    	
+	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1);    
+	  cblas_dscal(ny, param.lagrange_update_scale, (double*)s, 1);
+	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)z, 1);    	
 	}
 	else {
 alpha = 1.0 + 0.0*I;    	  	  
-cblas_zaxpy(ny, (void*)(&alpha), s, 1, res, 1);
+cblas_zaxpy(ny, (void*)(&alpha), res, 1, s, 1);
 //cblas_zaxpy(ny, &complex_unity, s, 1, res, 1);
-	  cblas_zdscal(ny, param.lagrange_update_scale, res, 1);
-cblas_zaxpy(ny, (void*)&alpha, res, 1, z, 1);
+	  cblas_zdscal(ny, param.lagrange_update_scale, s, 1);
+cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
 //cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
 	}
 
