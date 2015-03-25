@@ -6,6 +6,7 @@
 #include <complex.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 #include SOPT_BLAS_H
 #include "sopt_utility.h"
 #include "sopt_error.h"
@@ -1297,7 +1298,7 @@ void sopt_l1_sdmm(void *xsol,
  * \param[in] param Data structure with the parameters of
  *            the optimization (including \f$\epsilon\f$).
  */
-void sopt_l1_solver_aadmm(void *xsol,
+void sopt_l1_solver_padmm(void *xsol,
 			  int nx,
 			  void (*A)(void *out, void *in, void **data), 
 			  void **A_data,
@@ -1311,7 +1312,7 @@ void sopt_l1_solver_aadmm(void *xsol,
 			  void *y,
 			  int ny,
 			  double *weights,
-			  sopt_l1_param param){
+			  sopt_l1_param_padmm param){
     
     int i;
     int iter;
@@ -1319,210 +1320,223 @@ void sopt_l1_solver_aadmm(void *xsol,
     double prev_ob;
     double rel_ob;
     char crit[8];
-    //complex double alpha;
     double mu;
-    double beta;
     double scale;
     double norm_res;
 
-/*
-    // Local memory
-    void *dummy; // size nr
-    void *xhat;  // size nx
-    void *temp;  // size nx
-    void *res;   // size ny
-
-   
-
-    // Memory for L2b prox
-    void *u2;    // size ny
-    void *v2;    // size ny
-*/
-
-
-
+    // Local 
     void *z;
     void *s;
     void *res;
-    void *temp_y;
+    void *y_temp;
     void *r;
     void *dummy;
 
-    // Memory for L1 prox
+    // Memory for L1 prox (so working memory doesn't need to be
+    // reallocated for each iteration).
     void *sol1;  // size nx
     void *u1;    // size nr
     void *v1;    // size nr
       
+    const complex double complex_unity_minus = -1.0 + 0.0*I;
+    const complex double complex_unity = 1.0 + 0.0*I;
+    const double tol = 1e-8;
+
+
+// TODO: make input parameter
+    double epsilon_tol_scale = 1.001;
+    double beta = 0.9;
+    
+
 
 
     
-/*
-    if (param.real_out == 1){
-        //Local
-        dummy = malloc(nr * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
-        xhat = malloc(nx * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(xhat);
-        //L1 prox
-        u1 = malloc(nr * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(u1);
-        v1 = malloc(nr * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+    // Allocate memory
+
+    if (param.real_out == 1) {
+
+      r = malloc(nx * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(r);
+    
+      dummy = malloc(nr * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+     
+      u1 = malloc(nr * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+      v1 = malloc(nr * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+
     }
-    else{
-        //Local
-        dummy = malloc(nr * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
-        xhat = malloc(nx * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(xhat);
-        //L1 prox
-        u1 = malloc(nr * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(u1);
-        v1 = malloc(nr * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(v1);
+    else {
+     
+      r = malloc(nx * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(r);
+    
+      dummy = malloc(nr * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
+     
+      u1 = malloc(nr * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(u1);
+      v1 = malloc(nr * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(v1);      
+
     }
 
     if (param.real_out == 1 && param.real_meas == 1) {
-        temp = malloc(nx * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(temp);
-        sol1 = malloc(nx * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+
+      sol1 = malloc(nx * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+
     }
     else {
-        temp = malloc(nx * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(temp);
-        sol1 = malloc(nx * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+    
+      sol1 = malloc(nx * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
+
     }
+    
+    if (param.real_meas == 1) {
 
-    if (param.real_meas == 1){
-        //Local
-        res = malloc(ny * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(res);
-        //L2b prox
-        u2 = malloc(ny * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(u2);
-        v2 = malloc(ny * sizeof(double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(v2); 
+      z = calloc(ny, sizeof(double));  // Must be initalised to zero
+      SOPT_ERROR_MEM_ALLOC_CHECK(z);
+    
+      s = malloc(ny * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(s);
+    
+      res = malloc(ny * sizeof(double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(res);
+
+      y_temp = malloc(ny * sizeof(double)); 
+      SOPT_ERROR_MEM_ALLOC_CHECK(y_temp);
+
     }
-    else{
-        //Local
-        res = malloc(ny * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(res);
-        //L2b prox
-        u2 = malloc(ny * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(u2);
-        v2 = malloc(ny * sizeof(complex double));
-        SOPT_ERROR_MEM_ALLOC_CHECK(v2);
+    else {
+
+      z = calloc(ny, sizeof(complex double));  // Must be initalised to zero
+      SOPT_ERROR_MEM_ALLOC_CHECK(z);
+    
+      s = malloc(ny * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(s);
+    
+      res = malloc(ny * sizeof(complex double));
+      SOPT_ERROR_MEM_ALLOC_CHECK(res);
+
+      y_temp = malloc(ny * sizeof(complex double)); 
+      SOPT_ERROR_MEM_ALLOC_CHECK(y_temp);
+
     }
-*/
-
-
-    beta = 0.9;
-    
-    z = calloc(ny, sizeof(double));  // Must be initalised to zero
-    SOPT_ERROR_MEM_ALLOC_CHECK(z);
-    
-    s = malloc(ny * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(s);
-    
-    res = malloc(ny * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(res);
-
-    temp_y = malloc(ny * sizeof(double)); 
-    SOPT_ERROR_MEM_ALLOC_CHECK(temp_y);
-
-    r = malloc(nx * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(r);
-    
-    dummy = malloc(nr * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(dummy);
-     
-    u1 = malloc(nr * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(u1);
-    v1 = malloc(nr * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(v1);
-    sol1 = malloc(nx * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(sol1);
-
-    
 
     // Initialise solution: xsol =  1/param.nu*At(y)
     At(xsol, y, At_data);
+    assert(fabs(param.paraml1.nu) > tol);
     mu = 1.0 / param.paraml1.nu;
-// TODO: check nu != 0...
-    cblas_dscal(nx, mu, (double*)xsol, 1);
+    if (param.real_out == 1) 
+      cblas_dscal(nx, mu, (double*)xsol, 1);
+    else
+      cblas_zdscal(nx, mu, xsol, 1);
 
     // Initalise residuals: res = A * x_sol - y.
     A(res, xsol, A_data);
-    cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);    
-    /*
-    for (i = 0; i < ny; i++){
-      (double*)res[i] -= (double*)y[i];
-      *((double*)res + i) -= *((double*)y + i);
-    }
-    */
+    if (param.real_meas == 1) 
+      cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
+    else
+      cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 
     // Compute objective
     // dummy = Psit * xsol
     Psit(dummy, xsol, Psit_data);
-    obj = sopt_utility_l1normr((double*)dummy, weights, nr);
- 
+    if (param.real_out == 1)
+      obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+    else
+      obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
+    
     // Initializations
     iter = 1;
     prev_ob = 0.0;
         
     // Log
-    if (param.verbose > 1){
+    if (param.verbose > 1)
         printf("L1 solver: \n ");
-    }
     
     while (1) {
+      
         // Log
-        if (param.verbose > 1){
+        if (param.verbose > 1)
             printf("Iteration %i:\n ", iter);
-        }
 	
 	// Slack variable update
-	// s = z
-        cblas_dcopy(ny, (double*)z, 1, (double*)s, 1);	
-	// s = s + res
-	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
-	// s = -s
-	cblas_dscal(ny, -1.0, (double*)s, 1);
-	//  s = s*min(1.0, epsilon/norm(s))	   
-	scale = cblas_dnrm2(ny, (double*)s, 1);
-//TODO: check scale non-zero...	
-	scale = min(1.0, param.epsilon/scale);
-	cblas_dscal(ny, scale, (double*)s, 1);
+	if (param.real_meas == 1) {
+
+	  // s = z
+	  cblas_dcopy(ny, (double*)z, 1, (double*)s, 1);	
+	  // s = s + res
+	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
+	  // s = -s
+	  cblas_dscal(ny, -1.0, (double*)s, 1);
+	  //  s = s*min(1.0, epsilon/norm(s))	   
+	  scale = cblas_dnrm2(ny, (double*)s, 1);
+	  assert(fabs(scale) > tol);	
+	  scale = min(1.0, param.epsilon/scale);
+	  cblas_dscal(ny, scale, (double*)s, 1);
+
+	}
+	else {
+
+	  // s = z
+	  cblas_zcopy(ny, z, 1, s, 1);	 
+	  // s = s + res
+	  cblas_zaxpy(ny, &complex_unity, res, 1, s, 1);	  
+	  // s = -s
+	  cblas_zdscal(ny, -1.0, s, 1);	    
+	  //  s = s*min(1.0, epsilon/norm(s))
+	  scale = cblas_dznrm2(ny, s, 1);	 
+	  assert(fabs(scale) > tol);
+	  scale = min(1.0, param.epsilon/scale);
+	  cblas_zdscal(ny, scale, s, 1);
+	  
+	}
 
 	// Gradient formulation
-	// temp_y = z + res + s
-	cblas_dcopy(ny, (double*)z, 1, (double*)temp_y, 1);
-	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)temp_y, 1);
-	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)temp_y, 1); 		
+	// y_temp = z + res + s
+	if (param.real_meas == 1) {
+	  cblas_dcopy(ny, (double*)z, 1, (double*)y_temp, 1);
+	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)y_temp, 1);
+	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)y_temp, 1);
+	}
+	else {
+	  cblas_zcopy(ny, z, 1, y_temp, 1);	 
+	  cblas_zaxpy(ny, &complex_unity, res, 1, y_temp, 1);
+	  cblas_zaxpy(ny, &complex_unity, s, 1, y_temp, 1);
+	}
 	// r = At(z + res + s)
-	At(r, temp_y, At_data);
+	At(r, y_temp, At_data);
 
 	// Gradient descent
 	// r = xsol - mu * r
-	cblas_dscal(nx, -mu, (double*)r, 1);
-	cblas_daxpy(nx, 1.0, (double*)xsol, 1, (double*)r, 1);
+	if (param.real_out == 1) {
+	  cblas_dscal(nx, -mu, (double*)r, 1);
+	  cblas_daxpy(nx, 1.0, (double*)xsol, 1, (double*)r, 1);
+	}
+	else {
+	  cblas_zdscal(nx, -mu, r, 1);
+	  cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
+	}
 
 	// Prox L1 
         sopt_prox_l1(xsol, r, nx, nr,
                      Psi, Psi_data, Psit, Psit_data,
-//                     weights, param.gamma, param.real_out,
-		     weights, param.gamma * mu, param.real_out,
+		     weights, param.gamma * mu, param.real_out, // Note mu weighting
                      param.paraml1, dummy, sol1, u1, v1);
-	
-//TODO: compute obj at same time as l1 prox
 	
 	// Compute objective
 	prev_ob = obj;
 	Psit(dummy, xsol, Psit_data);
-	obj = sopt_utility_l1normr((double*)dummy, weights, nr);    
-	/* QUESTION: this shouldn't be needed
+	if (param.real_out == 1)
+	  obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+	else
+	  obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
+
+/* QUESTION: this shouldn't be needed
 	if (obj > 0.0){
             rel_ob = fabs(obj-prev_ob)/obj;
         }
@@ -1532,31 +1546,47 @@ void sopt_l1_solver_aadmm(void *xsol,
         else{
             rel_ob = 1.0;
         }
-	*/
+*/
 	
 	// Residual
+
+	// Compute residuals: res = A * x_sol - y.
 	A(res, xsol, A_data);
-	cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);    
-	norm_res = cblas_dnrm2(ny, (double*)res, 1);
+	if (param.real_meas == 1) {
+	  cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
+	  norm_res = cblas_dnrm2(ny, (double*)res, 1);
+	}
+	else {
+	  cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
+	  norm_res = cblas_dznrm2(ny, res, 1);	 
+	}	
 	
         // Log
         if (param.verbose > 1) {
             printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
 	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
         }
-	
+
 	// Lagrange multipliers update
 	// z = z + beta*(res + s);
-	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);    
-	cblas_dscal(ny, beta, (double*)res, 1);
-	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)z, 1);    	
+	if (param.real_meas == 1) {
+	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);    
+	  cblas_dscal(ny, param.lagrange_update_scale, (double*)res, 1);
+	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)z, 1);    	
+	}
+	else {
+	  cblas_zaxpy(ny, &complex_unity, s, 1, res, 1);
+	  cblas_zdscal(ny, beta, res, 1);
+	  cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
+	}
 
 	// Check relative change of objective function   
 	rel_ob = abs(obj - prev_ob)/obj;
 	
         // Stopping criteria
-// TODO: make 1.001 an input parameter	
-        if (rel_ob < param.rel_obj && norm_res <= param.epsilon * 1.001) {
+
+        if (rel_ob < param.rel_obj
+	    && norm_res <= param.epsilon * param.epsilon_tol_scale) {
             strcpy(crit, "REL_OBJ");
             break;
         }
@@ -1582,12 +1612,12 @@ void sopt_l1_solver_aadmm(void *xsol,
         printf("Stopping criterion: %s \n\n ", crit);
     }
     
-    //Free temporary memory
+    // Free memory
 
     free(z);
     free(s);
     free(res);
-    free(temp_y);
+    free(y_temp);
     free(r);
     free(dummy);
             
@@ -1595,15 +1625,4 @@ void sopt_l1_solver_aadmm(void *xsol,
     free(u1);
     free(v1);
     
-
-    /*
-    free(dummy);
-    free(xhat);
-    free(temp);
-    free(res);
-
-
-    free(u2);
-    free(v2);
-    */
 }
