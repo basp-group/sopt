@@ -1,6 +1,6 @@
 set(DEMO_SOURCES sopt_demo1.c sopt_demo1_padmm.c)
 if(FFTW3_DOUBLE_FOUND)
-    list(APPEND DEMO_SOURCES sopt_demo2.c)
+    list(APPEND DEMO_SOURCES sopt_demo2.c sopt_demo2_padmm.c)
 endif()
 set(Sopt_SOURCES
     sopt_error.c  sopt_l2.c    sopt_ran.c        sopt_wavelet.c

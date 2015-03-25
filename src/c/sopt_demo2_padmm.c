@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     //Structures for the different operators
     sopt_wavelet_type *dict_types;
     sopt_prox_l1param param;
-    sopt_l1_param param2;
+    sopt_l1_param_padmm param2;
     sopt_prox_l2bparam param3;
     sopt_l1_rwparam param4;
     sopt_sara_param param5;
@@ -325,9 +325,12 @@ int main(int argc, char *argv[]) {
     param2.real_out = 1;
     param2.real_meas = 0;
     param2.paraml1 = param;
-    param2.paraml2b = param3;
+    //    param2.paraml2b = param3;
     
-   
+    param2.epsilon_tol_scale = 1.001;
+    param2.lagrange_update_scale = 0.9;
+
+    
     //Weights
     for (i=0; i < Nr; i++) {
         w[i] = 1.0;
@@ -343,7 +346,7 @@ int main(int argc, char *argv[]) {
     #else
         assert((start = clock())!=-1);
     #endif
-        sopt_l1_solver((void*)xout, Nx,
+        sopt_l1_solver_padmm((void*)xout, Nx,
                     &sopt_meas_fsamp_c2c,
                     datafwd,
                     &sopt_meas_fsampadj_c2c,
@@ -378,7 +381,8 @@ int main(int argc, char *argv[]) {
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 
-
+return 1;
+/*
     printf("**********************\n");
     printf("SARA reconstruction\n");
     printf("**********************\n");
@@ -450,6 +454,6 @@ int main(int argc, char *argv[]) {
     fftw_destroy_plan(planadj);
 
     sopt_sara_free(&param5);
-        
+*/        
     return 0;
 }
