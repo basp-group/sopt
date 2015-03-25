@@ -1341,17 +1341,6 @@ void sopt_l1_solver_padmm(void *xsol,
     const double tol = 1e-8;
 
 
-
-
-    
-
-
-
-    /*Comment(Rafa): I change the memory allocation for dummy. Basically, dummy should be of the same data type as
-      xsol. Thus if param.real_out = 1 dummy is real (only this condition). Then, I also changed its use fro the first
-      time we computed the objective function */
-    
-    
     // Allocate memory
 
     if (param.real_out == 1) {
