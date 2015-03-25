@@ -1348,8 +1348,9 @@ void sopt_l1_solver_padmm(void *xsol,
 
 
     /*Comment(Rafa): I change the memory allocation for dummy. Basically, dummy should be of the same data type as
-    xsol. Thus if param.real_out = 1 dummy is real (only this condition). Then, I also changed its use fro the first
-    time we computed the objective function */
+      xsol. Thus if param.real_out = 1 dummy is real (only this condition). Then, I also changed its use fro the first
+      time we computed the objective function */
+    
     // Allocate memory
 
     if (param.real_out == 1) {
@@ -1426,9 +1427,9 @@ void sopt_l1_solver_padmm(void *xsol,
     assert(fabs(param.nu) > tol);
     mu = 1.0 / param.nu;
     if (param.real_out == 1 && param.real_meas == 1)
-        cblas_dscal(nx, mu, (double*)sol1, 1);
+      cblas_dscal(nx, mu, (double*)sol1, 1);
     else
-        cblas_zdscal(nx, mu, sol1, 1);
+      cblas_zdscal(nx, mu, sol1, 1);
 
     // Initalise residuals: res = A * sol1 - y.
     A(res, sol1, A_data);
@@ -1448,8 +1449,8 @@ void sopt_l1_solver_padmm(void *xsol,
     }
     else if (param.real_out == 1 && param.real_meas == 0){
       for (i = 0; i < nx; i++){
-                *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
-        } 
+	*((double*)xsol + i) = creal(*((complex double*)sol1 + i));
+      } 
       Psit(dummy, xsol, Psit_data);    
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
     }
@@ -1464,219 +1465,219 @@ void sopt_l1_solver_padmm(void *xsol,
         
     // Log
     if (param.verbose > 1)
-        printf("L1 solver: \n ");
+      printf("L1 solver: \n ");
     
     //Main loop
     while (1) {
       
-        // Log
-        if (param.verbose > 1)
-            printf("Iteration %i:\n ", iter);
+      // Log
+      if (param.verbose > 1)
+	printf("Iteration %i:\n ", iter);
 	
-	// Slack variable update
-	if (param.real_meas == 1) {
+      // Slack variable update
+      if (param.real_meas == 1) {
 
-	  // s = z
-	  cblas_dcopy(ny, (double*)z, 1, (double*)s, 1);	
-	  // s = s + res
-	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
-	  // s = -s
-	  cblas_dscal(ny, -1.0, (double*)s, 1);
-	  //  s = s*min(1.0, epsilon/norm(s))	   
-	  scale = cblas_dnrm2(ny, (double*)s, 1);
-	  if (fabs(scale) > tol) 	  
-	    scale = min(1.0, param.epsilon/scale);
-	  else
-	    scale = 1.0;	  
-	  cblas_dscal(ny, scale, (double*)s, 1);
+	// s = z
+	cblas_dcopy(ny, (double*)z, 1, (double*)s, 1);	
+	// s = s + res
+	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
+	// s = -s
+	cblas_dscal(ny, -1.0, (double*)s, 1);
+	//  s = s*min(1.0, epsilon/norm(s))	   
+	scale = cblas_dnrm2(ny, (double*)s, 1);
+	if (fabs(scale) > tol) 	  
+	  scale = min(1.0, param.epsilon/scale);
+	else
+	  scale = 1.0;	  
+	cblas_dscal(ny, scale, (double*)s, 1);
 
-	}
-	else {
+      }
+      else {
 
-	  // s = z
-	  cblas_zcopy(ny, z, 1, s, 1);	 
-	  // s = s + res
-	  alpha = 1.0 + 0.0*I;    	  
-	  cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
-	  // s = -s
-	  cblas_zdscal(ny, -1.0, s, 1);	    
-	  //  s = s*min(1.0, epsilon/norm(s))
-	  scale = cblas_dznrm2(ny, s, 1);	 
-	  if (fabs(scale) > tol) 	  
-	    scale = min(1.0, param.epsilon/scale);
-	  else
-	    scale = 1.0;
-	  cblas_zdscal(ny, scale, s, 1);
+	// s = z
+	cblas_zcopy(ny, z, 1, s, 1);	 
+	// s = s + res
+	alpha = 1.0 + 0.0*I;    	  
+	cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
+	// s = -s
+	cblas_zdscal(ny, -1.0, s, 1);	    
+	//  s = s*min(1.0, epsilon/norm(s))
+	scale = cblas_dznrm2(ny, s, 1);	 
+	if (fabs(scale) > tol) 	  
+	  scale = min(1.0, param.epsilon/scale);
+	else
+	  scale = 1.0;
+	cblas_zdscal(ny, scale, s, 1);
 	  
-	}
+      }
 
-	// Gradient formulation
-	// res = z + res + s
-	if (param.real_meas == 1) {
-	  cblas_daxpy(ny, 1.0, (double*)z, 1, (double*)res, 1);
-	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);	  
-	}
-	else {
-	  alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(ny, (void*)&alpha, z, 1, res, 1);
-	  alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(ny, (void*)&alpha, s, 1, res, 1);
-	}
+      // Gradient formulation
+      // res = z + res + s
+      if (param.real_meas == 1) {
+	cblas_daxpy(ny, 1.0, (double*)z, 1, (double*)res, 1);
+	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);	  
+      }
+      else {
+	alpha = 1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(ny, (void*)&alpha, z, 1, res, 1);
+	alpha = 1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(ny, (void*)&alpha, s, 1, res, 1);
+      }
 
-	// r = At(res_new = z + res_old + s)
-	At(r, res, At_data);
+      // r = At(res_new = z + res_old + s)
+      At(r, res, At_data);
 
-	// Gradient descent
-	// r = sol1 - mu * r
-	if (param.real_out == 1 && param.real_meas == 1) {
-	  cblas_dscal(nx, -mu, (double*)r, 1);
-	  cblas_daxpy(nx, 1.0, (double*)sol1, 1, (double*)r, 1);
-	}
-	else {
-	  cblas_zdscal(nx, -mu, r, 1);
-	  alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
-	}
+      // Gradient descent
+      // r = sol1 - mu * r
+      if (param.real_out == 1 && param.real_meas == 1) {
+	cblas_dscal(nx, -mu, (double*)r, 1);
+	cblas_daxpy(nx, 1.0, (double*)sol1, 1, (double*)r, 1);
+      }
+      else {
+	cblas_zdscal(nx, -mu, r, 1);
+	alpha = 1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
+      }
 
-    //Copy sol1 to xsol
-    /*
-    if (param.real_out == 1 && param.real_meas == 0){
+      //Copy sol1 to xsol
+      /*
+	if (param.real_out == 1 && param.real_meas == 0){
         for (i = 0; i < nx; i++){
-                *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
+	*((double*)xsol + i) = creal(*((complex double*)sol1 + i));
         }
-    }
-    else if (param.real_out == 1 && param.real_meas == 1){
-
-        for (i = 0; i < nx; i++){
-                *((double*)xsol + i) = *((double*)sol1 + i);
-        }
-
-    }
-    else{
+	}
+	else if (param.real_out == 1 && param.real_meas == 1){
 
         for (i = 0; i < nx; i++){
-                *((complex double*)xsol + i) = *((complex double*)sol1 + i);
+	*((double*)xsol + i) = *((double*)sol1 + i);
         }
 
-    }
-    */
-    //Change: we don't need the previous block of code what we need is to
-    //copy r in the right way such as it can be read as real data
-    //in the real-complex case
-    if (param.real_out == 1 && param.real_meas == 0){
+	}
+	else{
+
         for (i = 0; i < nx; i++){
-                *((double*)xsol + i) = creal(*((complex double*)r + i));
-                *((complex double*)r + i) = 0.0 +0.0*I;
+	*((complex double*)xsol + i) = *((complex double*)sol1 + i);
+        }
+
+	}
+      */
+      //Change: we don't need the previous block of code what we need is to
+      //copy r in the right way such as it can be read as real data
+      //in the real-complex case
+      if (param.real_out == 1 && param.real_meas == 0){
+        for (i = 0; i < nx; i++){
+	  *((double*)xsol + i) = creal(*((complex double*)r + i));
+	  *((complex double*)r + i) = 0.0 +0.0*I;
         }
         for (i = 0; i < nx; i++){
-                *((double*)r + i) = *((double*)xsol + i);
+	  *((double*)r + i) = *((double*)xsol + i);
         }
-    }
+      }
     
 
-	// Prox L1 
-        sopt_prox_l1(xsol, r, nx, nr,
-                     Psi, Psi_data, Psit, Psit_data,
-		     weights, param.gamma * mu, param.real_out, // Note mu weighting
-                     param.paraml1, dummy, sol1, u1, v1);
+      // Prox L1 
+      sopt_prox_l1(xsol, r, nx, nr,
+		   Psi, Psi_data, Psit, Psit_data,
+		   weights, param.gamma * mu, param.real_out, // Note mu weighting
+		   param.paraml1, dummy, sol1, u1, v1);
 	
-	// Compute objective
-	prev_ob = obj;
-	Psit(dummy, xsol, Psit_data);
-	if (param.real_out == 1)
-	  obj = sopt_utility_l1normr((double*)dummy, weights, nr);
-	else
-	  obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
+      // Compute objective
+      prev_ob = obj;
+      Psit(dummy, xsol, Psit_data);
+      if (param.real_out == 1)
+	obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+      else
+	obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
 	
-	// Residual
+      // Residual
 
-    //Copy xsol to sol1 for the different cases
-    if (param.real_out == 1 && param.real_meas == 0){
+      //Copy xsol to sol1 for the different cases
+      if (param.real_out == 1 && param.real_meas == 0){
         for (i = 0; i < nx; i++){
-                 *((complex double*)sol1 + i) = *((double*)xsol + i) + 0.0*I;
+	  *((complex double*)sol1 + i) = *((double*)xsol + i) + 0.0*I;
         }
-    }
-    else if (param.real_out == 1 && param.real_meas == 1){
-
-        for (i = 0; i < nx; i++){
-                *((double*)sol1 + i) = *((double*)xsol + i);
-        }
-
-    }
-    else{
+      }
+      else if (param.real_out == 1 && param.real_meas == 1){
 
         for (i = 0; i < nx; i++){
-                *((complex double*)sol1 + i) = *((complex double*)xsol + i);
+	  *((double*)sol1 + i) = *((double*)xsol + i);
         }
 
-    }
+      }
+      else{
 
-	// Compute residuals: res = A * x_sol - y.
-	A(res, sol1, A_data);
-	if (param.real_meas == 1) {
-	  cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
-	  norm_res = cblas_dnrm2(ny, (double*)res, 1);
-	}
-	else {
-	  alpha = -1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
-	  norm_res = cblas_dznrm2(ny, res, 1);	 
-	}	
-	/*Change(Rafa): we need to keep res for the next iteration but not s,
-    thus I'm switcing res and s in the Lagrange multipliers update */
-	// Lagrange multipliers update
-	// z = z + beta*(res + s);
-	if (param.real_meas == 1) {
-	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1);    
-	  cblas_dscal(ny, param.lagrange_update_scale, (double*)s, 1);
-	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)z, 1);    	
-	}
-	else {
-	  alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(ny, (void*)(&alpha), res, 1, s, 1);
-	  cblas_zdscal(ny, param.lagrange_update_scale, s, 1);
-	  alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
-	}
+        for (i = 0; i < nx; i++){
+	  *((complex double*)sol1 + i) = *((complex double*)xsol + i);
+        }
 
-	// Check relative change of objective function
-	if (obj > 0.0) 
-	  rel_ob = fabs(obj - prev_ob)/obj;
-	else
-	  rel_ob = fabs(obj - prev_ob);
+      }
+
+      // Compute residuals: res = A * x_sol - y.
+      A(res, sol1, A_data);
+      if (param.real_meas == 1) {
+	cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
+	norm_res = cblas_dnrm2(ny, (double*)res, 1);
+      }
+      else {
+	alpha = -1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
+	norm_res = cblas_dznrm2(ny, res, 1);	 
+      }	
+      /*Change(Rafa): we need to keep res for the next iteration but not s,
+	thus I'm switcing res and s in the Lagrange multipliers update */
+      // Lagrange multipliers update
+      // z = z + beta*(res + s);
+      if (param.real_meas == 1) {
+	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1);    
+	cblas_dscal(ny, param.lagrange_update_scale, (double*)s, 1);
+	cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)z, 1);    	
+      }
+      else {
+	alpha = 1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(ny, (void*)(&alpha), res, 1, s, 1);
+	cblas_zdscal(ny, param.lagrange_update_scale, s, 1);
+	alpha = 1.0 + 0.0*I;    	  	  
+	cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
+      }
+
+      // Check relative change of objective function
+      if (obj > 0.0) 
+	rel_ob = fabs(obj - prev_ob)/obj;
+      else
+	rel_ob = fabs(obj - prev_ob);
 	
-        // Log
-        if (param.verbose > 1) {
-	    printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
-	    printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
-        }
+      // Log
+      if (param.verbose > 1) {
+	printf("Objective: obj value = %e, rel obj = %e \n ", obj, rel_ob);
+	printf("Residuals: epsilon = %e, residual norm = %e \n ", param.epsilon, norm_res);
+      }
 	
-        // Stopping criteria
-        if (rel_ob < param.rel_obj
-	    && norm_res <= param.epsilon * param.epsilon_tol_scale) {
-            strcpy(crit, "REL_OBJ");
-            break;
-        }
-        if (iter > param.max_iter) {
-            strcpy(crit, "MAX_ITE");
-            break;
-        }
+      // Stopping criteria
+      if (rel_ob < param.rel_obj
+	  && norm_res <= param.epsilon * param.epsilon_tol_scale) {
+	strcpy(crit, "REL_OBJ");
+	break;
+      }
+      if (iter > param.max_iter) {
+	strcpy(crit, "MAX_ITE");
+	break;
+      }
 
-        // Update
-        iter++;
+      // Update
+      iter++;
         
     }
     
     //Log
     if (param.verbose > 0){
-        //L1 norm
-        printf("Solution found \n");
-        printf("Final L1 norm: %e\n ", obj);
-        //Residual        
-        printf("epsilon = %e, residual = %e\n", param.epsilon, norm_res);
-        //Stopping criteria
-        printf("%i iterations\n", iter);
-        printf("Stopping criterion: %s \n\n ", crit);
+      //L1 norm
+      printf("Solution found \n");
+      printf("Final L1 norm: %e\n ", obj);
+      //Residual        
+      printf("epsilon = %e, residual = %e\n", param.epsilon, norm_res);
+      //Stopping criteria
+      printf("%i iterations\n", iter);
+      printf("Stopping criterion: %s \n\n ", crit);
     }
     
     // Free memory
