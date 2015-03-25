@@ -1546,7 +1546,7 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
                 *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
         }
     }
-    elseif (param.real_out == 1 && param.real_meas == 1){
+    else if (param.real_out == 1 && param.real_meas == 1){
 
         for (i = 0; i < nx; i++){
                 *((double*)xsol + i) = *((double*)sol1 + i);
@@ -1584,7 +1584,7 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
                  *((complex double*)sol1 + i) = *((double*)xsol + i) +0.0*I;
         }
     }
-    elseif (param.real_out == 1 && param.real_meas == 1){
+    else if (param.real_out == 1 && param.real_meas == 1){
 
         for (i = 0; i < nx; i++){
                 *((double*)sol1 + i) = *((double*)xsol + i);
