@@ -1261,8 +1261,8 @@ void sopt_l1_sdmm(void *xsol,
  * \f$A \in C^{N_y \times N_x}\f$ is the measurement operator,
  * \f$\epsilon\f$ is a noise tolerance and \f$y\in C^{N_y}\f$ is the
  * measurement vector.  The solution is denoted \f$x^\star \in
- * C^{N_x}\f$. The Approximate Alternating Direction Method of
- * Multipliers (AADMM) is used to solve the optimization problem.
+ * C^{N_x}\f$. The Proximal Alternating Direction Method of
+ * Multipliers (PAADMM) is used to solve the optimization problem.
  *
  * \note 
  * The solver can be used to solve the analysis based problem, as
@@ -1328,7 +1328,6 @@ void sopt_l1_solver_padmm(void *xsol,
     void *z;
     void *s;
     void *res;
-    void *y_temp;
     void *r;
     void *dummy;
 
@@ -1338,17 +1337,12 @@ void sopt_l1_solver_padmm(void *xsol,
     void *u1;    // size nr
     void *v1;    // size nr
       
-    const complex double complex_unity_minus = -1.0 + 0.0*I;
-    const complex double complex_unity = 1.0 + 0.0*I;
+    complex double alpha;
     const double tol = 1e-8;
 
 
-complex double alpha;
 
-    
-// TODO: make input parameter
-//    double epsilon_tol_scale = 1.001;
-//    double beta = 0.9;
+
     
 
 
@@ -1413,9 +1407,6 @@ complex double alpha;
       res = malloc(ny * sizeof(double));
       SOPT_ERROR_MEM_ALLOC_CHECK(res);
 
-      y_temp = malloc(ny * sizeof(double)); 
-      SOPT_ERROR_MEM_ALLOC_CHECK(y_temp);
-
     }
     else {
 
@@ -1427,9 +1418,6 @@ complex double alpha;
     
       res = malloc(ny * sizeof(complex double));
       SOPT_ERROR_MEM_ALLOC_CHECK(res);
-
-      y_temp = malloc(ny * sizeof(complex double)); 
-      SOPT_ERROR_MEM_ALLOC_CHECK(y_temp);
 
     }
 
@@ -1444,12 +1432,11 @@ complex double alpha;
 
     // Initalise residuals: res = A * sol1 - y.
     A(res, sol1, A_data);
-alpha = -1.0 + 0.0*I;    
+    alpha = -1.0 + 0.0*I;    
     if (param.real_meas == 1) 
       cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
     else
       cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
-//cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
 
     //There is another change here. We are now checking 3 conditions and use xsol
     //as an auxiliary variable for the real-complex case
@@ -1509,9 +1496,8 @@ alpha = -1.0 + 0.0*I;
 	  // s = z
 	  cblas_zcopy(ny, z, 1, s, 1);	 
 	  // s = s + res
-alpha = 1.0 + 0.0*I;    	  
-cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
-//cblas_zaxpy(ny, &complex_unity, res, 1, s, 1);	  
+	  alpha = 1.0 + 0.0*I;    	  
+	  cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
 	  // s = -s
 	  cblas_zdscal(ny, -1.0, s, 1);	    
 	  //  s = s*min(1.0, epsilon/norm(s))
@@ -1525,24 +1511,20 @@ cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
 	}
 
 	// Gradient formulation
-	// y_temp = z + res + s
+	// res = z + res + s
 	if (param.real_meas == 1) {
-	  cblas_dcopy(ny, (double*)z, 1, (double*)y_temp, 1);
-	  cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)y_temp, 1);
-	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)y_temp, 1);
+	  cblas_daxpy(ny, 1.0, (double*)z, 1, (double*)res, 1);
+	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)res, 1);	  
 	}
 	else {
-alpha = 1.0 + 0.0*I;    	  	  
-	  cblas_zcopy(ny, z, 1, y_temp, 1);	 
-cblas_zaxpy(ny, (void*)&alpha, res, 1, y_temp, 1);
-cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
-//cblas_zaxpy(ny, &complex_unity, res, 1, y_temp, 1);
-//cblas_zaxpy(ny, &complex_unity, s, 1, y_temp, 1);
+	  alpha = 1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(ny, (void*)&alpha, z, 1, res, 1);
+	  alpha = 1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(ny, (void*)&alpha, s, 1, res, 1);
 	}
-    //Todo: can we eliminate y_temp
 
-	// r = At(z + res + s)
-	At(r, y_temp, At_data);
+	// r = At(res_new = z + res_old + s)
+	At(r, res, At_data);
 
 	// Gradient descent
 	// r = sol1 - mu * r
@@ -1552,9 +1534,8 @@ cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
 	}
 	else {
 	  cblas_zdscal(nx, -mu, r, 1);
-alpha = 1.0 + 0.0*I;    	  	  
-cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
-//cblas_zaxpy(nx, &complex_unity, xsol, 1, r, 1);
+	  alpha = 1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
 	}
 
     //Copy sol1 to xsol
@@ -1637,9 +1618,8 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
 	  norm_res = cblas_dnrm2(ny, (double*)res, 1);
 	}
 	else {
-alpha = -1.0 + 0.0*I;    	  	  
-cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
-//cblas_zaxpy(ny, &complex_unity_minus, y, 1, res, 1);
+	  alpha = -1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
 	  norm_res = cblas_dznrm2(ny, res, 1);	 
 	}	
 	/*Change(Rafa): we need to keep res for the next iteration but not s,
@@ -1652,12 +1632,11 @@ cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
 	  cblas_daxpy(ny, 1.0, (double*)s, 1, (double*)z, 1);    	
 	}
 	else {
-alpha = 1.0 + 0.0*I;    	  	  
-cblas_zaxpy(ny, (void*)(&alpha), res, 1, s, 1);
-//cblas_zaxpy(ny, &complex_unity, s, 1, res, 1);
+	  alpha = 1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(ny, (void*)(&alpha), res, 1, s, 1);
 	  cblas_zdscal(ny, param.lagrange_update_scale, s, 1);
-cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
-//cblas_zaxpy(ny, &complex_unity, res, 1, z, 1);
+	  alpha = 1.0 + 0.0*I;    	  	  
+	  cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
 	}
 
 	// Check relative change of objective function
@@ -1705,7 +1684,6 @@ cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
     free(z);
     free(s);
     free(res);
-    free(y_temp);
     free(r);
     free(dummy);
             
