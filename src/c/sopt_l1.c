@@ -1351,11 +1351,12 @@ void sopt_l1_solver_padmm(void *xsol,
       xsol. Thus if param.real_out = 1 dummy is real (only this condition). Then, I also changed its use fro the first
       time we computed the objective function */
     
+    
     // Allocate memory
 
     if (param.real_out == 1) {
 
-      dummy = malloc(nr * sizeof(double));
+      dummy = malloc(nr * sizeof(double));  // Should be same type as xsol.
       SOPT_ERROR_MEM_ALLOC_CHECK(dummy);  
 
       u1 = malloc(nr * sizeof(double));
@@ -1439,22 +1440,20 @@ void sopt_l1_solver_padmm(void *xsol,
     else
       cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);
 
-    //There is another change here. We are now checking 3 conditions and use xsol
-    //as an auxiliary variable for the real-complex case
     // Compute objective
     // dummy = Psit * sol1
-    if (param.real_out == 1 && param.real_meas == 1){
+    if (param.real_out == 1 && param.real_meas == 1) {
       Psit(dummy, sol1, Psit_data);  
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
     }
-    else if (param.real_out == 1 && param.real_meas == 0){
+    else if (param.real_out == 1 && param.real_meas == 0) {
       for (i = 0; i < nx; i++){
 	*((double*)xsol + i) = creal(*((complex double*)sol1 + i));
       } 
       Psit(dummy, xsol, Psit_data);    
       obj = sopt_utility_l1normr((double*)dummy, weights, nr);
     }
-    else{
+    else {
       Psit(dummy, sol1, Psit_data);  
       obj = sopt_utility_l1normc((complex double*)dummy, weights, nr); 
     }
@@ -1539,42 +1538,18 @@ void sopt_l1_solver_padmm(void *xsol,
 	cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
       }
 
-      //Copy sol1 to xsol
-      /*
-	if (param.real_out == 1 && param.real_meas == 0){
-        for (i = 0; i < nx; i++){
-	*((double*)xsol + i) = creal(*((complex double*)sol1 + i));
-        }
-	}
-	else if (param.real_out == 1 && param.real_meas == 1){
-
-        for (i = 0; i < nx; i++){
-	*((double*)xsol + i) = *((double*)sol1 + i);
-        }
-
-	}
-	else{
-
-        for (i = 0; i < nx; i++){
-	*((complex double*)xsol + i) = *((complex double*)sol1 + i);
-        }
-
-	}
-      */
-      //Change: we don't need the previous block of code what we need is to
-      //copy r in the right way such as it can be read as real data
-      //in the real-complex case
-      if (param.real_out == 1 && param.real_meas == 0){
+      // Copy r in such a way so that as it can be read as real data
+      // in the real-complex case (xsol used for temporary storage).
+      if (param.real_out == 1 && param.real_meas == 0) {
         for (i = 0; i < nx; i++){
 	  *((double*)xsol + i) = creal(*((complex double*)r + i));
+
 	  *((complex double*)r + i) = 0.0 +0.0*I;
         }
-        for (i = 0; i < nx; i++){
-	  *((double*)r + i) = *((double*)xsol + i);
-        }
+        for (i = 0; i < nx; i++)
+	  *((double*)r + i) = *((double*)xsol + i);        
       }
     
-
       // Prox L1 
       sopt_prox_l1(xsol, r, nx, nr,
 		   Psi, Psi_data, Psit, Psit_data,
@@ -1591,25 +1566,18 @@ void sopt_l1_solver_padmm(void *xsol,
 	
       // Residual
 
-      //Copy xsol to sol1 for the different cases
-      if (param.real_out == 1 && param.real_meas == 0){
-        for (i = 0; i < nx; i++){
+      // Copy xsol to sol1 for the different cases
+      if (param.real_out == 1 && param.real_meas == 0) {
+        for (i = 0; i < nx; i++)
 	  *((complex double*)sol1 + i) = *((double*)xsol + i) + 0.0*I;
-        }
       }
-      else if (param.real_out == 1 && param.real_meas == 1){
-
-        for (i = 0; i < nx; i++){
+      else if (param.real_out == 1 && param.real_meas == 1) {
+        for (i = 0; i < nx; i++)
 	  *((double*)sol1 + i) = *((double*)xsol + i);
-        }
-
       }
       else{
-
-        for (i = 0; i < nx; i++){
+        for (i = 0; i < nx; i++)
 	  *((complex double*)sol1 + i) = *((complex double*)xsol + i);
-        }
-
       }
 
       // Compute residuals: res = A * x_sol - y.
@@ -1622,11 +1590,11 @@ void sopt_l1_solver_padmm(void *xsol,
 	alpha = -1.0 + 0.0*I;    	  	  
 	cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
 	norm_res = cblas_dznrm2(ny, res, 1);	 
-      }	
-      /*Change(Rafa): we need to keep res for the next iteration but not s,
-	thus I'm switcing res and s in the Lagrange multipliers update */
+      }
+      
       // Lagrange multipliers update
-      // z = z + beta*(res + s);
+      // z = z + beta*(res + s)
+      // (We need to keep res for the next iteration but not s).
       if (param.real_meas == 1) {
 	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1);    
 	cblas_dscal(ny, param.lagrange_update_scale, (double*)s, 1);
