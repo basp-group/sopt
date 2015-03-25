@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     sopt_wavelet_type *dict_types;
     sopt_sara_param param5;
     sopt_prox_l1param param6;
-    sopt_l1_param param7;
+    sopt_l1_param_padmm param7;
     
 
     void *datam[1];
@@ -261,7 +261,12 @@ int main(int argc, char *argv[]) {
     param7.real_out = 1;
     param7.real_meas = 1;
     param7.paraml1 = param6;
-    param7.paraml2b = param3;
+
+    param7.epsilon_tol_scale = 1.001;
+    param7.lagrange_update_scale = 0.9;
+      
+      
+    //param7.paraml2b = param3;
     
    
     //Weights
@@ -279,7 +284,7 @@ int main(int argc, char *argv[]) {
     #else
         assert((start = clock())!=-1);
     #endif
-    sopt_l1_solver((void*)xout, Nx,
+    sopt_l1_solver_padmm((void*)xout, Nx,
                    &sopt_meas_urandsamp,
                    datam,
                    &sopt_meas_urandsampadj,
