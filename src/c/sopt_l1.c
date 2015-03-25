@@ -1545,7 +1545,7 @@ cblas_zaxpy(ny, (void*)&alpha, s, 1, y_temp, 1);
 	At(r, y_temp, At_data);
 
 	// Gradient descent
-	// sol1 = sol1 - mu * r
+	// r = sol1 - mu * r
 	if (param.real_out == 1 && param.real_meas == 1) {
 	  cblas_dscal(nx, -mu, (double*)r, 1);
 	  cblas_daxpy(nx, 1.0, (double*)sol1, 1, (double*)r, 1);
@@ -1558,7 +1558,7 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
 	}
 
     //Copy sol1 to xsol
-
+    /*
     if (param.real_out == 1 && param.real_meas == 0){
         for (i = 0; i < nx; i++){
                 *((double*)xsol + i) = creal(*((complex double*)sol1 + i));
@@ -1578,7 +1578,20 @@ cblas_zaxpy(nx, (void*)&alpha, sol1, 1, r, 1);
         }
 
     }
-
+    */
+    //Change: we don't need the previous block of code what we need is to
+    //copy r in the right way such as it can be read as real data
+    //in the real-complex case
+    if (param.real_out == 1 && param.real_meas == 0){
+        for (i = 0; i < nx; i++){
+                *((double*)xsol + i) = creal(*((complex double*)r + i));
+                *((complex double*)r + i) = 0.0 +0.0*I;
+        }
+        for (i = 0; i < nx; i++){
+                *((double*)r + i) = *((double*)xsol + i);
+        }
+    }
+    
 
 	// Prox L1 
         sopt_prox_l1(xsol, r, nx, nr,
