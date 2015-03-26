@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     double *xin;
     double *xout;
     double *error;
-    double *w;
+    double *w_l1, *w_l2;
     complex double *y0;
     complex double *y;
     complex double *noise;
@@ -117,8 +117,12 @@ int main(int argc, char *argv[]) {
     SOPT_ERROR_MEM_ALLOC_CHECK(y0);
     noise = (complex double*)malloc((Ny) * sizeof(complex double));
     SOPT_ERROR_MEM_ALLOC_CHECK(noise);
-    w = (double*)malloc((Nr) * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(w);
+    w_l1 = (double*)malloc((Nr) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l1);
+    w_l2 = (double*)malloc((Ny) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l2);
+
+
     xinc = (complex double*)malloc((Nx) * sizeof(complex double));
     SOPT_ERROR_MEM_ALLOC_CHECK(xinc);
 
@@ -333,8 +337,15 @@ int main(int argc, char *argv[]) {
     
     //Weights
     for (i=0; i < Nr; i++) {
-        w[i] = 1.0;
+        w_l1[i] = 1.0;
     }
+
+    for (i=0; i < Ny; i++) {
+        w_l2[i] = 1.0;
+    }
+
+    
+    //TODO: weights for L2 norm should be of length Ny
     
     //Initial solution
     for (i=0; i < Nx; i++) {
@@ -356,7 +367,7 @@ int main(int argc, char *argv[]) {
                     &sopt_sara_analysisop,
                     datas,
                     Nr,
-		    (void*)y, Ny, w, w, param2);
+		    (void*)y, Ny, w_l1, w_l2, param2);
     #ifdef _OPENMP
         stop = omp_get_wtime();
         t = stop - start;
@@ -437,7 +448,8 @@ return 1;
     
     free(xin);
     free(xout);
-    free(w);
+    free(w_l1);
+    free(w_l2);
     free(y);
     free(y0);
     free(noise);
@@ -454,6 +466,8 @@ return 1;
     fftw_destroy_plan(planadj);
 
     sopt_sara_free(&param5);
-*/        
+*/
+
+ 
     return 0;
 }

@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     double *y0;
     double *y;
     double *noise;
-    double *w;
+    double *w_l1, *w_l2;
     
 
     double scale = 1.0/255.0, offset = 0.0;
@@ -105,8 +105,10 @@ int main(int argc, char *argv[]) {
     SOPT_ERROR_MEM_ALLOC_CHECK(y0);
     noise = (double*)malloc((Ny) * sizeof(double));
     SOPT_ERROR_MEM_ALLOC_CHECK(noise);
-    w = (double*)malloc((Nr) * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(w);
+    w_l1 = (double*)malloc((Nr) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l1);
+    w_l2 = (double*)malloc((Ny) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l2);
 
 
     //Measurement operator initialization
@@ -271,8 +273,12 @@ int main(int argc, char *argv[]) {
    
     //Weights
     for (i=0; i < Nr; i++) {
-        w[i] = 1.0;
+      w_l1[i] = 1.0;
     }
+    for (i=0; i < Ny; i++) {
+      w_l2[i] = 1.0;
+    }
+
 
     //Initial solution for L1 recosntruction
     for (i=0; i < Nx; i++) {
@@ -294,7 +300,7 @@ int main(int argc, char *argv[]) {
                    &sopt_sara_analysisop,
                    datas,
                    Nr,
-		   (void*)y, Ny, w, w, param7);
+		   (void*)y, Ny, w_l1, w_l2, param7);
     #ifdef _OPENMP
         stop = omp_get_wtime();
         t = stop - start;
@@ -331,7 +337,8 @@ int main(int argc, char *argv[]) {
     free(y0);
     free(noise);
     free(error);
-    free(w);
+    free(w_l1);
+    free(w_l2);
     free(param1.perm);
     free(dict_types);
     sopt_sara_free(&param5);
