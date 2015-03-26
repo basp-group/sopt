@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
                    &sopt_sara_analysisop,
                    datas,
                    Nr,
-                   (void*)y, Ny, w, param7);
+		   (void*)y, Ny, w, w, param7);
     #ifdef _OPENMP
         stop = omp_get_wtime();
         t = stop - start;

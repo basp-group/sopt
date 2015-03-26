@@ -1254,7 +1254,7 @@ void sopt_l1_sdmm(void *xsol,
 /*!
  * This function solves the problem:
  * \f[
- * \min_{x} ||W \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - A x||_2 < \epsilon\ \mbox{and}\ x \geq 0,
+ * \min_{x} ||W_1 \Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||W_2(y - A x)||_2 < \epsilon\ \mbox{and}\ x \geq 0,
  * \f]
  * where \f$ \Psi \in C^{N_x \times N_r} \f$ is the sparsifying
  * operator, \f$ W \in R_{+}^{N_x}\f$ is the diagonal weight matrix,
@@ -1293,8 +1293,11 @@ void sopt_l1_sdmm(void *xsol,
  * \param[in] y Measurement vector (\f$y\f$).
  * \param[in] ny Dimension of measurement vector, i.e. number of
  *             measurements (\f$N_y\f$).
- * \param[in] weights Weights for the weighted L1 problem. Vector storing
- *            the main diagonal of \f$ W  \f$.
+ * \param[in] weights_l1 Weights for the weighted L1 problem. Vector storing
+ *            the main diagonal of \f$ W_1  \f$.
+ * \param[in] weights_l2 Weights for a weighted L2 norm. Vector storing
+ *            the main diagonal of \f$ W_2  \f$.
+
  * \param[in] param Data structure with the parameters of
  *            the optimization (including \f$\epsilon\f$).
  */
@@ -1311,7 +1314,8 @@ void sopt_l1_solver_padmm(void *xsol,
 			  int nr,
 			  void *y,
 			  int ny,
-			  double *weights,
+			  double *weights_l1,
+			  double *weights_l2,
 			  sopt_l1_param_padmm param){
     
     int i;
@@ -1338,7 +1342,7 @@ void sopt_l1_solver_padmm(void *xsol,
     void *v1;    // size nr
       
     complex double alpha;
-    const double tol = 1e-8;
+    const double tol = 1e-10;
 
 
     // Allocate memory
@@ -1433,18 +1437,18 @@ void sopt_l1_solver_padmm(void *xsol,
     // dummy = Psit * sol1
     if (param.real_out == 1 && param.real_meas == 1) {
       Psit(dummy, sol1, Psit_data);  
-      obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+      obj = sopt_utility_l1normr((double*)dummy, weights_l1, nr);
     }
     else if (param.real_out == 1 && param.real_meas == 0) {
       for (i = 0; i < nx; i++){
 	*((double*)xsol + i) = creal(*((complex double*)sol1 + i));
       } 
       Psit(dummy, xsol, Psit_data);    
-      obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+      obj = sopt_utility_l1normr((double*)dummy, weights_l1, nr);
     }
     else {
       Psit(dummy, sol1, Psit_data);  
-      obj = sopt_utility_l1normc((complex double*)dummy, weights, nr); 
+      obj = sopt_utility_l1normc((complex double*)dummy, weights_l1, nr);
     }
     
     // Initializations
@@ -1471,13 +1475,21 @@ void sopt_l1_solver_padmm(void *xsol,
 	cblas_daxpy(ny, 1.0, (double*)res, 1, (double*)s, 1); 
 	// s = -s
 	cblas_dscal(ny, -1.0, (double*)s, 1);
-	//  s = s*min(1.0, epsilon/norm(s))	   
+	// s = s * weights_l2
+	for (i = 0; i < ny; i++)
+	  *((double*)s + i) *= weights_l2[i];
+	// s = s*min(1.0, epsilon/norm(s))
 	scale = cblas_dnrm2(ny, (double*)s, 1);
 	if (fabs(scale) > tol) 	  
 	  scale = min(1.0, param.epsilon/scale);
 	else
 	  scale = 1.0;	  
 	cblas_dscal(ny, scale, (double*)s, 1);
+	// s = s * weights_l2
+	for (i = 0; i < ny; i++) {
+	  assert(fabs(weights_l2[i]) > tol);
+	  *((double*)s + i) /= weights_l2[i];
+	}
 
       }
       else {
@@ -1488,14 +1500,22 @@ void sopt_l1_solver_padmm(void *xsol,
 	alpha = 1.0 + 0.0*I;    	  
 	cblas_zaxpy(ny, (void*)&alpha, res, 1, s, 1);
 	// s = -s
-	cblas_zdscal(ny, -1.0, s, 1);	    
-	//  s = s*min(1.0, epsilon/norm(s))
+	cblas_zdscal(ny, -1.0, s, 1);
+	// s = s * weights_l2
+	for (i = 0; i < ny; i++)
+	  *((complex double*)s + i) *= weights_l2[i];
+	// s = s*min(1.0, epsilon/norm(s))
 	scale = cblas_dznrm2(ny, s, 1);	 
 	if (fabs(scale) > tol) 	  
 	  scale = min(1.0, param.epsilon/scale);
 	else
 	  scale = 1.0;
 	cblas_zdscal(ny, scale, s, 1);
+	// s = s * weights_l2
+	for (i = 0; i < ny; i++) {
+	  assert(fabs(weights_l2[i]) > tol);
+	  *((complex double*)s + i) /= weights_l2[i];
+	}
 	  
       }
 
@@ -1542,16 +1562,16 @@ void sopt_l1_solver_padmm(void *xsol,
       // Prox L1 
       sopt_prox_l1(xsol, r, nx, nr,
 		   Psi, Psi_data, Psit, Psit_data,
-		   weights, param.gamma * mu, param.real_out, // Note mu weighting
+		   weights_l1, param.gamma * mu, param.real_out, // Note mu weighting
 		   param.paraml1, dummy, sol1, u1, v1);
 	
       // Compute objective
       prev_ob = obj;
       Psit(dummy, xsol, Psit_data);
       if (param.real_out == 1)
-	obj = sopt_utility_l1normr((double*)dummy, weights, nr);
+	obj = sopt_utility_l1normr((double*)dummy, weights_l1, nr);
       else
-	obj = sopt_utility_l1normc((complex double*)dummy, weights, nr);
+	obj = sopt_utility_l1normc((complex double*)dummy, weights_l1, nr);
 	
       // Residual
 
@@ -1573,12 +1593,10 @@ void sopt_l1_solver_padmm(void *xsol,
       A(res, sol1, A_data);
       if (param.real_meas == 1) {
 	cblas_daxpy(ny, -1.0, (double*)y, 1, (double*)res, 1);
-	norm_res = cblas_dnrm2(ny, (double*)res, 1);
       }
       else {
 	alpha = -1.0 + 0.0*I;    	  	  
 	cblas_zaxpy(ny, (void*)&alpha, y, 1, res, 1);	  
-	norm_res = cblas_dznrm2(ny, res, 1);	 
       }
       
       // Lagrange multipliers update
@@ -1595,6 +1613,23 @@ void sopt_l1_solver_padmm(void *xsol,
 	cblas_zdscal(ny, param.lagrange_update_scale, s, 1);
 	alpha = 1.0 + 0.0*I;    	  	  
 	cblas_zaxpy(ny, (void*)&alpha, s, 1, z, 1);
+      }
+
+      // Compute residual norm.
+      // (Use s as temporary memory again.)
+      if (param.real_meas == 1) {
+	for (i = 0; i < ny; i++) {
+	  *((double*)s + i)
+	    = *((double*)res + i) * weights_l2[i];
+	}
+	norm_res = cblas_dnrm2(ny, (double*)s, 1);
+      }
+      else {
+	for (i = 0; i < ny; i++) {
+	  *((complex double*)s + i)
+	    = *((complex double*)res + i) * weights_l2[i];
+	}
+	norm_res = cblas_dznrm2(ny, s, 1);
       }
 
       // Check relative change of objective function

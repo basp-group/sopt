@@ -215,7 +215,8 @@ void sopt_l1_solver_padmm(void *xsol,
 			  int nr,
 			  void *y,
 			  int ny,
-			  double *weights,
+			  double *weights_l1,
+			  double *weights_l2,
 			  sopt_l1_param_padmm param);
 
 #endif
