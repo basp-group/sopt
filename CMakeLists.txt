@@ -28,6 +28,9 @@ include_directories(
   "${EIGEN3_INCLUDE_DIR}"
 )
 
+# sets rpath policy explicitly
+cmake_policy(SET CMP0042 NEW)
+
 add_subdirectory(wavelets)
 
 if(tests)
