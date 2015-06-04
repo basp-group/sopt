@@ -3,7 +3,7 @@
 
 #include "wavelets/convolve.impl.cc"
 
-TEST_CASE("Periodic convolution operator", "[wavelet]") {
+TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   using namespace sopt::wavelets;
 
   Eigen::Matrix<int, Eigen::Dynamic, 1> small(3); small << 1, 2, 3;
@@ -70,5 +70,31 @@ TEST_CASE("Periodic convolution operator", "[wavelet]") {
     CHECK(trial(1, 0, 4, 2) == trial(3, 1, 5, 1));
     CHECK(trial(1, -1, 1, 1) == trial(0, 1, 0, 1));
     CHECK(trial(4, -3, 2, 6) == trial(0, 1, 0, 1));
+  }
+
+  SECTION("Convolve and Downsample simultaneously") {
+    Eigen::Matrix<int, Eigen::Dynamic, 1> expected(large.size());
+    convolve(expected, large, small);
+    Eigen::Matrix<int, Eigen::Dynamic, 1> actual(large.size() >> 1);
+    down_convolve(actual, large, small);
+    for(size_t i(0); i < static_cast<size_t>(actual.size()); ++i)
+      CHECK(expected(i << 1) == actual(i));
+  }
+
+  SECTION("Convolve output to expression") {
+    Eigen::Matrix<int, Eigen::Dynamic, 1> actual(large.size() << 1);
+    Eigen::Matrix<int, Eigen::Dynamic, 1> expected(large.size());
+    convolve(std::move(actual.head(large.size())), large, small);
+    convolve(expected, large, small);
+    CHECK(actual.head(large.size()) == expected);
+  }
+
+  SECTION("Copy does copy") {
+    auto result = copy(large);
+    CHECK(large.data() != result.data());
+
+    auto actual = copy(large.head(3));
+    CHECK(large.data() != actual.data());
+    CHECK(large.data() == large.head(3).data());
   }
 }
