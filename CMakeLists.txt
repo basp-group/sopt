@@ -28,6 +28,8 @@ include_directories(
   "${EIGEN3_INCLUDE_DIR}"
 )
 
+add_subdirectory(wavelets)
+
 if(tests)
   enable_testing()
   include(catch)
