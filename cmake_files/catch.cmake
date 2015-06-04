@@ -65,7 +65,7 @@ function(add_catch_test testname)
   endif()
 
   if(catch_LIBRARIES)
-    target_link_libraries(${testname} ${catch_LIBRARIES})
+    target_link_libraries(test_${testname} ${catch_LIBRARIES})
   endif()
   include_directories(${CATCH_INCLUDE_DIR})
 
