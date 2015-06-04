@@ -1,6 +1,7 @@
 #include <random>
 #include "catch.hpp"
 
+#include "wavelets/wavelets.h"
 #include "wavelets/convolve.impl.cc"
 
 TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
@@ -96,5 +97,21 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
     auto actual = copy(large.head(3));
     CHECK(large.data() != actual.data());
     CHECK(large.data() == large.head(3).data());
+  }
+}
+
+TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
+  using namespace sopt;
+  using namespace sopt::wavelets;
+
+  t_rMatrix const data = t_rMatrix::Random(6, 6);
+  typedef Daubechies2Tag Wavelet;
+  SECTION("Direct one dimensional transform == two downsample + convolution") {
+     auto const actual = transform(data.row(0).transpose(), 1, Wavelet()).eval();
+     t_rVector high(data.cols() >> 1), low(data.cols() >> 1);
+     down_convolve(high, data.row(0).transpose(), Wavelet::high_pass);
+     down_convolve(low, data.row(0).transpose(), Wavelet::low_pass);
+     CHECK(low.isApprox(actual.head(data.row(0).size() >> 1)));
+     CHECK(high.isApprox(actual.tail(data.row(0).size() >> 1)));
   }
 }

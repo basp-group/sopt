@@ -1,1 +1,1 @@
-add_catch_test(wavelet_convolution)
+add_catch_test(wavelet_convolution LIBRARIES wavelets)

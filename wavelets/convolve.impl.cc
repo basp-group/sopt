@@ -155,11 +155,11 @@ template<class WAVELET, class T0, class T1>
     auto input = copy(signal);
     if(levels > 0)
       transform_impl(coeffs, input, wavelet);
-    // for(t_uint level(1); level < levels; ++level) {
-    //   auto const N = signal.size() >> level;
-    //   input.head(N) = coeffs.head(N);
-    //   transform_impl(coeffs.head(N), input.head(N), wavelet);
-    // }
+    for(t_uint level(1); level < levels; ++level) {
+      auto const N = signal.size() >> level;
+      input.head(N) = coeffs.head(N);
+      transform_impl(coeffs.head(N), input.head(N), wavelet);
+    }
   }
 
 template<class WAVELET, class T0, class T1>
