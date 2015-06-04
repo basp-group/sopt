@@ -11,6 +11,8 @@ namespace sopt { namespace wavelets {
   struct NAME ## Tag {                           \
     /** Coefficients for the wavelet */          \
     const static Eigen::Matrix<t_real, SIZE, 1> coefficients; \
+    const static Eigen::Matrix<t_real, SIZE, 1> high_pass;    \
+    const static Eigen::Matrix<t_real, SIZE, 1> low_pass;     \
   };
 
   SOPT_WAVELET_MACRO(Dirac, 1);
