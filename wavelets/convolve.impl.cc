@@ -45,7 +45,7 @@ template<class T0, class T1, class T2>
 {
   assert(result.size() == signal.size());
   for(t_int i(0); i < t_int(signal.size()); ++i)
-    result(i) = periodic_scalar_product(signal, filter.reverse(), i);
+    result(i) = periodic_scalar_product(signal, filter, i);
 }
 //! \brief Convolve variation for vector blocks
 template<class T0, class T1, class T2>
@@ -67,7 +67,7 @@ template<class T0, class T1, class T2>
 {
   assert(result.size() * 2 <= signal.size());
   for(t_int i(0); i < t_int(result.size()); ++i)
-    result(i) = periodic_scalar_product(signal, filter.reverse(), 2 * i);
+    result(i) = periodic_scalar_product(signal, filter, 2 * i);
 }
 //! \brief Dowsampling + convolve variation for vector blocks
 template<class T0, class T1, class T2>
@@ -96,28 +96,28 @@ template<class T0, class T1, class T2, class T3, class T4>
   auto const hoffset = high_pass.size() - 1;
   for(t_int i(0); i < static_cast<t_int>(result.size()); ++i)
     result(i) =
-      periodic_scalar_product(low_pass_signal, low_pass.reverse(), i - loffset)
-      + periodic_scalar_product(high_pass_signal, high_pass.reverse(), i - hoffset);
+      periodic_scalar_product(low_pass_signal, low_pass, i - loffset)
+      + periodic_scalar_product(high_pass_signal, high_pass, i - hoffset);
 }
 
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   transform_impl(
       Eigen::MatrixBase<T0> &coeffs,
-      Eigen::MatrixBase<T1> const& signal, WAVELET
+      Eigen::MatrixBase<T1> const& signal, WAVELET const &wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
-    assert(WAVELET::low_pass.size() == WAVELET::high_pass.size());
+    assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
     auto const N = signal.size() >> 1;
-    down_convolve(std::move(coeffs.head(N)), signal, WAVELET::low_pass);
-    down_convolve(std::move(coeffs.tail(coeffs.size() - N)), signal, WAVELET::high_pass);
+    down_convolve(std::move(coeffs.head(N)), signal, wavelet.direct_filter.low);
+    down_convolve(std::move(coeffs.tail(coeffs.size() - N)), signal, wavelet.direct_filter.high);
   }
 template<class WAVELET, class T0, class T1>
   void transform_impl(
       Eigen::VectorBlock<T0> &&coeffs,
-      Eigen::MatrixBase<T1> const& signal, WAVELET wavelet
+      Eigen::MatrixBase<T1> const& signal, WAVELET const &wavelet
   ) {
     transform_impl(coeffs, signal, wavelet);
   }
@@ -126,11 +126,11 @@ template<class WAVELET, class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   transform_impl(
       Eigen::MatrixBase<T0> &coeffs,
-      Eigen::MatrixBase<T1> &signal, WAVELET wavelet
+      Eigen::MatrixBase<T1> &signal, WAVELET const &wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
-    assert(WAVELET::low_pass.size() == WAVELET::high_pass.size());
+    assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
     auto const N = signal.size() >> 1;
     for(t_uint i(0); i < coeffs.rows(); ++i)
@@ -147,7 +147,7 @@ template<class WAVELET, class T0, class T1>
   transform(
       Eigen::MatrixBase<T0> &coeffs,
       Eigen::MatrixBase<T1> const& signal,
-      t_uint levels, WAVELET wavelet
+      t_uint levels, WAVELET const &wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
@@ -167,7 +167,7 @@ template<class WAVELET, class T0, class T1>
   transform(
       Eigen::MatrixBase<T0> &coeffs,
       Eigen::MatrixBase<T1> const& signal,
-      t_uint levels, WAVELET wavelet
+      t_uint levels, WAVELET const& wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
@@ -184,7 +184,7 @@ template<class WAVELET, class T0, class T1>
   }
 
 template<class WAVELET, class T0>
-  auto transform(Eigen::MatrixBase<T0> const &signal, t_uint levels, WAVELET wavelet)
+  auto transform(Eigen::MatrixBase<T0> const &signal, t_uint levels, WAVELET const& wavelet)
   -> decltype(copy(signal)) {
     auto result = copy(signal);
     transform(result, signal, levels, wavelet);

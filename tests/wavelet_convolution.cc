@@ -34,10 +34,10 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
 
     convolve(result, large, small);
 
-    CHECK(result(0) == 3 * 4 + 2 * 5 + 1 * 6);
-    CHECK(result(1) == 3 * 5 + 2 * 6 + 1 * 7);
-    CHECK(result(3) == 3 * 7 + 2 * 8 + 1 * 9);
-    CHECK(result(4) == 3 * 8 + 2 * 9 + 1 * 4);
+    CHECK(result(0) == 1 * 4 + 2 * 5 + 3 * 6);
+    CHECK(result(1) == 1 * 5 + 2 * 6 + 3 * 7);
+    CHECK(result(3) == 1 * 7 + 2 * 8 + 3 * 9);
+    CHECK(result(4) == 1 * 8 + 2 * 9 + 3 * 4);
   }
 
   SECTION("Convolve and sum") {
@@ -105,12 +105,12 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt::wavelets;
 
   t_rMatrix const data = t_rMatrix::Random(6, 6);
-  typedef Daubechies2Tag Wavelet;
+  auto const &wavelet = Daubechies2;
   SECTION("Direct one dimensional transform == two downsample + convolution") {
-     auto const actual = transform(data.row(0).transpose(), 1, Wavelet()).eval();
+     auto const actual = transform(data.row(0).transpose(), 1, wavelet).eval();
      t_rVector high(data.cols() >> 1), low(data.cols() >> 1);
-     down_convolve(high, data.row(0).transpose(), Wavelet::high_pass);
-     down_convolve(low, data.row(0).transpose(), Wavelet::low_pass);
+     down_convolve(high, data.row(0).transpose(), wavelet.direct_filter.high);
+     down_convolve(low, data.row(0).transpose(), wavelet.direct_filter.low);
      CHECK(low.isApprox(actual.head(data.row(0).size() >> 1)));
      CHECK(high.isApprox(actual.tail(data.row(0).size() >> 1)));
   }

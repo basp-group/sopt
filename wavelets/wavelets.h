@@ -6,28 +6,47 @@
 
 namespace sopt { namespace wavelets {
 
-# define SOPT_WAVELET_MACRO(NAME, SIZE)          \
-  /** Selects a specific wavelet type */         \
-  struct NAME ## Tag {                           \
-    /** Coefficients for the wavelet */          \
-    const static Eigen::Matrix<t_real, SIZE, 1> coefficients; \
-    const static Eigen::Matrix<t_real, SIZE, 1> high_pass;    \
-    const static Eigen::Matrix<t_real, SIZE, 1> low_pass;     \
+  //! Holds wavelets coefficients
+  struct WaveletData {
+    //! Type of the underlying scalar
+    typedef t_real t_scalar;
+    //! Type of the underlying vector
+    typedef Eigen::Matrix<t_scalar, Eigen::Dynamic, 1> t_vector;
+    //! Wavelet coefficient per-se
+    const t_vector coefficients;
+
+    //! Holds filters for direct transform
+    struct {
+      //! Low-pass filter for direct transform
+      const t_vector low;
+      //! High-pass filter for direct transform
+      const t_vector high;
+    } direct_filter;
+
+    //! Holds filters for indirect transform
+    struct {
+      //! High-pass filter for direct transform
+      const t_vector low_even;
+      const t_vector low_odd;
+      const t_vector high_even;
+      const t_vector high_odd;
+    } indirect_filter;
+
+    //! Constructs from initializers
+    WaveletData(std::initializer_list<t_scalar> const &coefs);
+    //! Constructs from vector
+    WaveletData(t_vector const &coefs);
   };
-
-  SOPT_WAVELET_MACRO(Dirac, 1);
-  SOPT_WAVELET_MACRO(Daubechies1,   2);
-  SOPT_WAVELET_MACRO(Daubechies2,   4);
-  SOPT_WAVELET_MACRO(Daubechies3,   6);
-  SOPT_WAVELET_MACRO(Daubechies4,   8);
-  SOPT_WAVELET_MACRO(Daubechies5,  10);
-  SOPT_WAVELET_MACRO(Daubechies6,  12);
-  SOPT_WAVELET_MACRO(Daubechies7,  14);
-  SOPT_WAVELET_MACRO(Daubechies8,  16);
-  SOPT_WAVELET_MACRO(Daubechies9,  18);
-  SOPT_WAVELET_MACRO(Daubechies10, 20);
-
-# undef SOPT_WAVELET_MACRO
-
+  extern const WaveletData Dirac;
+  extern const WaveletData Daubechies1;
+  extern const WaveletData Daubechies2;
+  extern const WaveletData Daubechies3;
+  extern const WaveletData Daubechies4;
+  extern const WaveletData Daubechies5;
+  extern const WaveletData Daubechies6;
+  extern const WaveletData Daubechies7;
+  extern const WaveletData Daubechies8;
+  extern const WaveletData Daubechies9;
+  extern const WaveletData Daubechies10;
 }}
 #endif
