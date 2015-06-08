@@ -4,11 +4,48 @@
 #include "wavelets/wavelets.h"
 #include "wavelets/convolve.impl.cc"
 
+typedef Eigen::Matrix<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
+t_iVector even(t_iVector const & x) {
+  t_iVector result((x.size()+1) >> 1);
+  for(t_iVector::Index i(0); i < x.size(); i += 2)
+    result(i >> 1) = x(i);
+  return result;
+};
+t_iVector odd(t_iVector const & x) {
+  t_iVector result(x.size() >> 1);
+  for(t_iVector::Index i(1); i < x.size(); i += 2)
+    result(i >> 1) = x(i);
+  return result;
+};
+t_iVector upsample(t_iVector const & input) {
+  t_iVector result(input.size() * 2);
+  for(t_iVector::Index i(0); i < input.size(); ++i) {
+    result(2*i) = input(i);
+    result(2*i+1) = 0;
+  }
+  return result;
+};
+
+
 TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   using namespace sopt::wavelets;
 
-  Eigen::Matrix<int, Eigen::Dynamic, 1> small(3); small << 1, 2, 3;
-  Eigen::Matrix<int, Eigen::Dynamic, 1> large(6); large << 4, 5, 6, 7, 8, 9;
+  std::random_device rd;
+  std::default_random_engine rengine(rd());
+  auto random_integer = [&rd, &rengine](sopt::t_int min, sopt::t_int max) {
+    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
+    return uniform_dist(rengine);
+  };
+  auto random_ivector = [&rd, &rengine](sopt::t_int size, sopt::t_int min, sopt::t_int max) {
+    t_iVector result(size);
+    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
+    for(t_iVector::Index i(0); i < result.size(); ++i)
+      result(i) = uniform_dist(rengine);
+    return result;
+  };
+
+  t_iVector small(3); small << 1, 2, 3;
+  t_iVector large(6); large << 4, 5, 6, 7, 8, 9;
 
   SECTION("Periodic scalar product") {
 
@@ -30,7 +67,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   }
 
   SECTION("Convolve") {
-    Eigen::Matrix<int, Eigen::Dynamic, 1> result(large.size());
+    t_iVector result(large.size());
 
     convolve(result, large, small);
 
@@ -41,8 +78,8 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   }
 
   SECTION("Convolve and sum") {
-    Eigen::Matrix<int, Eigen::Dynamic, 1> result(large.size());
-    Eigen::Matrix<int, Eigen::Dynamic, 1> noOffset(large.size());
+    t_iVector result(large.size());
+    t_iVector noOffset(large.size());
 
     // Check that if high pass is zero, then this is an offseted convolution
     convolve_sum(result, large, small, large, 0 * small);
@@ -57,7 +94,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
 
     // Check symmetry relationships
     auto const trial = [&small, &large](int a, int b, int c, int d) {
-      Eigen::Matrix<int, Eigen::Dynamic, 1> result(large.size());
+      t_iVector result(large.size());
       convolve_sum(result, a * large, b * small, c * large, d * small);
       return result;
     };
@@ -73,18 +110,18 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
     CHECK(trial(4, -3, 2, 6) == trial(0, 1, 0, 1));
   }
 
-  SECTION("Convolve and Downsample simultaneously") {
-    Eigen::Matrix<int, Eigen::Dynamic, 1> expected(large.size());
+  SECTION("Convolve and Down-sample simultaneously") {
+    t_iVector expected(large.size());
     convolve(expected, large, small);
-    Eigen::Matrix<int, Eigen::Dynamic, 1> actual(large.size() >> 1);
+    t_iVector actual(large.size() >> 1);
     down_convolve(actual, large, small);
     for(size_t i(0); i < static_cast<size_t>(actual.size()); ++i)
       CHECK(expected(i << 1) == actual(i));
   }
 
   SECTION("Convolve output to expression") {
-    Eigen::Matrix<int, Eigen::Dynamic, 1> actual(large.size() << 1);
-    Eigen::Matrix<int, Eigen::Dynamic, 1> expected(large.size());
+    t_iVector actual(large.size() << 1);
+    t_iVector expected(large.size());
     convolve(std::move(actual.head(large.size())), large, small);
     convolve(expected, large, small);
     CHECK(actual.head(large.size()) == expected);
@@ -97,6 +134,26 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
     auto actual = copy(large.head(3));
     CHECK(large.data() != actual.data());
     CHECK(large.data() == large.head(3).data());
+  }
+
+  SECTION("Convolve, Sum and Up-sample simultaneously") {
+    for(sopt::t_int i(0); i < 100; ++i) {
+      auto const Ncoeffs = random_integer(2, 100) * 2;
+      auto const Nfilters = random_integer(2, 100);
+      auto const Nhead = Ncoeffs / 2;
+      auto const Ntail = Ncoeffs - Nhead;
+
+      auto const coeffs = random_ivector(Ncoeffs, -10, 10);
+      auto const low = random_ivector(Nfilters, -10, 10);
+      auto const high = random_ivector(Nfilters, -10, 10);
+
+      t_iVector actual(Ncoeffs), expected(Ncoeffs);
+      // does all in go, more complicated but compuationally less intensive
+      up_convolve_sum(actual, coeffs, even(low), odd(low), even(high), odd(high));
+      // first up-samples, then does convolve: conceptually simpler but does unnecessary operations
+      convolve_sum(expected, upsample(coeffs.head(Nhead)), low, upsample(coeffs.tail(Ntail)), high);
+      CHECK(actual.transpose() == expected.transpose());
+    }
   }
 }
 

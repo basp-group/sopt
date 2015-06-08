@@ -1,4 +1,5 @@
 #include <type_traits>
+#include <iostream>
 #include "traits.h"
 
 // Function inside anonymouns namespace won't appear in library
@@ -92,13 +93,52 @@ template<class T0, class T1, class T2, class T3, class T4>
   assert(result.size() == high_pass_signal.size());
   assert(low_pass.size() == high_pass.size());
 
-  auto const loffset = low_pass.size() - 1;
-  auto const hoffset = high_pass.size() - 1;
-  for(t_int i(0); i < static_cast<t_int>(result.size()); ++i)
+  auto const loffset = 1 - static_cast<t_int>(low_pass.size());
+  auto const hoffset = 1 - static_cast<t_int>(high_pass.size());
+  for(t_int i(0); i < static_cast<t_int>(result.size()); ++i) {
+      // std::cout << "F: " << low_pass_signal.transpose() << " x " << low_pass.transpose() << " for " << i + loffset << "\n";
     result(i) =
-      periodic_scalar_product(low_pass_signal, low_pass, i - loffset)
-      + periodic_scalar_product(high_pass_signal, high_pass, i - hoffset);
+      periodic_scalar_product(low_pass_signal, low_pass, i + loffset)
+      + periodic_scalar_product(high_pass_signal, high_pass, i + hoffset);
 }
+}
+
+//! \brief Convolves and up-samples at the same time
+//! \details If Cn shuffles the (periodic) vector right, U does the upsampling,
+//! and O is the convolution operation, then the normal upsample + convolution
+//! is O(Cn[U [a]], b). What we are doing here is U[O(Cn'[a'], b')]. This avoids
+//! some unnecessary operations (multiplying and summing zeros) and removes the
+//! need for temporary copies.  Testing shows the operations are equivalent. But
+//! I certainly cannot show how on paper.
+template<class T0, class T1, class T2, class T3, class T4, class T5>
+  void up_convolve_sum(
+      Eigen::MatrixBase<T0> &result,
+      Eigen::MatrixBase<T1> const &coeffs,
+      Eigen::MatrixBase<T2> const &low_even,
+      Eigen::MatrixBase<T3> const &low_odd,
+      Eigen::MatrixBase<T4> const &high_even,
+      Eigen::MatrixBase<T5> const &high_odd)
+{
+  assert(result.size() % 2 == 0);
+  assert(result.size() <= coeffs.size());
+  assert(low_even.size() == high_even.size());
+  assert(low_odd.size() == high_odd.size());
+  auto const Nlow = (coeffs.size() + 1) >> 1;
+  auto const Nhigh = coeffs.size() >> 1;
+  auto const size = static_cast<t_int>(low_even.size() + low_odd.size());
+  auto const is_even = size % 2 == 0;
+  auto const even_offset = ((1 - size) >> 1) + (is_even ? 1: 0);
+  auto const odd_offset = ((2 - size) >> 1) + (is_even ? 0: 1);
+  for(t_int i(0); i+1 < static_cast<t_int>(result.size()); i += 2) {
+      result(i + (is_even ? 1: 0)) =
+            periodic_scalar_product(coeffs.head(Nlow), low_even, i/2 + even_offset)
+            + periodic_scalar_product(coeffs.tail(Nhigh), high_even, i/2 + even_offset);
+      result(i + (is_even ? 0: 1)) =
+            periodic_scalar_product(coeffs.head(Nlow), low_odd, i/2 + odd_offset)
+            + periodic_scalar_product(coeffs.tail(Nhigh), high_odd, i/2 + odd_offset);
+  }
+}
+
 
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
@@ -114,6 +154,7 @@ template<class WAVELET, class T0, class T1>
     down_convolve(std::move(coeffs.head(N)), signal, wavelet.direct_filter.low);
     down_convolve(std::move(coeffs.tail(coeffs.size() - N)), signal, wavelet.direct_filter.high);
   }
+
 template<class WAVELET, class T0, class T1>
   void transform_impl(
       Eigen::VectorBlock<T0> &&coeffs,
