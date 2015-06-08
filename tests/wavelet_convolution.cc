@@ -6,19 +6,22 @@
 
 typedef Eigen::Matrix<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
 t_iVector even(t_iVector const & x) {
-  t_iVector result((x.size()+1) >> 1);
+  t_iVector result((x.size()+1) / 2);
   for(t_iVector::Index i(0); i < x.size(); i += 2)
-    result(i >> 1) = x(i);
+    result(i / 2) = x(i);
   return result;
 };
 t_iVector odd(t_iVector const & x) {
-  t_iVector result(x.size() >> 1);
+  t_iVector result(x.size() / 2);
   for(t_iVector::Index i(1); i < x.size(); i += 2)
-    result(i >> 1) = x(i);
+    result(i / 2) = x(i);
   return result;
 };
-t_iVector upsample(t_iVector const & input) {
-  t_iVector result(input.size() * 2);
+template<class T>
+Eigen::Matrix<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime>
+upsample(Eigen::MatrixBase<T> const & input) {
+  typedef Eigen::Matrix<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime> Matrix;
+  Matrix result(input.size() * 2);
   for(t_iVector::Index i(0); i < input.size(); ++i) {
     result(2*i) = input(i);
     result(2*i+1) = 0;
@@ -113,14 +116,14 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   SECTION("Convolve and Down-sample simultaneously") {
     t_iVector expected(large.size());
     convolve(expected, large, small);
-    t_iVector actual(large.size() >> 1);
+    t_iVector actual(large.size() / 2);
     down_convolve(actual, large, small);
     for(size_t i(0); i < static_cast<size_t>(actual.size()); ++i)
-      CHECK(expected(i << 1) == actual(i));
+      CHECK(expected(i * 2) == actual(i));
   }
 
   SECTION("Convolve output to expression") {
-    t_iVector actual(large.size() << 1);
+    t_iVector actual(large.size() * 2);
     t_iVector expected(large.size());
     convolve(std::move(actual.head(large.size())), large, small);
     convolve(expected, large, small);
@@ -138,8 +141,8 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
 
   SECTION("Convolve, Sum and Up-sample simultaneously") {
     for(sopt::t_int i(0); i < 100; ++i) {
-      auto const Ncoeffs = random_integer(2, 100) * 2;
-      auto const Nfilters = random_integer(2, 100);
+      auto const Ncoeffs = random_integer(2, 10) * 2;
+      auto const Nfilters = random_integer(2, 5);
       auto const Nhead = Ncoeffs / 2;
       auto const Ntail = Ncoeffs - Nhead;
 
@@ -161,14 +164,52 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt;
   using namespace sopt::wavelets;
 
-  t_rMatrix const data = t_rMatrix::Random(6, 6);
+  t_rMatrix const data = t_rMatrix::Random(16, 16);
   auto const &wavelet = Daubechies2;
+
+  std::random_device rd;
+  std::default_random_engine rengine(rd());
+  auto random_integer = [&rd, &rengine](sopt::t_int min, sopt::t_int max) {
+    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
+    return uniform_dist(rengine);
+  };
+
+  // Condition on input fixture data
+  REQUIRE((data.rows() %  2 == 0 and (data.cols() == 1 or data.cols() % 2 == 0)));
+
   SECTION("Direct one dimensional transform == two downsample + convolution") {
-     auto const actual = transform(data.row(0).transpose(), 1, wavelet).eval();
-     t_rVector high(data.cols() >> 1), low(data.cols() >> 1);
+     auto const actual = direct_transform(data.row(0).transpose(), 1, wavelet);
+     t_rVector high(data.cols() / 2), low(data.cols() / 2);
      down_convolve(high, data.row(0).transpose(), wavelet.direct_filter.high);
      down_convolve(low, data.row(0).transpose(), wavelet.direct_filter.low);
-     CHECK(low.isApprox(actual.head(data.row(0).size() >> 1)));
-     CHECK(high.isApprox(actual.tail(data.row(0).size() >> 1)));
+     CHECK(low.isApprox(actual.head(data.row(0).size() / 2)));
+     CHECK(high.isApprox(actual.tail(data.row(0).size() / 2)));
+  }
+
+  // SECTION("Indirect one dimensional transform == two upsample + convolution") {
+  //    auto const actual = indirect_transform(data.row(0).transpose(), 1, wavelet);
+  //    auto const low = upsample(data.row(0).transpose().head(data.rows() / 2));
+  //    auto const high = upsample(data.row(0).transpose().tail(data.rows() / 2));
+  //    auto expected = copy(data.row(0).transpose());
+  //    convolve_sum(
+  //        expected,
+  //        low, wavelet.direct_filter.low.reverse(),
+  //        high, -wavelet.direct_filter.high.reverse()
+  //    );
+  //    CAPTURE(expected.transpose());
+  //    CAPTURE(actual.transpose());
+  //    CHECK(expected.isApprox(actual));
+  // }
+
+  SECTION("Round-trip test for one dimensional data") {
+    for(t_int i(0); i < 1; ++i) {
+      auto input = t_rVector::Ones(16).eval(); //Random(random_integer(2, 100)*2).eval();
+      input.tail(8).fill(-1e0);
+      auto const actual = indirect_transform(direct_transform(input, 1, wavelet), 1, wavelet);
+      CAPTURE(input.transpose());
+      CAPTURE(actual.transpose());
+      CAPTURE(direct_transform(input, 1, wavelet).transpose());
+      CHECK(input.isApprox(actual));
+    }
   }
 }
