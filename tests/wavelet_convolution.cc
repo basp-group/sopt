@@ -202,13 +202,14 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
   }
 
   SECTION("Round-trip test for one dimensional data") {
-    for(t_int i(0); i < 1000; ++i) {
+    for(t_int i(0); i < 100; ++i) {
       auto input = t_rVector::Random(random_integer(2, 100)*2).eval();
-      auto const actual = indirect_transform(direct_transform(input, 1, wavelet), 1, wavelet);
+      auto const &dbwave = daubechies(random_integer(1, 38));
+      auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
       CAPTURE(input.transpose());
       CAPTURE(actual.transpose());
-      CAPTURE(direct_transform(input, 1, wavelet).transpose());
-      CHECK(input.isApprox(actual, 1e-8));
+      CAPTURE(direct_transform(input, 1, dbwave).transpose());
+      CHECK(input.isApprox(actual, 1e-14));
     }
   }
 }

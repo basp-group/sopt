@@ -37,7 +37,7 @@ namespace sopt { namespace wavelets {
     //! Constructs from vector
     WaveletData(t_vector const &coefs);
   };
-  extern const WaveletData Dirac;
+
   extern const WaveletData Daubechies1;
   extern const WaveletData Daubechies2;
   extern const WaveletData Daubechies3;
@@ -48,5 +48,36 @@ namespace sopt { namespace wavelets {
   extern const WaveletData Daubechies8;
   extern const WaveletData Daubechies9;
   extern const WaveletData Daubechies10;
+  extern const WaveletData Daubechies11;
+  extern const WaveletData Daubechies12;
+  extern const WaveletData Daubechies13;
+  extern const WaveletData Daubechies14;
+  extern const WaveletData Daubechies15;
+  extern const WaveletData Daubechies16;
+  extern const WaveletData Daubechies17;
+  extern const WaveletData Daubechies18;
+  extern const WaveletData Daubechies19;
+  extern const WaveletData Daubechies20;
+  extern const WaveletData Daubechies21;
+  extern const WaveletData Daubechies22;
+  extern const WaveletData Daubechies23;
+  extern const WaveletData Daubechies24;
+  extern const WaveletData Daubechies25;
+  extern const WaveletData Daubechies26;
+  extern const WaveletData Daubechies27;
+  extern const WaveletData Daubechies28;
+  extern const WaveletData Daubechies29;
+  extern const WaveletData Daubechies30;
+  extern const WaveletData Daubechies31;
+  extern const WaveletData Daubechies32;
+  extern const WaveletData Daubechies33;
+  extern const WaveletData Daubechies34;
+  extern const WaveletData Daubechies35;
+  extern const WaveletData Daubechies36;
+  extern const WaveletData Daubechies37;
+  extern const WaveletData Daubechies38;
+
+  //! Returns specific daubechie wavelet
+  WaveletData const & daubechies(t_uint);
 }}
 #endif
