@@ -165,7 +165,7 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt::wavelets;
 
   t_rMatrix const data = t_rMatrix::Random(16, 16);
-  auto const &wavelet = Daubechies2;
+  auto const &wavelet = Daubechies4;
 
   std::random_device rd;
   std::default_random_engine rengine(rd());
@@ -186,30 +186,29 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
      CHECK(high.isApprox(actual.tail(data.row(0).size() / 2)));
   }
 
-  // SECTION("Indirect one dimensional transform == two upsample + convolution") {
-  //    auto const actual = indirect_transform(data.row(0).transpose(), 1, wavelet);
-  //    auto const low = upsample(data.row(0).transpose().head(data.rows() / 2));
-  //    auto const high = upsample(data.row(0).transpose().tail(data.rows() / 2));
-  //    auto expected = copy(data.row(0).transpose());
-  //    convolve_sum(
-  //        expected,
-  //        low, wavelet.direct_filter.low.reverse(),
-  //        high, -wavelet.direct_filter.high.reverse()
-  //    );
-  //    CAPTURE(expected.transpose());
-  //    CAPTURE(actual.transpose());
-  //    CHECK(expected.isApprox(actual));
-  // }
+  SECTION("Indirect one dimensional transform == two upsample + convolution") {
+     auto const actual = indirect_transform(data.row(0).transpose(), 1, wavelet);
+     auto const low = upsample(data.row(0).transpose().head(data.rows() / 2));
+     auto const high = upsample(data.row(0).transpose().tail(data.rows() / 2));
+     auto expected = copy(data.row(0).transpose());
+     convolve_sum(
+         expected,
+         low, wavelet.direct_filter.low.reverse(),
+         high, wavelet.direct_filter.high.reverse()
+     );
+     CAPTURE(expected.transpose());
+     CAPTURE(actual.transpose());
+     CHECK(expected.isApprox(actual));
+  }
 
   SECTION("Round-trip test for one dimensional data") {
-    for(t_int i(0); i < 1; ++i) {
-      auto input = t_rVector::Ones(16).eval(); //Random(random_integer(2, 100)*2).eval();
-      input.tail(8).fill(-1e0);
+    for(t_int i(0); i < 1000; ++i) {
+      auto input = t_rVector::Random(random_integer(2, 100)*2).eval();
       auto const actual = indirect_transform(direct_transform(input, 1, wavelet), 1, wavelet);
       CAPTURE(input.transpose());
       CAPTURE(actual.transpose());
       CAPTURE(direct_transform(input, 1, wavelet).transpose());
-      CHECK(input.isApprox(actual));
+      CHECK(input.isApprox(actual, 1e-8));
     }
   }
 }

@@ -17,24 +17,24 @@ namespace sopt { namespace wavelets {
       return result;
     }
     //! Every other element is negative
-    WaveletData::t_vector negate_odd(WaveletData::t_vector const &coeffs) {
+    WaveletData::t_vector negate_even(WaveletData::t_vector const &coeffs) {
       WaveletData::t_vector result(coeffs);
-      for(t_int i(0); i < static_cast<t_int>(coeffs.size()); ++i)
-        result(i) -= result(i);
+      for(t_int i(0); i < static_cast<t_int>(coeffs.size()); i += 2)
+        result(i) = -result(i);
       return result;
     }
     //! Odd elements only
     WaveletData::t_vector odd(WaveletData::t_vector const &coeffs) {
-      WaveletData::t_vector result(coeffs.size() >> 1);
-      for(t_int i(1); i < static_cast<t_int>(result.size()); i+=2)
-        result(i >> 1) = coeffs(i);
+      WaveletData::t_vector result(coeffs.size() / 2);
+      for(t_int i(1); i < static_cast<t_int>(coeffs.size()); i+=2)
+        result(i / 2) = coeffs(i);
       return result;
     }
     //! Even elements only
     WaveletData::t_vector even(WaveletData::t_vector const &coeffs) {
-      WaveletData::t_vector result((coeffs.size() + 1) >> 1);
-      for(t_int i(0); i < static_cast<t_int>(result.size()); i += 2)
-        result(i >> 1) = coeffs(i);
+      WaveletData::t_vector result((coeffs.size() + 1) / 2);
+      for(t_int i(0), j(0); i < static_cast<t_int>(coeffs.size()); i += 2, ++j)
+        result(j) = coeffs(i);
       return result;
     }
   }
@@ -43,7 +43,7 @@ namespace sopt { namespace wavelets {
     : WaveletData(init_db(coeffs)) {}
 
   WaveletData::WaveletData(t_vector const &coeffs)
-    : coefficients(coeffs), direct_filter({coeffs, negate_odd(coeffs).reverse()}),
+    : coefficients(coeffs), direct_filter({coeffs, negate_even(coeffs.reverse())}),
     indirect_filter({even(coeffs.reverse()), odd(coeffs.reverse()), even(coeffs), -odd(coeffs)}) {}
 
   const WaveletData Daubechies1({0.707106781186548, 0.707106781186548e0});
