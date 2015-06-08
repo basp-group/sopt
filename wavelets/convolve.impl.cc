@@ -140,6 +140,7 @@ template<class T0, class T1, class T2, class T3, class T4, class T5>
 }
 
 
+//! Single-level 1d direct transform
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   transform_impl(
@@ -155,6 +156,7 @@ template<class WAVELET, class T0, class T1>
     down_convolve(std::move(coeffs.tail(coeffs.size() - N)), signal, wavelet.direct_filter.high);
   }
 
+//! Single-level 1d direct transform, vector segment version
 template<class WAVELET, class T0, class T1>
   void transform_impl(
       Eigen::VectorBlock<T0> &&coeffs,
@@ -163,6 +165,7 @@ template<class WAVELET, class T0, class T1>
     transform_impl(coeffs, signal, wavelet);
   }
 
+//! Single-level 2d direct transform
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   transform_impl(
@@ -183,6 +186,7 @@ template<class WAVELET, class T0, class T1>
     }
   }
 
+//! N-levels 1d direct transform
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   transform(
@@ -203,6 +207,7 @@ template<class WAVELET, class T0, class T1>
     }
   }
 
+//! N-levels 2d direct transform
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   transform(
@@ -224,6 +229,7 @@ template<class WAVELET, class T0, class T1>
     }
   }
 
+//! Direct 1d and 2d transform
 template<class WAVELET, class T0>
   auto transform(Eigen::MatrixBase<T0> const &signal, t_uint levels, WAVELET const& wavelet)
   -> decltype(copy(signal)) {
