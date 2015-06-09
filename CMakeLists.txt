@@ -22,19 +22,13 @@ cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 # search/install dependencies
 include(dependencies)
 
-# some common compilation flags
-include_directories(
-  "${PROJECT_SOURCE_DIR}"
-  "${EIGEN3_INCLUDE_DIR}"
-)
-
 # sets rpath policy explicitly
 cmake_policy(SET CMP0042 NEW)
 
-add_subdirectory(wavelets)
 
 if(tests)
   enable_testing()
   include(catch)
-  add_subdirectory(tests)
 endif()
+
+add_subdirectory(cpp)
