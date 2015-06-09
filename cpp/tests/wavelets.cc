@@ -29,23 +29,23 @@ upsample(Eigen::MatrixBase<T> const & input) {
   return result;
 };
 
+std::random_device rd;
+std::default_random_engine rengine(rd());
+sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
+  std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
+  return uniform_dist(rengine);
+};
+t_iVector random_ivector(sopt::t_int size, sopt::t_int min, sopt::t_int max) {
+  t_iVector result(size);
+  std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
+  for(t_iVector::Index i(0); i < result.size(); ++i)
+    result(i) = uniform_dist(rengine);
+  return result;
+};
+
 
 TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   using namespace sopt::wavelets;
-
-  std::random_device rd;
-  std::default_random_engine rengine(rd());
-  auto random_integer = [&rd, &rengine](sopt::t_int min, sopt::t_int max) {
-    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-    return uniform_dist(rengine);
-  };
-  auto random_ivector = [&rd, &rengine](sopt::t_int size, sopt::t_int min, sopt::t_int max) {
-    t_iVector result(size);
-    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-    for(t_iVector::Index i(0); i < result.size(); ++i)
-      result(i) = uniform_dist(rengine);
-    return result;
-  };
 
   t_iVector small(3); small << 1, 2, 3;
   t_iVector large(6); large << 4, 5, 6, 7, 8, 9;
@@ -167,13 +167,6 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
   t_rMatrix const data = t_rMatrix::Random(16, 16);
   auto const &wavelet = Daubechies4;
 
-  std::random_device rd;
-  std::default_random_engine rengine(rd());
-  auto random_integer = [&rd, &rengine](sopt::t_int min, sopt::t_int max) {
-    std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-    return uniform_dist(rengine);
-  };
-
   // Condition on input fixture data
   REQUIRE((data.rows() %  2 == 0 and (data.cols() == 1 or data.cols() % 2 == 0)));
 
@@ -232,5 +225,17 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
         );
       }
     }
+  }
+}
+
+TEST_CASE("1D wavelet transform with complex data", "[wavelet]") {
+  using namespace sopt;
+  using namespace sopt::wavelets;
+  SECTION("Round-trip test for complex data") {
+    auto input = t_cVector::Random(random_integer(2, 100)*2).eval();
+    auto const &dbwave = daubechies(random_integer(1, 38));
+    auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
+    CHECK(input.isApprox(actual, 1e-14));
+    CHECK(not input.isApprox(direct_transform(input, 1, dbwave), 1e-4));
   }
 }
