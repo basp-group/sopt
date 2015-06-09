@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #include "wavelets/wavelets.h"
-#include "wavelets/convolve.impl.cc"
+#include "wavelets/wavelets.impl.cc"
 
 typedef Eigen::Matrix<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
 t_iVector even(t_iVector const & x) {

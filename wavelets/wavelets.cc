@@ -2,10 +2,10 @@
 #include "wavelets.h"
 #include "traits.h"
 
-// helper convolution functions
+// Actual implementation
 // kept in anonymous namespace so as to not pollute the rest of the library
 // this file should not be included explcitly except here on in tests.
-#include "convolve.impl.cc"
+#include "wavelets.impl.cc"
 
 namespace sopt { namespace wavelets {
   // Function inside anonymouns namespace won't appear in library
