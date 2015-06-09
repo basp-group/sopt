@@ -50,6 +50,8 @@ function(add_catch_test testname)
   unset(source)
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.cc")
     set(source ${testname}.cc)
+  elseif("${catch_UNPARSED_ARGUMENTS}" STREQUAL "")
+    message(FATAL_ERROR "No source given or found for ${testname}")
   endif()
 
 
