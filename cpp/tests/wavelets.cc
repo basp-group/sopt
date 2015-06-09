@@ -160,7 +160,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   }
 }
 
-TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
+TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt;
   using namespace sopt::wavelets;
 
@@ -177,7 +177,7 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
   // Condition on input fixture data
   REQUIRE((data.rows() %  2 == 0 and (data.cols() == 1 or data.cols() % 2 == 0)));
 
-  SECTION("Direct one dimensional transform == two downsample + convolution") {
+  SECTION("Direct transform == two downsample + convolution") {
      auto const actual = direct_transform(data.row(0).transpose(), 1, wavelet);
      t_rVector high(data.cols() / 2), low(data.cols() / 2);
      down_convolve(high, data.row(0).transpose(), wavelet.direct_filter.high);
@@ -186,7 +186,7 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
      CHECK(high.isApprox(actual.tail(data.row(0).size() / 2)));
   }
 
-  SECTION("Indirect one dimensional transform == two upsample + convolution") {
+  SECTION("Indirect transform == two upsample + convolution") {
      auto const actual = indirect_transform(data.row(0).transpose(), 1, wavelet);
      auto const low = upsample(data.row(0).transpose().head(data.rows() / 2));
      auto const high = upsample(data.row(0).transpose().tail(data.rows() / 2));
@@ -201,8 +201,8 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
      CHECK(expected.isApprox(actual));
   }
 
-  SECTION("Round-trip test for one dimensional data") {
-    for(t_int i(0); i < 100; ++i) {
+  SECTION("Round-trip test for single level") {
+    for(t_int i(0); i < 20; ++i) {
       auto input = t_rVector::Random(random_integer(2, 100)*2).eval();
       auto const &dbwave = daubechies(random_integer(1, 38));
       auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
@@ -210,6 +210,21 @@ TEST_CASE("Wavelet transform with floating point data", "[wavelet]") {
       CAPTURE(actual.transpose());
       CAPTURE(direct_transform(input, 1, dbwave).transpose());
       CHECK(input.isApprox(actual, 1e-14));
+    }
+  }
+
+  t_uint nlevels = 5;
+  SECTION("Round-trip test for multiple levels") {
+    for(t_int i(0); i < 10; ++i) {
+      auto input = t_rVector::Random(random_integer(2, 100) * (1u << nlevels)).eval();
+      auto const &dbwave = daubechies(random_integer(1, 38));
+      for(t_uint n(0); n < nlevels; ++n) {
+        auto const actual = indirect_transform(
+                direct_transform(input, nlevels, dbwave),
+                nlevels, dbwave
+        );
+        CHECK(input.isApprox(actual, 1e-14));
+      }
     }
   }
 }
