@@ -210,6 +210,7 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
       CAPTURE(actual.transpose());
       CAPTURE(direct_transform(input, 1, dbwave).transpose());
       CHECK(input.isApprox(actual, 1e-14));
+      CHECK(not input.isApprox(direct_transform(input, 1, dbwave), 1e-4));
     }
   }
 
@@ -218,12 +219,17 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
     for(t_int i(0); i < 10; ++i) {
       auto input = t_rVector::Random(random_integer(2, 100) * (1u << nlevels)).eval();
       auto const &dbwave = daubechies(random_integer(1, 38));
-      for(t_uint n(0); n < nlevels; ++n) {
+      for(t_uint n(2); n < nlevels; ++n) {
         auto const actual = indirect_transform(
                 direct_transform(input, nlevels, dbwave),
                 nlevels, dbwave
         );
         CHECK(input.isApprox(actual, 1e-14));
+        CHECK(
+            not direct_transform(input, nlevels, dbwave).isApprox(
+              direct_transform(input, nlevels - 1, dbwave)
+            )
+        );
       }
     }
   }
