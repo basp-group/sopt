@@ -180,23 +180,28 @@ template<class WAVELET, class T0, class T1>
   }
 
 //! Single-level 2d direct transform
+//! \param[out] coeffs_: output of the function (despite the const)
+//! \param[inout] signal: input signal for which to compute wavelet transform. Input is modified.
+//! \param[in] wavelet: contains wavelet coefficients
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   direct_transform_impl(
-      Eigen::MatrixBase<T0> &coeffs,
-      Eigen::MatrixBase<T1> &signal, WAVELET const &wavelet
+      Eigen::MatrixBase<T0> const &coeffs_,
+      Eigen::MatrixBase<T1> const &signal_, WAVELET const &wavelet
   ) {
+    Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
+    Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
     assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
     auto const N = signal.size() / 2;
     for(t_uint i(0); i < coeffs.rows(); ++i)
-      direct_transform(coeffs.row(i), signal.row(i), wavelet);
+      direct_transform_impl(coeffs.row(i).transpose(), signal.row(i).transpose(), wavelet);
 
     for(t_uint i(0); i < coeffs.cols(); ++i) {
       signal.col(i) = coeffs.col(i);
-      direct_transform(coeffs.col(i), signal.col(i), wavelet);
+      direct_transform_impl(coeffs.col(i), signal.col(i), wavelet);
     }
   }
 
@@ -237,8 +242,8 @@ template<class WAVELET, class T0, class T1>
     for(t_uint level(1); level < levels; ++level) {
       auto const Nx = static_cast<t_uint>(signal.rows()) >> level;
       auto const Ny = static_cast<t_uint>(signal.cols()) >> level;
-      input.block(Nx, Ny) = coeffs.head(Nx, Ny);
-      direct_transform_impl(coeffs.block(Nx, Ny), input.block(Nx, Ny), wavelet);
+      input.topLeftCorner(Nx, Ny) = coeffs.topLeftCorner(Nx, Ny);
+      direct_transform_impl(coeffs.topLeftCorner(Nx, Ny), input.topLeftCorner(Nx, Ny), wavelet);
     }
   }
 
@@ -260,6 +265,49 @@ template<class WAVELET, class T0, class T1>
       auto const N = static_cast<t_uint>(signal.size()) >> level;
       indirect_transform_impl(input.head(N), signal.head(N), wavelet);
       input.head(N) = signal.head(N);
+    }
+    indirect_transform_impl(input, signal, wavelet);
+  }
+
+//! Single-level 2d indirect transform
+template<class WAVELET, class T0, class T1>
+  typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
+  indirect_transform_impl(
+      Eigen::MatrixBase<T0> const & coeffs_,
+      Eigen::MatrixBase<T1> const & signal_, WAVELET const &wavelet
+  ) {
+    Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
+    Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
+    assert(coeffs.rows() == signal.rows() and coeffs.cols() == signal.cols());
+    assert(coeffs.rows() % 2 == 0 and coeffs.cols() % 2 == 0);
+
+    for(typename T0::Index i(0); i < signal.rows(); ++i)
+      indirect_transform_impl(coeffs.row(i).transpose(), signal.row(i).transpose(), wavelet);
+    coeffs = signal;
+    for(typename T0::Index j(0); j < signal.cols(); ++j)
+      indirect_transform_impl(coeffs.col(j), signal.col(j), wavelet);
+  }
+//! N-levels 2d indirect transform
+template<class WAVELET, class T0, class T1>
+  typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
+  indirect_transform(
+      Eigen::MatrixBase<T0> const & coeffs_,
+      Eigen::MatrixBase<T1> const & signal_,
+      t_uint levels, WAVELET const &wavelet
+  ) {
+    if(levels == 0) return;
+    Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
+    Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
+    assert(coeffs.rows() == signal.rows());
+    assert(coeffs.cols() == signal.cols());
+    assert(coeffs.size() % (1u << levels) == 0);
+
+    auto input = copy(coeffs);
+    for(t_uint level(levels - 1); level > 0; --level) {
+      auto const Nx = static_cast<t_uint>(signal.rows()) >> level;
+      auto const Ny = static_cast<t_uint>(signal.cols()) >> level;
+      indirect_transform_impl(input.topLeftCorner(Nx, Ny), signal.topLeftCorner(Nx, Ny), wavelet);
+      input.topLeftCorner(Nx, Ny) = signal.topLeftCorner(Nx, Ny);
     }
     indirect_transform_impl(input, signal, wavelet);
   }

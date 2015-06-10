@@ -239,3 +239,25 @@ TEST_CASE("1D wavelet transform with complex data", "[wavelet]") {
     CHECK(not input.isApprox(direct_transform(input, 1, dbwave), 1e-4));
   }
 }
+
+TEST_CASE("2D wavelet transform with real data", "[wavelet]") {
+  using namespace sopt;
+  using namespace sopt::wavelets;
+  SECTION("Single level round-trip test for square matrix") {
+    auto N = random_integer(2, 100) * 2;
+    check_round_trip(t_rMatrix::Random(N, N), random_integer(1, 38), 1);
+  }
+  SECTION("Single level round-trip test for non-square matrix") {
+    auto Nx = random_integer(2, 5) * 2;
+    auto Ny = Nx + 5 * 2;
+    check_round_trip(t_rMatrix::Random(Nx, Ny), random_integer(1, 38), 1);
+  }
+  SECTION("Round-trip test for multiple levels") {
+    for(t_int i(0); i < 10; ++i) {
+      auto const n = random_integer(2, 5);
+      auto const Nx = random_integer(2, 5) * (1u << n);
+      auto const Ny = random_integer(2, 5) * (1u << n);
+      check_round_trip(t_rMatrix::Random(Nx, Ny), random_integer(1, 38), n);
+    }
+  }
+}
