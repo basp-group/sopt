@@ -139,36 +139,36 @@ template<class T0, class T1, class T2, class T3, class T4, class T5>
 }
 
 
-//! Single-level 1d direct transform
+//! \brief Single-level 1d direct transform
+//! \param[out] coeffs_: output of the function (despite the const)
+//! \param[in] signal: input signal for which to compute wavelet transform
+//! \param[in] wavelet: contains wavelet coefficients
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   direct_transform_impl(
-      Eigen::MatrixBase<T0> &coeffs,
+      Eigen::MatrixBase<T0> const& coeffs_,
       Eigen::MatrixBase<T1> const& signal, WAVELET const &wavelet
   ) {
+    Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
     assert(coeffs.size() == signal.size());
     assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
     auto const N = signal.size() / 2;
-    down_convolve(std::move(coeffs.head(N)), signal, wavelet.direct_filter.low);
-    down_convolve(std::move(coeffs.tail(coeffs.size() - N)), signal, wavelet.direct_filter.high);
-  }
-//! Single-level 1d direct transform, vector segment version
-template<class WAVELET, class T0, class T1>
-  void direct_transform_impl(
-      Eigen::VectorBlock<T0> &&coeffs,
-      Eigen::MatrixBase<T1> const& signal, WAVELET const &wavelet
-  ) {
-    direct_transform_impl(coeffs, signal, wavelet);
+    down_convolve(coeffs.head(N), signal, wavelet.direct_filter.low);
+    down_convolve(coeffs.tail(coeffs.size() - N), signal, wavelet.direct_filter.high);
   }
 
 //! Single-level 1d indirect transform
+//! \param[in] coeffs_: output of the function (despite the const)
+//! \param[out] signal: input signal for which to compute wavelet transform
+//! \param[in] wavelet: contains wavelet coefficients
 template<class WAVELET, class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   indirect_transform_impl(
       Eigen::MatrixBase<T0> const & coeffs,
-      Eigen::MatrixBase<T1> & signal, WAVELET const &wavelet
+      Eigen::MatrixBase<T1> const & signal_, WAVELET const &wavelet
   ) {
+    Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
     assert(coeffs.size() == signal.size());
     assert(coeffs.size() % 2 == 0);
 
@@ -177,14 +177,6 @@ template<class WAVELET, class T0, class T1>
         wavelet.indirect_filter.low_even, wavelet.indirect_filter.low_odd,
         wavelet.indirect_filter.high_even, wavelet.indirect_filter.high_odd
     );
-  }
-//! Single-level 1d indirect transform, vector segment version
-template<class WAVELET, class T0, class T1>
-  void indirect_transform_impl(
-      Eigen::MatrixBase<T0> const & coeffs,
-      Eigen::VectorBlock<T1> && signal, WAVELET const &wavelet
-  ) {
-    indirect_transform_impl(coeffs, signal, wavelet);
   }
 
 //! Single-level 2d direct transform
