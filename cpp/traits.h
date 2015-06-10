@@ -22,6 +22,8 @@ namespace sopt {
   typedef Eigen::Matrix<t_complex, Eigen::Dynamic, 1> t_cVector;
   //! Real matrices
   typedef Eigen::Matrix<t_real, Eigen::Dynamic, Eigen::Dynamic> t_rMatrix;
+  //! Complex matrices
+  typedef Eigen::Matrix<t_complex, Eigen::Dynamic, Eigen::Dynamic> t_cMatrix;
 }
 #endif
 
