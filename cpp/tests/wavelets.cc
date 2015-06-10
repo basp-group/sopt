@@ -43,6 +43,21 @@ t_iVector random_ivector(sopt::t_int size, sopt::t_int min, sopt::t_int max) {
   return result;
 };
 
+// Checks round trip operation
+template<class T0>
+  void check_round_trip(
+      Eigen::MatrixBase<T0> const& input_, sopt::t_uint db, sopt::t_uint nlevels=1) {
+    auto const input = input_.eval();
+    auto const &dbwave = sopt::wavelets::daubechies(db);
+    auto const transform = sopt::wavelets::direct_transform(input, nlevels, dbwave);
+    auto const actual = sopt::wavelets::indirect_transform(transform, nlevels, dbwave);
+    CAPTURE(actual);
+    CAPTURE(input);
+    CAPTURE(transform);
+    CHECK(input.isApprox(actual, 1e-14));
+    CHECK(not transform.isApprox(sopt::wavelets::direct_transform(input, nlevels-1, dbwave), 1e-4));
+  }
+
 
 TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   using namespace sopt::wavelets;
@@ -196,34 +211,19 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
 
   SECTION("Round-trip test for single level") {
     for(t_int i(0); i < 20; ++i) {
-      auto input = t_rVector::Random(random_integer(2, 100)*2).eval();
-      auto const &dbwave = daubechies(random_integer(1, 38));
-      auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
-      CAPTURE(input.transpose());
-      CAPTURE(actual.transpose());
-      CAPTURE(direct_transform(input, 1, dbwave).transpose());
-      CHECK(input.isApprox(actual, 1e-14));
-      CHECK(not input.isApprox(direct_transform(input, 1, dbwave), 1e-4));
+      check_round_trip(t_rVector::Random(random_integer(2, 100)*2), random_integer(1, 38), 1);
     }
   }
 
   t_uint nlevels = 5;
   SECTION("Round-trip test for multiple levels") {
     for(t_int i(0); i < 10; ++i) {
-      auto input = t_rVector::Random(random_integer(2, 100) * (1u << nlevels)).eval();
-      auto const &dbwave = daubechies(random_integer(1, 38));
-      for(t_uint n(2); n < nlevels; ++n) {
-        auto const actual = indirect_transform(
-                direct_transform(input, nlevels, dbwave),
-                nlevels, dbwave
-        );
-        CHECK(input.isApprox(actual, 1e-14));
-        CHECK(
-            not direct_transform(input, nlevels, dbwave).isApprox(
-              direct_transform(input, nlevels - 1, dbwave)
-            )
-        );
-      }
+      auto const n = random_integer(2, nlevels);
+      check_round_trip(
+        t_rVector::Random(random_integer(2, 100) * (1u << n)),
+        random_integer(1, 38),
+        n
+      );
     }
   }
 }
