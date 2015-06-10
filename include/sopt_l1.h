@@ -38,6 +38,53 @@ typedef struct {
 
 /*!  
  * Data structure containing the parameters for solving the l1
+ * optimisation problem using the proximal ADMM algorithm.
+ */
+typedef struct {
+  /*! Verbose flag: 0 no log, 1 a summary at convergence, 
+   * 2 print main steps (default: 1). 
+   */
+  int verbose;
+
+  /*! Maximum number of iterations for the global L1 problem.*/
+  int max_iter;
+
+  /*! Convergence parameter for the DR algorithm, gamma>0.*/
+  double gamma;
+
+  /*! Convergence criteria. Minimum relative change of the objective value. */
+  double rel_obj;
+
+  /*! Radius of the L2 ball. */
+  double epsilon;
+
+  /*! Flag for real output signal, i.e. real l1-prox. 
+   *  1 if real, 0 for complex.
+   */
+  int real_out;
+
+  /*! Flag for real measurements, i.e. real prox l2-ball. 
+   *  1 if real, 0 for complex.
+   */
+  int real_meas;
+
+  /*! Parameters for the L1 prox. */
+  sopt_prox_l1param paraml1;
+
+  /*! Scale toleranace on epsilon (e.g. 1.001). */
+  double epsilon_tol_scale;
+
+  /*! Scale parameter when updating Lagrange multipliers (e.g. 0.9). */
+  double lagrange_update_scale;
+
+  /*!  Measurement opertor norm squared. */
+  double nu;
+  
+} sopt_l1_param_padmm;
+
+
+/*!  
+ * Data structure containing the parameters for solving the l1
  * optimisation problem using SDMM.
  */
 typedef struct {
@@ -92,20 +139,20 @@ typedef struct {
 } sopt_l1_rwparam;
 
 void sopt_l1_solver(void *xsol,
-                    int nx,
-                    void (*A)(void *out, void *in, void **data), 
-                    void **A_data,
-                    void (*At)(void *out, void *in, void **data), 
-                    void **At_data,
-                    void (*Psi)(void *out, void *in, void **data), 
-                    void **Psi_data,
-                    void (*Psit)(void *out, void *in, void **data), 
-                    void **Psit_data,
-                    int nr,
-                    void *y,
-                    int ny,
-                    double *weights,
-                    sopt_l1_param param);
+		    int nx,
+		    void (*A)(void *out, void *in, void **data), 
+		    void **A_data,
+		    void (*At)(void *out, void *in, void **data), 
+		    void **At_data,
+		    void (*Psi)(void *out, void *in, void **data), 
+		    void **Psi_data,
+		    void (*Psit)(void *out, void *in, void **data), 
+		    void **Psit_data,
+		    int nr,
+		    void *y,
+		    int ny,
+		    double *weights,
+		    sopt_l1_param param);
 
 void sopt_l1_rwmin(void *xsol,
                     int nx,
@@ -154,5 +201,39 @@ void sopt_l1_rwsdmm(void *xsol,
                     int ny,
                     sopt_l1_sdmmparam paraml1,
                     sopt_l1_rwparam paramrwl1);
+
+void sopt_l1_sdmm2(void *xsol,
+                    int nx,
+                    void (*A)(void *out, void *in, void **data), 
+                    void **A_data,
+                    void (*At)(void *out, void *in, void **data), 
+                    void **At_data,
+                    void (*Psi)(void *out, void *in, void **data), 
+                    void **Psi_data,
+                    void (*Psit)(void *out, void *in, void **data), 
+                    void **Psit_data,
+                    int nr,
+                    void *y,
+                    int ny,
+                    double *weights_l1,
+                    double *weights_l2,
+                    sopt_l1_sdmmparam param);
+
+void sopt_l1_solver_padmm(void *xsol,
+			  int nx,
+			  void (*A)(void *out, void *in, void **data), 
+			  void **A_data,
+			  void (*At)(void *out, void *in, void **data), 
+			  void **At_data,
+			  void (*Psi)(void *out, void *in, void **data), 
+			  void **Psi_data,
+			  void (*Psit)(void *out, void *in, void **data), 
+			  void **Psit_data,
+			  int nr,
+			  void *y,
+			  int ny,
+			  double *weights_l1,
+			  double *weights_l2,
+			  sopt_l1_param_padmm param);
 
 #endif

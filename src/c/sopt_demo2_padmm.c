@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     //Structures for the different operators
     sopt_wavelet_type *dict_types;
     sopt_prox_l1param param;
-    sopt_l1_param param2;
+    sopt_l1_param_padmm param2;
     sopt_prox_l2bparam param3;
     sopt_l1_rwparam param4;
     sopt_sara_param param5;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     double *xin;
     double *xout;
     double *error;
-    double *w;
+    double *w_l1, *w_l2;
     complex double *y0;
     complex double *y;
     complex double *noise;
@@ -117,8 +117,12 @@ int main(int argc, char *argv[]) {
     SOPT_ERROR_MEM_ALLOC_CHECK(y0);
     noise = (complex double*)malloc((Ny) * sizeof(complex double));
     SOPT_ERROR_MEM_ALLOC_CHECK(noise);
-    w = (double*)malloc((Nr) * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(w);
+    w_l1 = (double*)malloc((Nr) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l1);
+    w_l2 = (double*)malloc((Ny) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l2);
+
+
     xinc = (complex double*)malloc((Nx) * sizeof(complex double));
     SOPT_ERROR_MEM_ALLOC_CHECK(xinc);
 
@@ -314,24 +318,34 @@ int main(int argc, char *argv[]) {
     param.rel_obj = 0.01;
     param.nu = 1;
     param.tight = 0;
-    param.pos = 0;
+    param.pos = 1;
     
     //Structure for the L1 solver    
     param2.verbose = 2;
     param2.max_iter = 200;
-    param2.gamma = 0.8;
+    param2.gamma = 0.01;
     param2.rel_obj = 0.0005;
     param2.epsilon = sqrt(Ny + 2*sqrt(Ny))*sigma;
     param2.real_out = 1;
     param2.real_meas = 0;
     param2.paraml1 = param;
-    param2.paraml2b = param3;
+    //    param2.paraml2b = param3;
     
-   
+    param2.epsilon_tol_scale = 1.001;
+    param2.lagrange_update_scale = 0.9;
+    param2.nu = 1.0;
+    
     //Weights
     for (i=0; i < Nr; i++) {
-        w[i] = 1.0;
+        w_l1[i] = 1.0;
     }
+
+    for (i=0; i < Ny; i++) {
+        w_l2[i] = 1.0;
+    }
+
+    
+    //TODO: weights for L2 norm should be of length Ny
     
     //Initial solution
     for (i=0; i < Nx; i++) {
@@ -343,7 +357,7 @@ int main(int argc, char *argv[]) {
     #else
         assert((start = clock())!=-1);
     #endif
-        sopt_l1_solver((void*)xout, Nx,
+        sopt_l1_solver_padmm((void*)xout, Nx,
                     &sopt_meas_fsamp_c2c,
                     datafwd,
                     &sopt_meas_fsampadj_c2c,
@@ -353,7 +367,7 @@ int main(int argc, char *argv[]) {
                     &sopt_sara_analysisop,
                     datas,
                     Nr,
-                    (void*)y, Ny, w, param2);
+		    (void*)y, Ny, w_l1, w_l2, param2);
     #ifdef _OPENMP
         stop = omp_get_wtime();
         t = stop - start;
@@ -378,7 +392,8 @@ int main(int argc, char *argv[]) {
     if(fail == 1)
       SOPT_ERROR_GENERIC("Error writing image");
 
-
+return 1;
+/*
     printf("**********************\n");
     printf("SARA reconstruction\n");
     printf("**********************\n");
@@ -433,7 +448,8 @@ int main(int argc, char *argv[]) {
     
     free(xin);
     free(xout);
-    free(w);
+    free(w_l1);
+    free(w_l2);
     free(y);
     free(y0);
     free(noise);
@@ -450,6 +466,8 @@ int main(int argc, char *argv[]) {
     fftw_destroy_plan(planadj);
 
     sopt_sara_free(&param5);
-        
+*/
+
+ 
     return 0;
 }

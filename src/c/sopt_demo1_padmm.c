@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
     sopt_wavelet_type *dict_types;
     sopt_sara_param param5;
     sopt_prox_l1param param6;
-    sopt_l1_param param7;
+    sopt_l1_param_padmm param7;
     
 
     void *datam[1];
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     double *y0;
     double *y;
     double *noise;
-    double *w;
+    double *w_l1, *w_l2;
     
 
     double scale = 1.0/255.0, offset = 0.0;
@@ -105,8 +105,10 @@ int main(int argc, char *argv[]) {
     SOPT_ERROR_MEM_ALLOC_CHECK(y0);
     noise = (double*)malloc((Ny) * sizeof(double));
     SOPT_ERROR_MEM_ALLOC_CHECK(noise);
-    w = (double*)malloc((Nr) * sizeof(double));
-    SOPT_ERROR_MEM_ALLOC_CHECK(w);
+    w_l1 = (double*)malloc((Nr) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l1);
+    w_l2 = (double*)malloc((Ny) * sizeof(double));
+    SOPT_ERROR_MEM_ALLOC_CHECK(w_l2);
 
 
     //Measurement operator initialization
@@ -249,8 +251,8 @@ int main(int argc, char *argv[]) {
     param6.max_iter = 50;
     param6.rel_obj = 0.01;
     param6.nu = 1;
-    param6.tight = 1;
-    param6.pos = 0;
+    param6.tight = 0;
+    param6.pos = 1;
     
     //Structure for the L1 solver    
     param7.verbose = 2;
@@ -261,13 +263,22 @@ int main(int argc, char *argv[]) {
     param7.real_out = 1;
     param7.real_meas = 1;
     param7.paraml1 = param6;
-    param7.paraml2b = param3;
+
+    param7.epsilon_tol_scale = 1.001;
+    param7.lagrange_update_scale = 0.9;
+    param7.nu = 1.0;
+      
+    //param7.paraml2b = param3;
     
    
     //Weights
     for (i=0; i < Nr; i++) {
-        w[i] = 1.0;
+      w_l1[i] = 1.0;
     }
+    for (i=0; i < Ny; i++) {
+      w_l2[i] = 1.0;
+    }
+
 
     //Initial solution for L1 recosntruction
     for (i=0; i < Nx; i++) {
@@ -279,7 +290,7 @@ int main(int argc, char *argv[]) {
     #else
         assert((start = clock())!=-1);
     #endif
-    sopt_l1_solver((void*)xout, Nx,
+    sopt_l1_solver_padmm((void*)xout, Nx,
                    &sopt_meas_urandsamp,
                    datam,
                    &sopt_meas_urandsampadj,
@@ -289,7 +300,7 @@ int main(int argc, char *argv[]) {
                    &sopt_sara_analysisop,
                    datas,
                    Nr,
-                   (void*)y, Ny, w, param7);
+		   (void*)y, Ny, w_l1, w_l2, param7);
     #ifdef _OPENMP
         stop = omp_get_wtime();
         t = stop - start;
@@ -326,7 +337,8 @@ int main(int argc, char *argv[]) {
     free(y0);
     free(noise);
     free(error);
-    free(w);
+    free(w_l1);
+    free(w_l2);
     free(param1.perm);
     free(dict_types);
     sopt_sara_free(&param5);
