@@ -1,6 +1,6 @@
 #include <initializer_list>
 #include "wavelets.h"
-#include "traits.h"
+#include "types.h"
 
 // Actual implementation
 // kept in anonymous namespace so as to not pollute the rest of the library

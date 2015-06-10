@@ -2,7 +2,7 @@
 #define SOPT_WAVELETS_WAVELETS_H
 
 #include <Eigen/Core>
-#include "traits.h"
+#include "types.h"
 
 namespace sopt { namespace wavelets {
 

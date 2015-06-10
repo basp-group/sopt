@@ -1,6 +1,6 @@
 #include <type_traits>
 #include <iostream>
-#include "traits.h"
+#include "types.h"
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt { namespace wavelets { namespace {
