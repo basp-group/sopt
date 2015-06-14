@@ -1,8 +1,9 @@
 #include <random>
 #include "catch.hpp"
 
-#include "wavelets/wavelets.h"
-#include "wavelets/wavelets.impl.cc"
+#include "wavelets/wavelet_data.h"
+#include "wavelets/indirect.h"
+#include "wavelets/direct.h"
 
 typedef Eigen::Matrix<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
 t_iVector even(t_iVector const & x) {
@@ -48,7 +49,7 @@ template<class T0>
   void check_round_trip(
       Eigen::MatrixBase<T0> const& input_, sopt::t_uint db, sopt::t_uint nlevels=1) {
     auto const input = input_.eval();
-    auto const &dbwave = sopt::wavelets::daubechies(db);
+    auto const &dbwave = sopt::wavelets::daubechies_data(db);
     auto const transform = sopt::wavelets::direct_transform(input, nlevels, dbwave);
     auto const actual = sopt::wavelets::indirect_transform(transform, nlevels, dbwave);
     CAPTURE(actual);
@@ -180,7 +181,7 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt::wavelets;
 
   t_rMatrix const data = t_rMatrix::Random(16, 16);
-  auto const &wavelet = Daubechies4;
+  auto const &wavelet = daubechies_data(4);
 
   // Condition on input fixture data
   REQUIRE((data.rows() %  2 == 0 and (data.cols() == 1 or data.cols() % 2 == 0)));
@@ -233,7 +234,7 @@ TEST_CASE("1D wavelet transform with complex data", "[wavelet]") {
   using namespace sopt::wavelets;
   SECTION("Round-trip test for complex data") {
     auto input = t_cVector::Random(random_integer(2, 100)*2).eval();
-    auto const &dbwave = daubechies(random_integer(1, 38));
+    auto const &dbwave = daubechies_data(random_integer(1, 38));
     auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
     CHECK(input.isApprox(actual, 1e-14));
     CHECK(not input.isApprox(direct_transform(input, 1, dbwave), 1e-4));

@@ -1,3 +1,5 @@
+#ifndef SOPT_WAVELETS_INNARDS_H
+#define SOPT_WAVELETS_INNARDS_H
 #include<Eigen/Core>
 
 // Function inside anonymouns namespace won't appear in library
@@ -136,3 +138,4 @@ template<class T0, class T1, class T2, class T3, class T4, class T5>
   }
 }
 }}}
+#endif
