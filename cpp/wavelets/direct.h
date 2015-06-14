@@ -2,6 +2,7 @@
 #define SOPT_WAVELETS_DIRECT_H
 #include <type_traits>
 #include "types.h"
+#include "wavelet_data.h"
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt { namespace wavelets {
@@ -11,11 +12,11 @@ namespace {
   //! \param[out] coeffs_: output of the function (despite the const)
   //! \param[in] signal: input signal for which to compute wavelet transform
   //! \param[in] wavelet: contains wavelet coefficients
-  template<class WAVELET, class T0, class T1>
+  template<class T0, class T1>
     typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
     direct_transform_impl(
         Eigen::MatrixBase<T0> const& coeffs_,
-        Eigen::MatrixBase<T1> const& signal, WAVELET const &wavelet
+        Eigen::MatrixBase<T1> const& signal, WaveletData const &wavelet
     ) {
       Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
       assert(coeffs.size() == signal.size());
@@ -30,11 +31,11 @@ namespace {
   //! \param[out] coeffs_: output of the function (despite the const)
   //! \param[inout] signal: input signal for which to compute wavelet transform. Input is modified.
   //! \param[in] wavelet: contains wavelet coefficients
-  template<class WAVELET, class T0, class T1>
+  template<class T0, class T1>
     typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
     direct_transform_impl(
         Eigen::MatrixBase<T0> const &coeffs_,
-        Eigen::MatrixBase<T1> const &signal_, WAVELET const &wavelet
+        Eigen::MatrixBase<T1> const &signal_, WaveletData const &wavelet
     ) {
       Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
       Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
@@ -54,12 +55,12 @@ namespace {
 }
 
 //! N-levels 1d direct transform
-template<class WAVELET, class T0, class T1>
+template<class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   direct_transform(
       Eigen::MatrixBase<T0> &coeffs,
       Eigen::MatrixBase<T1> const& signal,
-      t_uint levels, WAVELET const &wavelet
+      t_uint levels, WaveletData const &wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
@@ -74,12 +75,12 @@ template<class WAVELET, class T0, class T1>
     }
   }
 //! N-levels 2d direct transform
-template<class WAVELET, class T0, class T1>
+template<class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   direct_transform(
       Eigen::MatrixBase<T0> &coeffs,
       Eigen::MatrixBase<T1> const& signal,
-      t_uint levels, WAVELET const& wavelet
+      t_uint levels, WaveletData const& wavelet
   ) {
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
@@ -96,8 +97,9 @@ template<class WAVELET, class T0, class T1>
   }
 
 //! Direct 1d and 2d transform
-template<class WAVELET, class T0>
-  auto direct_transform(Eigen::MatrixBase<T0> const &signal, t_uint levels, WAVELET const& wavelet)
+template<class T0>
+  auto direct_transform(
+      Eigen::MatrixBase<T0> const &signal, t_uint levels, WaveletData const& wavelet)
   -> decltype(copy(signal)) {
     auto result = copy(signal);
     direct_transform(result, signal, levels, wavelet);

@@ -1,5 +1,6 @@
 #ifndef SOPT_WAVELETS_INNARDS_H
 #define SOPT_WAVELETS_INNARDS_H
+
 #include<Eigen/Core>
 
 // Function inside anonymouns namespace won't appear in library

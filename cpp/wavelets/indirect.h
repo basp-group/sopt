@@ -2,6 +2,7 @@
 #define SOPT_WAVELET_INDIRECT_H
 
 #include "innards.impl.h"
+#include "wavelet_data.h"
 #include "types.h"
 
 // Function inside anonymouns namespace won't appear in library
@@ -11,11 +12,11 @@ namespace {
   //! \param[in] coeffs_: output of the function (despite the const)
   //! \param[out] signal: input signal for which to compute wavelet transform
   //! \param[in] wavelet: contains wavelet coefficients
-  template<class WAVELET, class T0, class T1>
+  template<class T0, class T1>
     typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
     indirect_transform_impl(
         Eigen::MatrixBase<T0> const & coeffs,
-        Eigen::MatrixBase<T1> const & signal_, WAVELET const &wavelet
+        Eigen::MatrixBase<T1> const & signal_, WaveletData const &wavelet
     ) {
       Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
       assert(coeffs.size() == signal.size());
@@ -28,11 +29,11 @@ namespace {
       );
     }
   //! Single-level 2d indirect transform
-  template<class WAVELET, class T0, class T1>
+  template<class T0, class T1>
     typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
     indirect_transform_impl(
         Eigen::MatrixBase<T0> const & coeffs_,
-        Eigen::MatrixBase<T1> const & signal_, WAVELET const &wavelet
+        Eigen::MatrixBase<T1> const & signal_, WaveletData const &wavelet
     ) {
       Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
       Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
@@ -48,12 +49,12 @@ namespace {
 }
 
 //! N-levels 1d indirect transform
-template<class WAVELET, class T0, class T1>
+template<class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   indirect_transform(
       Eigen::MatrixBase<T0> const & coeffs,
       Eigen::MatrixBase<T1> & signal,
-      t_uint levels, WAVELET const &wavelet
+      t_uint levels, WaveletData const &wavelet
   ) {
     if(levels == 0) return;
     assert(coeffs.rows() == signal.rows());
@@ -70,12 +71,12 @@ template<class WAVELET, class T0, class T1>
   }
 
 //! N-levels 2d indirect transform
-template<class WAVELET, class T0, class T1>
+template<class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   indirect_transform(
       Eigen::MatrixBase<T0> const & coeffs_,
       Eigen::MatrixBase<T1> const & signal_,
-      t_uint levels, WAVELET const &wavelet
+      t_uint levels, WaveletData const &wavelet
   ) {
     if(levels == 0) return;
     Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
@@ -95,9 +96,9 @@ template<class WAVELET, class T0, class T1>
   }
 
 //! Indirect 1d and 2d transform
-template<class WAVELET, class T0>
+template<class T0>
   auto indirect_transform(
-        Eigen::MatrixBase<T0> const &coeffs, t_uint levels, WAVELET const& wavelet
+        Eigen::MatrixBase<T0> const &coeffs, t_uint levels, WaveletData const& wavelet
   ) -> decltype(copy(coeffs)) {
     auto result = copy(coeffs);
     indirect_transform(coeffs, result, levels, wavelet);
