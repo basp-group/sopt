@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <initializer_list>
 #include "wavelet_data.h"
 #include "types.h"
 
