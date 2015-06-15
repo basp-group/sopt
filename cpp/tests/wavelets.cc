@@ -1,6 +1,7 @@
 #include <random>
 #include "catch.hpp"
 
+#include "wavelets/wavelets.h"
 #include "wavelets/wavelet_data.h"
 #include "wavelets/indirect.h"
 #include "wavelets/direct.h"
@@ -260,5 +261,22 @@ TEST_CASE("2D wavelet transform with real data", "[wavelet]") {
       auto const Ny = random_integer(2, 5) * (1u << n);
       check_round_trip(t_rMatrix::Random(Nx, Ny), random_integer(1, 38), n);
     }
+  }
+}
+
+TEST_CASE("Functor implementation", "[wavelet]") {
+  using namespace sopt;
+  auto const wavelet = wavelets::factory("DB3", 4);
+  auto const input = t_cMatrix::Random(256, 128).eval();
+  SECTION("Normal instances") {
+    auto const transform = wavelet.direct(input);
+    CHECK(transform.isApprox(wavelets::direct_transform(input, wavelet.levels(), wavelet)));
+    CHECK(input.isApprox(wavelet.indirect(transform)));
+  }
+  SECTION("Expression instances") {
+    t_cMatrix output(2, input.cols());
+    wavelet.direct(output.row(0).transpose(), input.row(0).transpose());
+    wavelet.indirect(output.row(0).transpose(), output.row(1).transpose());
+    CHECK(input.row(0).isApprox(output.row(1)));
   }
 }

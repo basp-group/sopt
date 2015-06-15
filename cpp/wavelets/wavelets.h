@@ -1,83 +1,134 @@
 #ifndef SOPT_WAVELETS_WAVELETS_H
 #define SOPT_WAVELETS_WAVELETS_H
 
-#include <Eigen/Core>
+#include <iostream>
+#include "wavelet_data.h"
+#include "direct.h"
+#include "indirect.h"
 #include "types.h"
 
 namespace sopt { namespace wavelets {
 
-  //! Holds wavelets coefficients
-  struct WaveletData {
-    //! Type of the underlying scalar
-    typedef t_real t_scalar;
-    //! Type of the underlying vector
-    typedef Eigen::Matrix<t_scalar, Eigen::Dynamic, 1> t_vector;
-    //! Wavelet coefficient per-se
-    const t_vector coefficients;
+// Advance declaration so we can define the subsequent friend function
+class Wavelet;
 
-    //! Holds filters for direct transform
-    struct {
-      //! Low-pass filter for direct transform
-      const t_vector low;
-      //! High-pass filter for direct transform
-      const t_vector high;
-    } direct_filter;
+//! \brief Creates a wavelet transform object
+Wavelet factory(std::string name="DB1", t_uint nlevels = 1);
 
-    //! Holds filters for indirect transform
-    struct {
-      //! High-pass filter for direct transform
-      const t_vector low_even;
-      const t_vector low_odd;
-      const t_vector high_even;
-      const t_vector high_odd;
-    } indirect_filter;
+//! Performs direct and indirect wavelet transforms
+class Wavelet : public WaveletData
+{
+  friend Wavelet factory(std::string name, t_uint nlevels);
+  protected:
+    //! Should be called through factory function
+    Wavelet(WaveletData const &c, t_uint nlevels) : WaveletData(c), levels_(nlevels) {}
 
-    //! Constructs from initializers
-    WaveletData(std::initializer_list<t_scalar> const &coefs);
-    //! Constructs from vector
-    WaveletData(t_vector const &coefs);
-  };
+  public:
+    //! Destructor
+    virtual ~Wavelet() {}
 
-  extern const WaveletData Daubechies1;
-  extern const WaveletData Daubechies2;
-  extern const WaveletData Daubechies3;
-  extern const WaveletData Daubechies4;
-  extern const WaveletData Daubechies5;
-  extern const WaveletData Daubechies6;
-  extern const WaveletData Daubechies7;
-  extern const WaveletData Daubechies8;
-  extern const WaveletData Daubechies9;
-  extern const WaveletData Daubechies10;
-  extern const WaveletData Daubechies11;
-  extern const WaveletData Daubechies12;
-  extern const WaveletData Daubechies13;
-  extern const WaveletData Daubechies14;
-  extern const WaveletData Daubechies15;
-  extern const WaveletData Daubechies16;
-  extern const WaveletData Daubechies17;
-  extern const WaveletData Daubechies18;
-  extern const WaveletData Daubechies19;
-  extern const WaveletData Daubechies20;
-  extern const WaveletData Daubechies21;
-  extern const WaveletData Daubechies22;
-  extern const WaveletData Daubechies23;
-  extern const WaveletData Daubechies24;
-  extern const WaveletData Daubechies25;
-  extern const WaveletData Daubechies26;
-  extern const WaveletData Daubechies27;
-  extern const WaveletData Daubechies28;
-  extern const WaveletData Daubechies29;
-  extern const WaveletData Daubechies30;
-  extern const WaveletData Daubechies31;
-  extern const WaveletData Daubechies32;
-  extern const WaveletData Daubechies33;
-  extern const WaveletData Daubechies34;
-  extern const WaveletData Daubechies35;
-  extern const WaveletData Daubechies36;
-  extern const WaveletData Daubechies37;
-  extern const WaveletData Daubechies38;
+    // Temporary macros that checks constraints on input
+#   define SOPT_WAVELET_MACRO_MULTIPLE(NAME)                                                      \
+        if((NAME.rows() == 1 or NAME.cols() == 1)) {                                              \
+          if(NAME.size() % (1 << levels()) != 0)                                                  \
+            throw std::length_error("Size of " #NAME " must number a multiple of 2^levels or 1"); \
+        } else if(NAME.rows() != 1 and NAME.rows() % (1 << levels()) != 0)                        \
+          throw std::length_error("Rows of " #NAME " must number a multiple of 2^levels or 1");   \
+        else if(NAME.cols() % (1 << levels()) != 0)                                               \
+          throw std::length_error("Columns of " #NAME " must number a multiple of 2^levels");
+#   define SOPT_WAVELET_MACRO_EQUAL_SIZE(A, B)                                                   \
+        if(A.rows() != B.rows() or A.cols() != B.cols())                                         \
+          throw std::length_error("Size of coefficients and signals must match");
+    //! \brief Direct transform
+    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
+    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
+    //! (1-d transform).
+    //! \return wavelet coefficients
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
+    template<class T0>
+      auto direct(Eigen::MatrixBase<T0> const &signal) const
+      -> decltype(direct_transform(signal, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(signal);
+        return direct_transform(signal, levels(), *this);
+      }
+    //! \brief Direct transform
+    //! \param[inout] coefficients: Output wavelet coefficients. Must be of the same size and type
+    //! as the input.
+    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
+    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
+    //! (1-d transform).
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
+    template<class T0, class T1>
+      auto direct(Eigen::MatrixBase<T1> & coefficients, Eigen::MatrixBase<T0> const &signal) const
+      -> decltype(direct_transform(coefficients, signal, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(signal);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(coefficients, signal);
+        return direct_transform(coefficients, signal, levels(), *this);
+      }
+    //! \brief Direct transform
+    //! \param[inout] coefficients: Output wavelet coefficients. Must be of the same size and type
+    //! as the input.
+    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
+    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
+    //! (1-d transform).
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data. This version
+    //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
+    //! cannonical approach.
+    template<class T0, class T1>
+      auto direct(Eigen::MatrixBase<T1> && coefficients, Eigen::MatrixBase<T0> const &signal) const
+      -> decltype(direct_transform(coefficients, signal, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(signal);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(coefficients, signal);
+        return direct_transform(coefficients, signal, levels(), *this);
+      }
+    //! \brief Indirect transform
+    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
+    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! transform).
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
+    template<class T0>
+      auto indirect(Eigen::MatrixBase<T0> const &coefficients) const
+      -> decltype(indirect_transform(coefficients, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(coefficients);
+        return indirect_transform(coefficients, levels(), *this);
+      }
+    //! \brief Indirect transform
+    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
+    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
+    template<class T0, class T1>
+      auto indirect(Eigen::MatrixBase<T1> const & coefficients, Eigen::MatrixBase<T0> &signal) const
+      -> decltype(indirect_transform(coefficients, signal, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(coefficients);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(coefficients, signal);
+        return indirect_transform(coefficients, signal, levels(), *this);
+      }
+    //! \brief Indirect transform
+    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
+    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
+    //! \details Supports 1 and 2 dimensional tranforms for real and complex data.  This version
+    //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
+    //! cannonical approach.
+    template<class T0, class T1>
+      auto indirect(Eigen::MatrixBase<T1> const & coeffs, Eigen::MatrixBase<T0> &&signal) const
+      -> decltype(indirect_transform(coeffs, signal, 1, *this)) {
+        SOPT_WAVELET_MACRO_MULTIPLE(coeffs);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(coeffs, signal);
+        return indirect_transform(coeffs, signal, levels(), *this);
+      }
+#   undef SOPT_WAVELET_MACRO_MULTIPLE
+#   undef SOPT_WAVELET_MACRO_EQUAL_SIZE
+    //! Number of levels over which to do transform
+    t_uint levels() const { return levels_; }
+    //! Sets number of levels over which to do transform
+    void levels(t_uint l) { levels_ = l; }
 
-  //! Returns specific daubechie wavelet
-  WaveletData const & daubechies(t_uint);
+    protected:
+      //! Number of levels in the wavelet
+      t_uint levels_;
+};
+
 }}
 #endif

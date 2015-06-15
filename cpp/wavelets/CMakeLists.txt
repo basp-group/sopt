@@ -1,1 +1,1 @@
-add_library(wavelets SHARED wavelet_data.cc)
+add_library(wavelets SHARED wavelets.cc wavelet_data.cc)
