@@ -13,6 +13,7 @@ set_version(0.1)
 get_gitref()
 
 option(tests          "Enable testing"                         on)
+option(benchmarks     "Enable benchmarking"                    on)
 
 # Add c++11 stuff
 include(AddCPP11Flags)
@@ -29,6 +30,9 @@ if(tests)
   enable_testing()
   include(catch)
   include(AddExample)
+endif()
+if(benchmarks)
+  include(AddBenchmark)
 endif()
 
 add_subdirectory(cpp)
