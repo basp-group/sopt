@@ -25,10 +25,10 @@ include(dependencies)
 # sets rpath policy explicitly
 cmake_policy(SET CMP0042 NEW)
 
-
 if(tests)
   enable_testing()
   include(catch)
+  include(AddExample)
 endif()
 
 add_subdirectory(cpp)
