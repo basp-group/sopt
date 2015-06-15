@@ -9,8 +9,8 @@
 namespace sopt { namespace wavelets {
 namespace {
   //! Single-level 1d indirect transform
-  //! \param[in] coeffs_: output of the function (despite the const)
-  //! \param[out] signal: input signal for which to compute wavelet transform
+  //! \param[in] coeffs_: input coefficients
+  //! \param[out] signal: output with the reconstituted signal
   //! \param[in] wavelet: contains wavelet coefficients
   template<class T0, class T1>
     typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
@@ -30,6 +30,9 @@ namespace {
       );
     }
   //! Single-level 2d indirect transform
+  //! \param[in] coeffs_: input coefficients
+  //! \param[out] signal: output with the reconstituted signal
+  //! \param[in] wavelet: contains wavelet coefficients
   template<class T0, class T1>
     typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
     indirect_transform_impl(
@@ -49,7 +52,12 @@ namespace {
     }
 }
 
-//! N-levels 1d indirect transform
+//! \brief N-levels 1d indirect transform
+//! \param[in] coeffs_: input coefficients
+//! \param[out] signal: output with the reconstituted signal
+//! \param[in] wavelet: contains wavelet coefficients
+//! \note The size  of the coefficients should a multiple of $2^l$ where $l$ is the number of
+//! levels.
 template<class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   indirect_transform(
@@ -71,7 +79,12 @@ template<class T0, class T1>
     indirect_transform_impl(input, signal, wavelet);
   }
 
-//! N-levels 2d indirect transform
+//! \brief N-levels 2d indirect transform
+//! \param[in] coeffs_: input coefficients
+//! \param[out] signal: output with the reconstituted signal
+//! \param[in] wavelet: contains wavelet coefficients
+//! \note The size  of the signal and coefficients should a multiple of $2^l$ where $l$ is the
+//! number of levels.
 template<class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   indirect_transform(
@@ -97,6 +110,11 @@ template<class T0, class T1>
   }
 
 //! Indirect 1d and 2d transform
+//! \param[in] coeffs_: input coefficients
+//! \param[in] wavelet: contains wavelet coefficients
+//! \returns the reconstituted signal
+//! \note The size  of the coefficients should a multiple of $2^l$ where $l$ is the number of
+//! levels.
 template<class T0>
   auto indirect_transform(
         Eigen::MatrixBase<T0> const &coeffs, t_uint levels, WaveletData const& wavelet

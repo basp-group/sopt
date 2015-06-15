@@ -54,7 +54,12 @@ namespace {
     }
 }
 
-//! N-levels 1d direct transform
+//! \brief N-levels 1d direct transform
+//! \param[out] coeffs_: output of the function (despite the const)
+//! \param[in] signal: input signal for which to compute wavelet transfor
+//! \param[in] wavelet: contains wavelet coefficients
+//! \note The size  of the coefficients should a multiple of $2^l$ where $l$ is the number of
+//! levels.
 template<class T0, class T1>
   typename std::enable_if<T1::IsVectorAtCompileTime, void>::type
   direct_transform(
@@ -75,6 +80,10 @@ template<class T0, class T1>
     }
   }
 //! N-levels 2d direct transform
+//! \param[in] signal: input signal for which to compute wavelet transfor
+//! \param[in] wavelet: contains wavelet coefficients
+//! \note The size  of the coefficients should a multiple of $2^l$ where $l$ is the number of
+//! levels.
 template<class T0, class T1>
   typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
   direct_transform(
@@ -97,7 +106,9 @@ template<class T0, class T1>
     }
   }
 
-//! Direct 1d and 2d transform
+//! \brief Direct 1d and 2d transform
+//! \note The size  of the coefficients should a multiple of $2^l$ where $l$ is the number of
+//! levels.
 template<class T0>
   auto direct_transform(
       Eigen::MatrixBase<T0> const &signal, t_uint levels, WaveletData const& wavelet)
