@@ -18,7 +18,8 @@ namespace {
         Eigen::MatrixBase<T0> const & coeffs,
         Eigen::MatrixBase<T1> const & signal_, WaveletData const &wavelet
     ) {
-      Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
+      Eigen::MatrixBase<T1> & signal = const_cast< Eigen::MatrixBase<T1>& >(signal_);
+
       assert(coeffs.size() == signal.size());
       assert(coeffs.size() % 2 == 0);
 
@@ -36,7 +37,7 @@ namespace {
         Eigen::MatrixBase<T1> const & signal_, WaveletData const &wavelet
     ) {
       Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
-      Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
+      Eigen::MatrixBase<T1> & signal = const_cast< Eigen::MatrixBase<T1>& >(signal_);
       assert(coeffs.rows() == signal.rows() and coeffs.cols() == signal.cols());
       assert(coeffs.rows() % 2 == 0 and coeffs.cols() % 2 == 0);
 
@@ -80,7 +81,7 @@ template<class T0, class T1>
   ) {
     if(levels == 0) return;
     Eigen::MatrixBase<T0> & coeffs = const_cast< Eigen::MatrixBase<T0>& >(coeffs_);
-    Eigen::MatrixBase<T0> & signal = const_cast< Eigen::MatrixBase<T0>& >(signal_);
+    Eigen::MatrixBase<T1> & signal = const_cast< Eigen::MatrixBase<T1>& >(signal_);
     assert(coeffs.rows() == signal.rows());
     assert(coeffs.cols() == signal.cols());
     assert(coeffs.size() % (1u << levels) == 0);
