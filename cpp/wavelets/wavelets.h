@@ -38,7 +38,9 @@ class Wavelet : public WaveletData
           throw std::length_error("Columns of " #NAME " must number a multiple of 2^levels");
 #   define SOPT_WAVELET_MACRO_EQUAL_SIZE(A, B)                                                   \
         if(A.rows() != B.rows() or A.cols() != B.cols())                                         \
-          throw std::length_error("Size of coefficients and signals must match");
+          A.derived().resize(B.rows(), B.cols());                                                \
+        if(A.rows() != B.rows() or A.cols() != B.cols())                                         \
+          throw std::length_error("Incorrect size for output matrix(or could not resize)")
     //! \brief Direct transform
     //! \param[in] signal: computes wavelet coefficients for this signal. Its size must be a
     //! multiple of $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a
@@ -103,7 +105,7 @@ class Wavelet : public WaveletData
       auto indirect(Eigen::MatrixBase<T1> const & coefficients, Eigen::MatrixBase<T0> &signal) const
       -> decltype(indirect_transform(coefficients, signal, 1, *this)) {
         SOPT_WAVELET_MACRO_MULTIPLE(coefficients);
-        SOPT_WAVELET_MACRO_EQUAL_SIZE(coefficients, signal);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(signal, coefficients);
         return indirect_transform(coefficients, signal, levels(), *this);
       }
     //! \brief Indirect transform
@@ -117,7 +119,7 @@ class Wavelet : public WaveletData
       auto indirect(Eigen::MatrixBase<T1> const & coeffs, Eigen::MatrixBase<T0> &&signal) const
       -> decltype(indirect_transform(coeffs, signal, 1, *this)) {
         SOPT_WAVELET_MACRO_MULTIPLE(coeffs);
-        SOPT_WAVELET_MACRO_EQUAL_SIZE(coeffs, signal);
+        SOPT_WAVELET_MACRO_EQUAL_SIZE(signal, coeffs);
         return indirect_transform(coeffs, signal, levels(), *this);
       }
 #   undef SOPT_WAVELET_MACRO_MULTIPLE

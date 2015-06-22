@@ -280,3 +280,18 @@ TEST_CASE("Functor implementation", "[wavelet]") {
     CHECK(input.row(0).isApprox(output.row(1)));
   }
 }
+
+TEST_CASE("Automatic input resizing", "[wavelet]") {
+  using namespace sopt;
+  auto const wavelet = wavelets::factory("DB3", 4);
+  auto const input = t_cMatrix::Random(256, 128).eval();
+  t_cMatrix output(1, 1);
+  wavelet.direct(output, input);
+  CHECK(output.rows() == input.rows());
+  CHECK(output.cols() == input.cols());
+
+  output.resize(1, 1);
+  wavelet.indirect(input, output);
+  CHECK(output.rows() == input.rows());
+  CHECK(output.cols() == input.cols());
+}
