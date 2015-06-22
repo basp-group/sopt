@@ -1,6 +1,6 @@
 #include <wavelets/wavelets.h>
 
-int main(int argc, char const ** argv) {
+int main(int, char const **) {
 
   // Creates Daubechies 4 wavelet, with 5 levels
   auto const wavelets = sopt::wavelets::factory("DB4", 5);
