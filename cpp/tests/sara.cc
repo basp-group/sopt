@@ -14,7 +14,7 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
   using namespace sopt::wavelets;
   using namespace sopt;
 
-  SARA const sara = {factory("DB3", 1), factory("DB1", 2), factory("DB1", 3)};
+  SARA const sara = {{"DB3", 1}, {"DB1", 2}, {"DB1", 3}};
   SECTION("Construction and vector functionality") {
     CHECK(sara.size() == 3);
     CHECK(sara[0].levels() == 1);

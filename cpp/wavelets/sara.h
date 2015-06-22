@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <cmath>
+#include <initializer_list>
+#include <tuple>
 #include "wavelets.h"
 
 namespace sopt { namespace wavelets {
@@ -13,6 +15,8 @@ class SARA : public std::vector<Wavelet>
   public:
     // Constructors
     using std::vector<Wavelet>::vector;
+    //! Easier constructor
+    SARA(std::initializer_list<std::tuple<std::string, t_uint>> const&init);
     //! Destructor
     virtual ~SARA() {}
 
@@ -86,6 +90,9 @@ class SARA : public std::vector<Wavelet>
       auto cmp = [](Wavelet const &a, Wavelet const &b){ return a.levels() < b.levels(); };
       return std::max_element(begin(), end(), cmp)->levels();
     }
+
+    //! Adds a wavelet of specific type
+    void emplace_back(std::string const& name, t_uint levels);
 };
 
 #define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                        \
