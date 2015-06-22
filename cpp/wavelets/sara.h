@@ -101,6 +101,8 @@ template<class T0, class T1>
     SOPT_WAVELET_ERROR_MACRO(signal);
     if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
       coeffs.derived().resize(signal.rows(), signal.cols() * size());
+    if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+      throw std::length_error("Incorrect size for output matrix(or could not resize)");
     auto const Ncols = signal.cols();
     t_Index colindex = Ncols;
     for(auto const &wavelet: *this) {
@@ -119,6 +121,8 @@ template<class T0, class T1>
           "Columns of coefficient matrix and number of wavelets are inconsistent");
     if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
       signal.derived().resize(coeffs.rows(), coeffs.cols() / size());
+    if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+      throw std::length_error("Incorrect size for output matrix(or could not resize)");
     auto const Ncols = signal.cols();
     front().indirect(coeffs.leftCols(Ncols) / std::sqrt(size()), signal);
     for(size_type i(1), colindex(2*Ncols); i < size(); ++i, colindex += Ncols)
