@@ -8,7 +8,7 @@
 namespace sopt { namespace wavelets {
 
 //! Sparsity Averaging Reweighted Analysis
-class SARA : std::vector<Wavelet>
+class SARA : public std::vector<Wavelet>
 {
   public:
     // Constructors
@@ -83,22 +83,25 @@ class SARA : std::vector<Wavelet>
 
     //! Number of levels over which to do transform
     t_uint max_levels() const {
-      return std::max_element(begin(), end(), [](Wavelet const &c){ return c.levels(); })->levels();
+      auto cmp = [](Wavelet const &a, Wavelet const &b){ return a.levels() < b.levels(); };
+      return std::max_element(begin(), end(), cmp)->levels();
     }
 };
 
-#define SOPT_WAVELET_ERROR_MACRO                                                               \
+#define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                        \
     typedef typename T0::Index t_Index;                                                        \
-    if(coeffs.rows() != signal.rows())                                                         \
-      throw std::length_error("Coefficients and signals should have same number of rows");     \
-    if(coeffs.cols() != signal.cols() * t_Index(size()))                                       \
-      throw std::length_error("Inconsistent number of columns in coefficients and signal");
+    if(INPUT.rows() % (1u << max_levels()) != 0)                                               \
+      throw std::length_error("Inconsistent number of columns and wavelet levels");            \
+    else if(INPUT.cols() != 1 and INPUT.cols() % (1u << max_levels()))                         \
+      throw std::length_error("Inconsistent number of rows and wavelet levels");
 
 template<class T0, class T1>
   auto SARA::direct(Eigen::MatrixBase<T1> & coeffs, Eigen::MatrixBase<T0> const &signal) const
   -> decltype(this->front().direct(coeffs, signal)) {
-    SOPT_WAVELET_ERROR_MACRO;
-    auto const Ncols = signal.size();
+    SOPT_WAVELET_ERROR_MACRO(signal);
+    if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+      coeffs.derived().resize(signal.rows(), signal.cols() * size());
+    auto const Ncols = signal.cols();
     t_Index colindex = Ncols;
     for(auto const &wavelet: *this) {
       wavelet.direct(coeffs.leftCols(colindex).rightCols(Ncols), signal);
@@ -110,8 +113,13 @@ template<class T0, class T1>
 template<class T0, class T1>
   auto SARA::indirect(Eigen::MatrixBase<T1> const & coeffs, Eigen::MatrixBase<T0> &signal) const
   -> decltype(this->front().indirect(coeffs, signal)) {
-    SOPT_WAVELET_ERROR_MACRO;
-    auto const Ncols = signal.size();
+    SOPT_WAVELET_ERROR_MACRO(coeffs);
+    if(coeffs.cols() % size() != 0)
+      throw std::length_error(
+          "Columns of coefficient matrix and number of wavelets are inconsistent");
+    if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+      signal.derived().resize(coeffs.rows(), coeffs.cols() / size());
+    auto const Ncols = signal.cols();
     front().indirect(coeffs.leftCols(Ncols) / std::sqrt(size()), signal);
     for(size_type i(1), colindex(2*Ncols); i < size(); ++i, colindex += Ncols)
       signal += (*this)[i].indirect(coeffs.leftCols(colindex).rightCols(Ncols))
@@ -123,20 +131,18 @@ template<class T0, class T1>
 template<class T0>
   auto SARA::indirect(Eigen::MatrixBase<T0> const &coeffs) const
   -> decltype(this->front().indirect(coeffs)) {
-    if(coeffs.cols() % size() != 0)
-      throw std::length_error("Inconsistent number of columns and wavelets");
     typedef decltype(this->front().indirect(coeffs)) t_Output;
     t_Output signal = t_Output::Zero(coeffs.rows(), coeffs.cols() / size());
-    (*this)(coeffs, signal);
+    (*this).indirect(coeffs, signal);
     return signal;
   }
 
 template<class T0>
   auto SARA::direct(Eigen::MatrixBase<T0> const &signal) const
   -> decltype(this->front().direct(signal)) {
-    typedef decltype(this->front()(signal)) t_Output;
+    typedef decltype(this->front().direct(signal)) t_Output;
     t_Output result = t_Output::Zero(signal.rows(), signal.cols() * size());
-    (*this)(result, signal);
+    (*this).direct(result, signal);
     return result;
   }
 

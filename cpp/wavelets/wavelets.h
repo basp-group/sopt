@@ -40,9 +40,9 @@ class Wavelet : public WaveletData
         if(A.rows() != B.rows() or A.cols() != B.cols())                                         \
           throw std::length_error("Size of coefficients and signals must match");
     //! \brief Direct transform
-    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
-    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
-    //! (1-d transform).
+    //! \param[in] signal: computes wavelet coefficients for this signal. Its size must be a
+    //! multiple of $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a
+    //! column vector (1-d transform).
     //! \return wavelet coefficients
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0>
@@ -54,8 +54,9 @@ class Wavelet : public WaveletData
     //! \brief Direct transform
     //! \param[inout] coefficients: Output wavelet coefficients. Must be of the same size and type
     //! as the input.
-    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
-    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
+    //! \param[in] signal: computes wavelet coefficients for this signal. Its size must be a
+    //! multiple of $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a
+    //! column vector
     //! (1-d transform).
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0, class T1>
@@ -68,8 +69,9 @@ class Wavelet : public WaveletData
     //! \brief Direct transform
     //! \param[inout] coefficients: Output wavelet coefficients. Must be of the same size and type
     //! as the input.
-    //! \param[in] signal: computes wavelet coefficients for this signal. It must be a multiple of
-    //! $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector
+    //! \param[in] signal: computes wavelet coefficients for this signal. Its size must be a
+    //! multiple of $2^l$ where $l$ is the number of levels. Can be a matrix (2d-transform) or a
+    //! column vector
     //! (1-d transform).
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data. This version
     //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
@@ -82,8 +84,8 @@ class Wavelet : public WaveletData
         return direct_transform(coefficients, signal, levels(), *this);
       }
     //! \brief Indirect transform
-    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
-    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
+    //! where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
     //! transform).
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0>
@@ -93,8 +95,8 @@ class Wavelet : public WaveletData
         return indirect_transform(coefficients, levels(), *this);
       }
     //! \brief Indirect transform
-    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
-    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
+    //! where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
     //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0, class T1>
@@ -105,8 +107,8 @@ class Wavelet : public WaveletData
         return indirect_transform(coefficients, signal, levels(), *this);
       }
     //! \brief Indirect transform
-    //! \param[in] coefficients: Input wavelet coefficients. It must be a multiple of $2^l$ where
-    //! $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
+    //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
+    //! where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
     //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.  This version
     //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
