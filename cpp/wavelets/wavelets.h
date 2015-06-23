@@ -5,7 +5,7 @@
 #include "wavelet_data.h"
 #include "direct.h"
 #include "indirect.h"
-#include "types.h"
+#include "sopt/types.h"
 
 namespace sopt { namespace wavelets {
 

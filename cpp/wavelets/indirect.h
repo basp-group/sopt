@@ -3,7 +3,7 @@
 
 #include "innards.impl.h"
 #include "wavelet_data.h"
-#include "types.h"
+#include "sopt/types.h"
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt { namespace wavelets {

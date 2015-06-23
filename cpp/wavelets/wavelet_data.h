@@ -1,7 +1,7 @@
 #ifndef SOPT_WAVELET_WAVELET_DATA_H
 #define SOPT_WAVELET_WAVELET_DATA_H
 
-#include "types.h"
+#include "sopt/types.h"
 #include "innards.impl.h"
 
 namespace sopt { namespace wavelets {
