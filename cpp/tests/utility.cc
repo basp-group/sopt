@@ -1,4 +1,5 @@
 #include <random>
+#include <utility>
 #include "catch.hpp"
 
 #include "sopt/utility.h"
@@ -43,3 +44,32 @@ TEST_CASE("Projector on positive quadrant", "[utility]") {
     CHECK(value.imag().isApprox(0e0 * input.real()));
   }
 }
+
+TEST_CASE("Weighted l1 norm", "[utility]") {
+  sopt::t_rVector weight(4);
+  weight << 1, 2, 3, 4;
+
+  SECTION("Real valued") {
+    sopt::t_rVector input(4);
+    input << 5, -6, 7, -8;
+    CHECK(sopt::l1_norm(input, weight) == Approx(5 + 12 + 21 + 32));
+  }
+  SECTION("Complex valued") {
+    sopt::t_complex const i(0, 1);
+    sopt::t_cVector input(4);
+    input << 5. + 5.*i, 6. + 6.*i, 7. + 7.*i, 8. + 8.*i;
+    CHECK(sopt::l1_norm(input, weight) == Approx(std::sqrt(2) * (5 + 12 + 21 + 32)));
+  }
+}
+
+// Checks type traits work
+static_assert(not sopt::details::HasValueType<double>::value, "");
+static_assert(not sopt::details::HasValueType<std::pair<double, int>>::value, "");
+static_assert(sopt::details::HasValueType<std::complex<double>>::value, "");
+static_assert(not sopt::details::HasValueType<sopt::t_cMatrix>::value, "");
+static_assert(sopt::details::HasValueType<sopt::t_cMatrix::Scalar>::value, "");
+
+static_assert(
+    std::is_same<sopt::underlying_value_type<sopt::t_real>::type, sopt::t_real>::value, "");
+static_assert(
+    std::is_same<sopt::underlying_value_type<sopt::t_complex>::type, sopt::t_real>::value, "");
