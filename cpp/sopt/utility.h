@@ -25,6 +25,22 @@ namespace details {
        }
   };
 
+  //! Expression to create projection onto positive orthant
+  template<class SCALAR> class SoftThreshhold {
+     public:
+       typedef typename Eigen::NumTraits<SCALAR>::Real t_Threshhold;
+       SoftThreshhold(t_Threshhold const &threshhold) : threshhold(threshhold) {
+         if(threshhold < 0e0)
+           throw std::domain_error("Threshhold must be negative");
+       }
+       SCALAR operator()(const SCALAR &value) const {
+         auto const normalized = std::abs(value);
+         return normalized < threshhold ? SCALAR(0): (value * (SCALAR(1) - threshhold/normalized));
+       }
+     private:
+       t_Threshhold threshhold;
+  };
+
   // Checks wether a type has contains a type "value_type"
   template<class T, class Enable=void> struct HasValueType {
       using Have = char[1];
@@ -60,11 +76,20 @@ template<class T> class underlying_value_type<T, true> {
 
 //! Expression to create projection onto positive quadrant
 template<class T>
-Eigen::CwiseUnaryOp<details::ProjectPositiveQuadrant<typename T::Scalar>, const T>
+Eigen::CwiseUnaryOp<const details::ProjectPositiveQuadrant<typename T::Scalar>, const T>
 positive_quadrant(Eigen::DenseBase<T> const &input) {
   typedef details::ProjectPositiveQuadrant<typename T::Scalar> Projector;
-  typedef Eigen::CwiseUnaryOp<Projector, const T> UnaryOp;
+  typedef Eigen::CwiseUnaryOp<const Projector, const T> UnaryOp;
   return UnaryOp(input.derived(), Projector());
+}
+
+//! Expression to create soft-threshhold
+template<class T>
+Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
+soft_threshhold(Eigen::DenseBase<T> const &input, typename T::Scalar const &threshhold) {
+  typedef details::SoftThreshhold<typename T::Scalar> Threshhold;
+  typedef Eigen::CwiseUnaryOp<const Threshhold, const T> UnaryOp;
+  return UnaryOp(input.derived(), Threshhold(threshhold));
 }
 
 

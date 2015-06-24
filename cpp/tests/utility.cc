@@ -5,7 +5,7 @@
 #include "sopt/utility.h"
 #include "sopt/types.h"
 
-TEST_CASE("Projector on positive quadrant", "[utility]") {
+TEST_CASE("Projector on positive quadrant", "[utility][project]") {
   using namespace sopt;
 
   SECTION("Real matrix") {
@@ -45,7 +45,7 @@ TEST_CASE("Projector on positive quadrant", "[utility]") {
   }
 }
 
-TEST_CASE("Weighted l1 norm", "[utility]") {
+TEST_CASE("Weighted l1 norm", "[utility][l1]") {
   sopt::t_rVector weight(4);
   weight << 1, 2, 3, 4;
 
@@ -60,6 +60,24 @@ TEST_CASE("Weighted l1 norm", "[utility]") {
     input << 5. + 5.*i, 6. + 6.*i, 7. + 7.*i, 8. + 8.*i;
     CHECK(sopt::l1_norm(input, weight) == Approx(std::sqrt(2) * (5 + 12 + 21 + 32)));
   }
+}
+
+TEST_CASE("Soft threshhold", "[utility][threshhold]") {
+  sopt::t_rVector input(6);
+  input << 1e1, 2e1, 3e1, 4e1, 1e4, 2e4;
+  CHECK_THROWS_AS(sopt::soft_threshhold(input, -10), std::domain_error);
+
+  // check thresshold
+  CHECK(sopt::soft_threshhold(input, 1.1e1)(0) == Approx(0));
+  CHECK(not (sopt::soft_threshhold(input, 1.1e1)(1) == Approx(0)));
+
+  // check linearity
+  auto a = sopt::soft_threshhold(input, 9e0)(0);
+  auto b = sopt::soft_threshhold(input, 4.5e0)(0);
+  auto c = sopt::soft_threshhold(input, 2.25e0)(0);
+  CAPTURE(b - a);
+  CAPTURE(c - b);
+  CHECK((b - a) == Approx(2*(c - b)));
 }
 
 // Checks type traits work
