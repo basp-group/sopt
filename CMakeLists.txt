@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(Sopt C)
+project(Sopt CXX)
 
 # Location of extra cmake includes for the project
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_files)
@@ -12,27 +12,23 @@ include(VersionAndGitRef)
 set_version(0.1)
 get_gitref()
 
-
-# Add C99 flag, since code uses inline
-# yeah, yeah it is GNU C, and others since for ever, but it was not part of the standard.
-include(AddC99Flags)
-
 option(tests          "Enable testing"                         on)
 
+# Add c++11 stuff
+include(AddCPP11Flags)
+include(CheckCXX11Features)
+cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
+
+# search/install dependencies
 include(dependencies)
+
+# sets rpath policy explicitly
+cmake_policy(SET CMP0042 NEW)
+
 if(tests)
   enable_testing()
+  include(catch)
+  include(AddExample)
 endif()
 
-include_directories(
-    "${PROJECT_SOURCE_DIR}/include"
-    "${PROJECT_BINARY_DIR}/include"
-)
-
-# include exernal dependencies
-add_subdirectory(src/c)
-add_subdirectory(include)
-add_subdirectory(doc)
-
-# Exports all Sopt so other packages can access it
-include(export_sopt)
+add_subdirectory(cpp)
