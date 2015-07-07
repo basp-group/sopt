@@ -6,7 +6,7 @@
 #include "wavelets/indirect.h"
 #include "wavelets/direct.h"
 
-typedef Eigen::Matrix<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
+typedef Eigen::Array<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
 t_iVector even(t_iVector const & x) {
   t_iVector result((x.size()+1) / 2);
   for(t_iVector::Index i(0); i < x.size(); i += 2)
@@ -20,9 +20,9 @@ t_iVector odd(t_iVector const & x) {
   return result;
 };
 template<class T>
-Eigen::Matrix<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime>
-upsample(Eigen::MatrixBase<T> const & input) {
-  typedef Eigen::Matrix<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime> Matrix;
+Eigen::Array<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime>
+upsample(Eigen::ArrayBase<T> const & input) {
+  typedef Eigen::Array<typename T::Scalar, T::RowsAtCompileTime, T::ColsAtCompileTime> Matrix;
   Matrix result(input.size() * 2);
   for(t_iVector::Index i(0); i < input.size(); ++i) {
     result(2*i) = input(i);
@@ -48,7 +48,7 @@ t_iVector random_ivector(sopt::t_int size, sopt::t_int min, sopt::t_int max) {
 // Checks round trip operation
 template<class T0>
   void check_round_trip(
-      Eigen::MatrixBase<T0> const& input_, sopt::t_uint db, sopt::t_uint nlevels=1) {
+      Eigen::ArrayBase<T0> const& input_, sopt::t_uint db, sopt::t_uint nlevels=1) {
     auto const input = input_.eval();
     auto const &dbwave = sopt::wavelets::daubechies_data(db);
     auto const transform = sopt::wavelets::direct_transform(input, nlevels, dbwave);
@@ -120,14 +120,14 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
     };
 
     // should all be ok as long as arguments sum: (a * b) + (c * d) == (a' * b') + (c' * d')
-    CHECK(trial(0, 1, 3, 1) == trial(0, 1, 1, 3));
-    CHECK(trial(5, 1, 3, 1) == trial(3, 1, 5, 1));
-    CHECK(trial(1, 5, 3, 1) == trial(3, 1, 5, 1));
-    CHECK(trial(1, 3, 5, 1) == trial(3, 1, 5, 1));
-    CHECK(trial(1, 3, 1, 5) == trial(3, 1, 5, 1));
-    CHECK(trial(1, 0, 4, 2) == trial(3, 1, 5, 1));
-    CHECK(trial(1, -1, 1, 1) == trial(0, 1, 0, 1));
-    CHECK(trial(4, -3, 2, 6) == trial(0, 1, 0, 1));
+    CHECK((trial(0, 1, 3, 1) == trial(0, 1, 1, 3)).all());
+    CHECK((trial(5, 1, 3, 1) == trial(3, 1, 5, 1)).all());
+    CHECK((trial(1, 5, 3, 1) == trial(3, 1, 5, 1)).all());
+    CHECK((trial(1, 3, 5, 1) == trial(3, 1, 5, 1)).all());
+    CHECK((trial(1, 3, 1, 5) == trial(3, 1, 5, 1)).all());
+    CHECK((trial(1, 0, 4, 2) == trial(3, 1, 5, 1)).all());
+    CHECK((trial(1, -1, 1, 1) == trial(0, 1, 0, 1)).all());
+    CHECK((trial(4, -3, 2, 6) == trial(0, 1, 0, 1)).all());
   }
 
   SECTION("Convolve and Down-sample simultaneously") {
@@ -144,7 +144,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
     t_iVector expected(large.size());
     convolve(std::move(actual.head(large.size())), large, small);
     convolve(expected, large, small);
-    CHECK(actual.head(large.size()) == expected);
+    CHECK((actual.head(large.size()) == expected).all());
   }
 
   SECTION("Copy does copy") {
@@ -172,7 +172,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
       up_convolve_sum(actual, coeffs, even(low), odd(low), even(high), odd(high));
       // first up-samples, then does convolve: conceptually simpler but does unnecessary operations
       convolve_sum(expected, upsample(coeffs.head(Nhead)), low, upsample(coeffs.tail(Ntail)), high);
-      CHECK(actual.transpose() == expected.transpose());
+      CHECK((actual == expected).all());
     }
   }
 }
@@ -188,12 +188,12 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
   REQUIRE((data.rows() %  2 == 0 and (data.cols() == 1 or data.cols() % 2 == 0)));
 
   SECTION("Direct transform == two downsample + convolution") {
-     auto const actual = direct_transform(data.row(0).transpose(), 1, wavelet);
+     auto const actual = direct_transform(data.row(0), 1, wavelet);
      t_rVector high(data.cols() / 2), low(data.cols() / 2);
-     down_convolve(high, data.row(0).transpose(), wavelet.direct_filter.high);
-     down_convolve(low, data.row(0).transpose(), wavelet.direct_filter.low);
-     CHECK(low.isApprox(actual.head(data.row(0).size() / 2)));
-     CHECK(high.isApprox(actual.tail(data.row(0).size() / 2)));
+     down_convolve(high, data.row(0), wavelet.direct_filter.high);
+     down_convolve(low, data.row(0), wavelet.direct_filter.low);
+     CHECK(low.transpose().isApprox(actual.head(data.row(0).size() / 2)));
+     CHECK(high.transpose().isApprox(actual.tail(data.row(0).size() / 2)));
   }
 
   SECTION("Indirect transform == two upsample + convolution") {
@@ -215,6 +215,13 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
     for(t_int i(0); i < 20; ++i) {
       check_round_trip(t_rVector::Random(random_integer(2, 100)*2), random_integer(1, 38), 1);
     }
+  }
+
+  SECTION("Round-trip test for two levels") {
+    check_round_trip(t_rVector::Random(8), 1, 2);
+    check_round_trip(t_rVector::Random(8), 2, 2);
+    check_round_trip(t_rVector::Random(16), 4, 2);
+    check_round_trip(t_rVector::Random(52), 10, 2);
   }
 
   t_uint nlevels = 5;

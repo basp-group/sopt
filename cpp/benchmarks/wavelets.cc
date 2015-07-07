@@ -15,8 +15,8 @@ template<class TYPE, unsigned DB=1, unsigned LEVEL=1>
 void direct_matrix(benchmark::State &state) {
   auto const Nx = get_size(state.range_x(), LEVEL);
   auto const Ny = get_size(state.range_y(), LEVEL);
-  auto const input = Eigen::Matrix<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Random(Nx, Ny).eval();
-  auto output = Eigen::Matrix<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Zero(Nx, Ny).eval();
+  auto const input = Eigen::Array<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Random(Nx, Ny).eval();
+  auto output = Eigen::Array<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Zero(Nx, Ny).eval();
   auto const wavelet = sopt::wavelets::factory(get_name(DB), LEVEL);
   while(state.KeepRunning())
     wavelet.direct(output, input);
@@ -27,8 +27,8 @@ template<class TYPE, unsigned DB=1, unsigned LEVEL=1>
 void indirect_matrix(benchmark::State &state) {
   auto const Nx = get_size(state.range_x(), LEVEL);
   auto const Ny = get_size(state.range_y(), LEVEL);
-  auto const input = Eigen::Matrix<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Random(Nx, Ny).eval();
-  auto output = Eigen::Matrix<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Zero(Nx, Ny).eval();
+  auto const input = Eigen::Array<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Random(Nx, Ny).eval();
+  auto output = Eigen::Array<TYPE, Eigen::Dynamic, Eigen::Dynamic>::Zero(Nx, Ny).eval();
   auto const wavelet = sopt::wavelets::factory(get_name(DB), LEVEL);
   while(state.KeepRunning())
     wavelet.indirect(input, output);
@@ -38,8 +38,8 @@ void indirect_matrix(benchmark::State &state) {
 template<class TYPE, unsigned DB=1, unsigned LEVEL=1>
 void direct_vector(benchmark::State &state) {
   auto const Nx = get_size(state.range_x(), LEVEL);
-  auto const input = Eigen::Matrix<TYPE, Eigen::Dynamic, 1>::Random(Nx).eval();
-  auto output = Eigen::Matrix<TYPE, Eigen::Dynamic, 1>::Zero(Nx).eval();
+  auto const input = Eigen::Array<TYPE, Eigen::Dynamic, 1>::Random(Nx).eval();
+  auto output = Eigen::Array<TYPE, Eigen::Dynamic, 1>::Zero(Nx).eval();
   auto const wavelet = sopt::wavelets::factory(get_name(DB), LEVEL);
   while(state.KeepRunning())
     wavelet.direct(output, input);
@@ -48,8 +48,8 @@ void direct_vector(benchmark::State &state) {
 template<class TYPE, unsigned DB=1, unsigned LEVEL=1>
 void indirect_vector(benchmark::State &state) {
   auto const Nx = get_size(state.range_x(), LEVEL);
-  auto const input = Eigen::Matrix<TYPE, Eigen::Dynamic, 1>::Random(Nx).eval();
-  auto output = Eigen::Matrix<TYPE, Eigen::Dynamic, 1>::Zero(Nx).eval();
+  auto const input = Eigen::Array<TYPE, Eigen::Dynamic, 1>::Random(Nx).eval();
+  auto output = Eigen::Array<TYPE, Eigen::Dynamic, 1>::Zero(Nx).eval();
   auto const wavelet = sopt::wavelets::factory(get_name(DB), LEVEL);
   while(state.KeepRunning())
     wavelet.indirect(input, output);

@@ -28,7 +28,7 @@ class SARA : public std::vector<Wavelet>
     //! is n by m * d, with d the number of wavelets.
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0>
-      auto direct(Eigen::MatrixBase<T0> const &signal) const
+      auto direct(Eigen::ArrayBase<T0> const &signal) const
       -> decltype(this->front().direct(signal));
     //! \brief Direct transform
     //! \param[inout] coefficients: Output wavelet coefficients. Must be of the type as the input.
@@ -39,7 +39,7 @@ class SARA : public std::vector<Wavelet>
     //! or a column vector (1-d transform).
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0, class T1>
-      auto direct(Eigen::MatrixBase<T1> & coefficients, Eigen::MatrixBase<T0> const &signal) const
+      auto direct(Eigen::ArrayBase<T1> & coefficients, Eigen::ArrayBase<T0> const &signal) const
       -> decltype(this->front().direct(coefficients, signal));
     //! \brief Direct transform
     //! \param[inout] coefficients: Output wavelet coefficients. Must be of the type as the input.
@@ -52,7 +52,7 @@ class SARA : public std::vector<Wavelet>
     //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
     //! cannonical approach.
     template<class T0, class T1>
-      auto direct(Eigen::MatrixBase<T1> && coefficients, Eigen::MatrixBase<T0> const &signal) const
+      auto direct(Eigen::ArrayBase<T1> && coefficients, Eigen::ArrayBase<T0> const &signal) const
       -> decltype(this->front().direct(coefficients, signal)) {
         return (*this)(coefficients, signal);
       }
@@ -62,7 +62,7 @@ class SARA : public std::vector<Wavelet>
     //! transform).
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0>
-      auto indirect(Eigen::MatrixBase<T0> const &coefficients) const
+      auto indirect(Eigen::ArrayBase<T0> const &coefficients) const
       -> decltype(this->front().indirect(coefficients));
     //! \brief Indirect transform
     //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
@@ -70,7 +70,7 @@ class SARA : public std::vector<Wavelet>
     //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0, class T1>
-      auto indirect(Eigen::MatrixBase<T1> const & coefficients, Eigen::MatrixBase<T0> &signal) const
+      auto indirect(Eigen::ArrayBase<T1> const & coefficients, Eigen::ArrayBase<T0> &signal) const
       -> decltype(this->front().indirect(coefficients, signal));
     //! \brief Indirect transform
     //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
@@ -80,7 +80,7 @@ class SARA : public std::vector<Wavelet>
     //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
     //! cannonical approach.
     template<class T0, class T1>
-      auto indirect(Eigen::MatrixBase<T1> const & coeffs, Eigen::MatrixBase<T0> &&signal) const
+      auto indirect(Eigen::ArrayBase<T1> const & coeffs, Eigen::ArrayBase<T0> &&signal) const
       -> decltype(this->front().indirect(coeffs, signal)) {
         return (*this)(coeffs, signal);
       }
@@ -103,7 +103,7 @@ class SARA : public std::vector<Wavelet>
       throw std::length_error("Inconsistent number of rows and wavelet levels");
 
 template<class T0, class T1>
-  auto SARA::direct(Eigen::MatrixBase<T1> & coeffs, Eigen::MatrixBase<T0> const &signal) const
+  auto SARA::direct(Eigen::ArrayBase<T1> & coeffs, Eigen::ArrayBase<T0> const &signal) const
   -> decltype(this->front().direct(coeffs, signal)) {
     SOPT_WAVELET_ERROR_MACRO(signal);
     if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
@@ -120,7 +120,7 @@ template<class T0, class T1>
   }
 
 template<class T0, class T1>
-  auto SARA::indirect(Eigen::MatrixBase<T1> const & coeffs, Eigen::MatrixBase<T0> &signal) const
+  auto SARA::indirect(Eigen::ArrayBase<T1> const & coeffs, Eigen::ArrayBase<T0> &signal) const
   -> decltype(this->front().indirect(coeffs, signal)) {
     SOPT_WAVELET_ERROR_MACRO(coeffs);
     if(coeffs.cols() % size() != 0)
@@ -140,7 +140,7 @@ template<class T0, class T1>
 # undef SOPT_WAVELET_ERROR_MACRO
 
 template<class T0>
-  auto SARA::indirect(Eigen::MatrixBase<T0> const &coeffs) const
+  auto SARA::indirect(Eigen::ArrayBase<T0> const &coeffs) const
   -> decltype(this->front().indirect(coeffs)) {
     typedef decltype(this->front().indirect(coeffs)) t_Output;
     t_Output signal = t_Output::Zero(coeffs.rows(), coeffs.cols() / size());
@@ -149,7 +149,7 @@ template<class T0>
   }
 
 template<class T0>
-  auto SARA::direct(Eigen::MatrixBase<T0> const &signal) const
+  auto SARA::direct(Eigen::ArrayBase<T0> const &signal) const
   -> decltype(this->front().direct(signal)) {
     typedef decltype(this->front().direct(signal)) t_Output;
     t_Output result = t_Output::Zero(signal.rows(), signal.cols() * size());
