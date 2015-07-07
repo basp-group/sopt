@@ -3,7 +3,7 @@ if(NOT TARGET examples)
 endif()
 
 function(add_example targetname)
-  cmake_parse_arguments(example "NOTEST" "WORKING_DIRECTORY" "LIBRARIES;LABELS" ${ARGN})
+  cmake_parse_arguments(example "NOTEST" "WORKING_DIRECTORY" "LIBRARIES;LABELS;DEPENDS" ${ARGN})
 
   # Source deduce from targetname if possible
   unset(source)
@@ -20,6 +20,9 @@ function(add_example targetname)
     target_link_libraries(example_${targetname} ${example_LIBRARIES})
   endif()
   add_dependencies(examples example_${targetname})
+  if(example_DEPENDS)
+    add_dependencies(example_${targetname} ${example_DEPENDS})
+  endif()
 
   # Add to tests
   if(NOT example_NOTEST)
