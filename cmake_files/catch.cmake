@@ -44,7 +44,8 @@ endfunction()
 
 # Then adds a function to create a test
 function(add_catch_test testname)
-  cmake_parse_arguments(catch "NOMAIN" "WORKING_DIRECTORY" "LIBRARIES;LABELS;DEPENDS" ${ARGN})
+  cmake_parse_arguments(catch
+    "NOMAIN" "WORKING_DIRECTORY;SEED" "LIBRARIES;LABELS;DEPENDS;ARGUMENTS" ${ARGN})
 
   # Source deduce from testname if possible
   unset(source)
@@ -78,7 +79,13 @@ function(add_catch_test testname)
   if(catch_WORKING_DIRECTORY)
     set(EXTRA_ARGS WORKING_DIRECTORY ${catch_WORKING_DIRECTORY})
   endif()
-  add_test(NAME ${testname} COMMAND test_${testname} ${EXTRA_ARGS})
+  set(arguments ${catch_ARGUMENTS})
+  if(catch_SEED)
+    list(APPEND arguments --rng-seed ${catch_SEED})
+  else()
+    list(APPEND arguments --rng-seed time)
+  endif()
+  add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
 
   list(APPEND catch_LABELS catch)
   set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
