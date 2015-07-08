@@ -16,7 +16,10 @@ TEST_CASE("Conjugate gradient", "[cg]") {
 
     CHECK(actual.niters > 0);
     CHECK(actual.residual == Approx(0));
-    CHECK((A.matrix() * actual.result).isApprox(expected.matrix(), 1e-7));
+    CAPTURE(actual.residual);
+    CAPTURE((A.matrix() * actual.result).transpose());
+    CAPTURE(expected.transpose());
+    CHECK((A.matrix() * actual.result).isApprox(expected.matrix(), 1e-6));
   }
 
   SECTION("Complex valued") {
@@ -28,6 +31,9 @@ TEST_CASE("Conjugate gradient", "[cg]") {
 
     CHECK(actual.niters > 0);
     CHECK(actual.residual == Approx(0));
-    CHECK((A.matrix() * actual.result).isApprox(expected.matrix(), 1e-7));
+    CAPTURE(actual.residual);
+    CAPTURE((A.matrix() * actual.result).transpose());
+    CAPTURE(expected.transpose());
+    CHECK((A.matrix() * actual.result).isApprox(expected.matrix(), 1e-6));
   }
 }
