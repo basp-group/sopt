@@ -101,36 +101,34 @@ class ConjugateGradient {
 template<class T0, class T1, class T2>
   ConjugateGradient::Diagnostic ConjugateGradient::implementation(
       Eigen::MatrixBase<T0> &x, T2 const &A, Eigen::MatrixBase<T1> const & b) const {
-
-    x.resize(b.size());
-    if(b.transpose() * b < tolerance()) {
-      x.fill(0);
-      return {0, 0, 1};
-    }
-
     typedef typename T0::Scalar Scalar;
     typedef typename underlying_value_type<Scalar>::type Real;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
 
+
+    x.resize(b.size());
+    if(std::abs((b.transpose().conjugate() * b)(0)) < tolerance()) {
+      x.fill(0);
+      return {0, 0, 1};
+    }
+
     t_Vector Ap(b.size());
     Scalar alpha;
-
-    Real const tolerance(this->tolerance());
 
     x = b;
     t_Vector residuals = b - A*x;
     t_Vector p = residuals;
-    Scalar residual = residuals.transpose() * residuals;
+    Real residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
 
     t_uint i(0);
     for(; i < itermax() || itermax() == 0 ; ++i) {
       Ap = A * p;
-      Real alpha = residual / (p.transpose() * Ap);
+      Scalar alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
       residuals -= alpha * Ap;
 
-      Scalar new_residual = residuals.transpose() * residuals;
-      if(std::abs(new_residual) < tolerance) {
+      Real new_residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
+      if(std::abs(new_residual) < tolerance()) {
         residual = new_residual;
         break;
       }
@@ -138,7 +136,7 @@ template<class T0, class T1, class T2>
       p = residuals + new_residual / residual * p;
       residual = new_residual;
     }
-    return {i, residual, residual < tolerance};
+    return {i, residual, residual < tolerance()};
   }
 } /* sopt */ 
 #endif
