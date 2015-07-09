@@ -46,27 +46,12 @@ class ConjugateGradient {
           Eigen::MatrixBase<T2> const &b) const {
         return operator()(x, ApplyMatrix<decltype(A)>(A), b);
       }
-    //! \brief Computes $x$ for $Ax=b$
-    //! \details Specialization that converts x and b from array-like object to matrix-like objects.
     template<class T0, class T1, class T2>
       Diagnostic operator()(
-          Eigen::ArrayBase<T0> &x,
-          Eigen::ArrayBase<T1> const &A,
-          Eigen::ArrayBase<T2> const &b) const {
-        return operator()(x.matrix(), A.matrix(), b.matrix());
-      }
-    //! \brief Computes $x$ for $Ax=b$
-    //! \details Specialization that converts x and b from array-like object to matrix-like objects.
-    //! It expects A to be a functor.
-    template<class T0, class T1, class T2>
-      typename std::enable_if<
-        not std::is_base_of<Eigen::EigenBase<T1>, T1>::value,
-        Diagnostic
-      >::type operator()(
-          Eigen::ArrayBase<T0> &x,
-          T1 const &A,
-          Eigen::ArrayBase<T2> const &b) const {
-        return operator()(x.matrix(), A, b.matrix());
+          Eigen::MatrixBase<T0> &&x,
+          Eigen::MatrixBase<T1> const &A,
+          Eigen::MatrixBase<T2> const &b) const {
+        return operator()(x, ApplyMatrix<decltype(A)>(A), b);
       }
     //! \brief Computes $x$ for $Ax=b$
     //! \details Specialisation where A is a functor and b and x are matrix-like objects. This is
@@ -76,13 +61,23 @@ class ConjugateGradient {
         not std::is_base_of<Eigen::EigenBase<T1>, T1>::value,
         Diagnostic
       >::type operator()(
-          Eigen::MatrixBase<T0> &x,
-          T1 const &A,
-          Eigen::MatrixBase<T2> const &b) const {
+          Eigen::MatrixBase<T0> &x, T1 const &A, Eigen::MatrixBase<T2> const &b) const {
         return implementation(x, A, b);
       }
     //! \brief Computes $x$ for $Ax=b$
-    //! \details Specialisation where x is constructed during call and returned.
+    //! \details Specialisation where A is a functor and b and x are matrix-like objects. This is
+    //! the innermost specialization.
+    template<class T0, class T1, class T2>
+      typename std::enable_if<
+        not std::is_base_of<Eigen::EigenBase<T1>, T1>::value,
+        Diagnostic
+      >::type operator()(
+          Eigen::MatrixBase<T0> &&x, T1 const &A, Eigen::MatrixBase<T2> const &b) const {
+        return implementation(x, A, b);
+      }
+    //! \brief Computes $x$ for $Ax=b$
+    //! \details Specialisation where x is constructed during call and returned. And x is a matrix
+    //! rather than an array.
     template<class T0, class A_TYPE>
       DiagnosticAndResult<typename T0::Scalar> operator()(
           A_TYPE const& A, Eigen::MatrixBase<T0> const& b) const {
@@ -91,16 +86,6 @@ class ConjugateGradient {
         *static_cast<Diagnostic*>(&result) = operator()(result.result, A, b);
         return result;
       }
-    //! \brief Computes $x$ for $Ax=b$
-    //! \details Specialisation where x is constructed during call and returned.
-    template<class T0, class T1>
-      DiagnosticAndResult<typename T0::Scalar> operator()(
-          Eigen::ArrayBase<T1> const& A, Eigen::ArrayBase<T0> const& b) const {
-        return operator()(A.matrix(), b.matrix());
-    }
-
-    template<class T0, class T_FUNC>
-      Diagnostic operator()(Eigen::ArrayBase<T0> &x, T_FUNC A, Eigen::ArrayBase<T0> const &b) const;
 
     //! \brief Maximum number of iterations
     //! \details 0 means algorithm breaks only if convergence is reached.
