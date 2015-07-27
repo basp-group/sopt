@@ -1,1 +1,6 @@
 add_example(wavelets LIBRARIES wavelets)
+add_example(sara LIBRARIES wavelets)
+add_example(positive_quadrant_projection DEPENDS lookup_dependencies)
+add_example(l1_norm DEPENDS lookup_dependencies)
+add_example(soft_threshhold DEPENDS lookup_dependencies)
+add_example(conjugate_gradient DEPENDS lookup_dependencies)

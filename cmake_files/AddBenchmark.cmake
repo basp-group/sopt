@@ -7,7 +7,8 @@ if(NOT TARGET benchmarks)
 endif()
 
 function(add_benchmark targetname)
-  cmake_parse_arguments(benchmark "" "WORKING_DIRECTORY" "LIBRARIES;LABELS;COMPILE_FLAGS" ${ARGN})
+  cmake_parse_arguments(benchmark
+    "" "WORKING_DIRECTORY" "LIBRARIES;LABELS;COMPILE_FLAGS;DEPENDS" ${ARGN})
 
   # Source deduce from targetname if possible
   unset(source)
@@ -25,6 +26,12 @@ function(add_benchmark targetname)
   if(benchmark_COMPILE_FLAGS)
     set_target_properties(benchmark_${targetname}
       PROPERTIES COMPILE_FLAGS ${benchmark_COMPILE_FLAGS})
+  endif()
+  if(TARGET GBenchmark)
+    list(APPEND benchmark_DEPENDS GBenchmark)
+  endif()
+  if(benchmark_DEPENDS)
+    add_dependencies(benchmark_${targetname} ${benchmark_DEPENDS})
   endif()
 
   if(EXISTS "${GBENCHMARK_LIBRARY}")

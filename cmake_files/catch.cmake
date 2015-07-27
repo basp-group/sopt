@@ -8,7 +8,7 @@ if(NOT CATCH_FOUND)
   set(catch_url
       https://raw.githubusercontent.com/philsquared/Catch/develop/single_include/catch.hpp)
   set(catch_file "${EXTERNAL_ROOT}/include/catch.hpp")
-  set(catch_md5 28cf206675d0509d1a92b01543aced8e)
+  set(catch_md5 64eaea293d6084afdede76b1f5713d34)
   file(MAKE_DIRECTORY "${EXTERNAL_ROOT}/include")
   file(DOWNLOAD ${catch_url} "${catch_file}")
   file(MD5 "${catch_file}" actual_md5)
@@ -44,7 +44,8 @@ endfunction()
 
 # Then adds a function to create a test
 function(add_catch_test testname)
-  cmake_parse_arguments(catch "NOMAIN" "WORKING_DIRECTORY" "LIBRARIES;LABELS" ${ARGN})
+  cmake_parse_arguments(catch
+    "NOMAIN" "WORKING_DIRECTORY;SEED" "LIBRARIES;LABELS;DEPENDS;ARGUMENTS" ${ARGN})
 
   # Source deduce from testname if possible
   unset(source)
@@ -69,13 +70,22 @@ function(add_catch_test testname)
   if(catch_LIBRARIES)
     target_link_libraries(test_${testname} ${catch_LIBRARIES})
   endif()
+  if(catch_DEPENDS)
+    add_dependencies(test_${testname} ${catch_DEPENDS})
+  endif()
   include_directories(${CATCH_INCLUDE_DIR})
 
   unset(EXTRA_ARGS)
   if(catch_WORKING_DIRECTORY)
     set(EXTRA_ARGS WORKING_DIRECTORY ${catch_WORKING_DIRECTORY})
   endif()
-  add_test(NAME ${testname} COMMAND test_${testname} ${EXTRA_ARGS})
+  set(arguments ${catch_ARGUMENTS})
+  if(catch_SEED)
+    list(APPEND arguments --rng-seed ${catch_SEED})
+  else()
+    list(APPEND arguments --rng-seed time)
+  endif()
+  add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
 
   list(APPEND catch_LABELS catch)
   set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
