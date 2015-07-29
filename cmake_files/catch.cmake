@@ -8,7 +8,7 @@ if(NOT CATCH_FOUND)
   set(catch_url
       https://raw.githubusercontent.com/philsquared/Catch/develop/single_include/catch.hpp)
   set(catch_file "${EXTERNAL_ROOT}/include/catch.hpp")
-  set(catch_md5 64eaea293d6084afdede76b1f5713d34)
+  set(catch_md5 94226cd8944458114e4c6f1bb0b85579)
   file(MAKE_DIRECTORY "${EXTERNAL_ROOT}/include")
   file(DOWNLOAD ${catch_url} "${catch_file}")
   file(MD5 "${catch_file}" actual_md5)
