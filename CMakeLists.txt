@@ -13,6 +13,7 @@ set_version(0.1)
 get_gitref()
 
 option(tests          "Enable testing"                         on)
+option(python         "Enable python"                          on)
 option(benchmarks     "Enable benchmarking"                    on)
 
 # Add c++11 stuff
@@ -36,3 +37,8 @@ if(benchmarks)
 endif()
 
 add_subdirectory(cpp)
+if(python)
+  include(python_dependencies)
+  include(PythonModule)
+  add_subdirectory(python)
+endif()
