@@ -1,4 +1,5 @@
 add_catch_test(wavelets LIBRARIES wavelets)
 add_catch_test(sara LIBRARIES wavelets)
 add_catch_test(utility LIBRARIES wavelets)
+add_catch_test(wrapper)
 add_catch_test(conjugate_gradient)
