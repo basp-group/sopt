@@ -76,3 +76,4 @@ images/wavedec.tiff
 lib/*.a
 build/
 .*.swp
+.settings
