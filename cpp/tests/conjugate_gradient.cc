@@ -6,7 +6,7 @@
 TEST_CASE("Conjugate gradient", "[cg]") {
   using namespace sopt;
 
-  ConjugateGradient const cg(0, 1e-12);
+  ConjugateGradient const cg(std::numeric_limits<t_uint>::max(), 1e-12);
   SECTION("Real valued") {
     auto const A = t_rMatrix::Random(10, 10).eval();
     auto const AtA = (A.transpose().matrix() * A.matrix()).eval();

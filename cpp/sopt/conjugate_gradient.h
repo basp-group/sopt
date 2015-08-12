@@ -2,6 +2,8 @@
 #define SOPT_CONJUGATE_GRADIENT
 
 #include <type_traits>
+#include <limits>
+
 #include "types.h"
 #include "utility.h"
 #include "wrapper.h"
@@ -30,7 +32,7 @@ class ConjugateGradient {
     //! \param[in] itermax: Maximum number of iterations. 0 means algorithm breaks only if
     //! convergence is reached.
     //! \param[in] tolerance: Convergence criteria
-    ConjugateGradient(t_uint itermax=0, t_real tolerance=1e-8)
+    ConjugateGradient(t_uint itermax=std::numeric_limits<t_uint>::max(), t_real tolerance=1e-8)
       : tolerance_(tolerance), itermax_(itermax) {}
     virtual ~ConjugateGradient() {}
 
@@ -125,7 +127,7 @@ template<class VECTOR, class T1, class MATRIXLIKE>
     Real residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
 
     t_uint i(0);
-    for(; i < itermax() || itermax() == 0 ; ++i) {
+    for(; i < itermax(); ++i) {
       Ap.noalias() = A * p;
       Scalar alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
