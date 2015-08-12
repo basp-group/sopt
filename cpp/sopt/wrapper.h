@@ -15,10 +15,11 @@ template<class FUNCTION, class DERIVED>
       typedef typename DERIVED::Index Index;
 
       AppliedFunction(FUNCTION const &func, DERIVED const &x) : func(func), x(x) {}
+      AppliedFunction(AppliedFunction const &c) : func(c.func), x(c.x) {}
+      AppliedFunction(AppliedFunction &&c) : func(std::move(c.func)), x(c.x) {}
 
       template<class DESTINATION> void evalTo(DESTINATION &destination) const {
         destination.resizeLike(x);
-        assert(func);
         func(destination, x);
       }
 
@@ -39,6 +40,8 @@ template<class VECTOR> class WrapFunction {
     typedef std::function<void(VECTOR &out, VECTOR const &input)> t_Function;
 
     WrapFunction(t_Function const &func) : func(func) {}
+    WrapFunction(WrapFunction const &c) : func(c.func) {}
+    WrapFunction(WrapFunction const &&c) : func(std::move(c.func)) {}
 
     //! Function application form
     template<class T0>
