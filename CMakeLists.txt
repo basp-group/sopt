@@ -14,6 +14,7 @@ get_gitref()
 
 option(tests          "Enable testing"                         on)
 option(benchmarks     "Enable benchmarking"                    on)
+option(logging        "Enable logging"                         on)
 
 # Add c++11 stuff
 include(AddCPP11Flags)
