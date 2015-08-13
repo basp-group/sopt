@@ -1,19 +1,19 @@
-#ifndef SOPT_L1_H
-#define SOPT_L1_H
+#ifndef SOPT_SDMM_H
+#define SOPT_SDMM_H
 
 #include <vector>
 #include <limits>
 
 #include "types.h"
 #include "linear_transform.h"
-#include "proximals.h"
+#include "proximal.h"
 #include "wrapper.h"
 #include "exception.h"
 #include "conjugate_gradient.h"
 
-namespace sopt {
+namespace sopt { namespace algorithm {
 
-template<class SCALAR> class L1SDMM {
+template<class SCALAR> class SDMM {
   public:
     //! Values indicating how the algorithm ran
     struct Diagnostic {
@@ -35,18 +35,18 @@ template<class SCALAR> class L1SDMM {
     //! Type of the proximal functions
     typedef std::function<void(t_Vector &, Scalar, t_Vector const &)> t_Proximal;
     //! Type of the convergence function
-    typedef std::function<bool(L1SDMM const&, t_Vector const&)> t_IsConverged;
+    typedef std::function<bool(SDMM const&, t_Vector const&)> t_IsConverged;
 
-    L1SDMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8),
+    SDMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8),
       conjugate_gradient_(std::numeric_limits<t_uint>::max(), 1e-6),
-      is_converged_([](L1SDMM const&, t_Vector const&) { return false; }) {}
-    virtual ~L1SDMM() {}
+      is_converged_([](SDMM const&, t_Vector const&) { return false; }) {}
+    virtual ~SDMM() {}
 
     // Macro helps define properties that can be initialized as in
-    // auto sdmm  = L1SDMM<float>().prop0(value).prop1(value);
+    // auto sdmm  = SDMM<float>().prop0(value).prop1(value);
 #   define SOPT_MACRO(NAME, TYPE)                                                   \
         TYPE NAME() const { return NAME ## _; }                                     \
-        L1SDMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; } \
+        SDMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; } \
       protected:                                                                    \
         TYPE NAME ## _;                                                             \
       public:
@@ -60,14 +60,14 @@ template<class SCALAR> class L1SDMM {
     SOPT_MACRO(is_converged, t_IsConverged);
 #   undef SOPT_MACRO
     //! Helps setup conjugate gradient
-    L1SDMM<SCALAR> & conjugate_gradient(t_uint itermax, t_real tolerance) {
+    SDMM<SCALAR> & conjugate_gradient(t_uint itermax, t_real tolerance) {
       conjugate_gradient().itermax(itermax);
       conjugate_gradient().tolerance(tolerance);
       return *this;
     }
     //! \brief Appends a proximal and linear transform
     //! \details Makes for easier construction
-    template<class PROXIMAL, class ... T> L1SDMM<SCALAR>& append(PROXIMAL proximal, T ... args) {
+    template<class PROXIMAL, class ... T> SDMM<SCALAR>& append(PROXIMAL proximal, T ... args) {
       proximals().emplace_back(proximal);
       transforms().emplace_back(linear_transform(args...));
       return *this;
@@ -92,9 +92,9 @@ template<class SCALAR> class L1SDMM {
     std::vector<t_Proximal> & proximals() { return proximals_; }
     //! Lazy call to specific proximal function
     template<class T0>
-      proximals::details::AppliedProximalFunction<t_Proximal const&, Eigen::MatrixBase<T0>>
+      proximal::details::AppliedProximalFunction<t_Proximal const&, Eigen::MatrixBase<T0>>
       proximals(t_uint i, Eigen::MatrixBase<T0> const &x) const {
-        typedef proximals::details::AppliedProximalFunction<
+        typedef proximal::details::AppliedProximalFunction<
           t_Proximal const&, Eigen::MatrixBase<T0>
         > t_LazyProximal;
         return t_LazyProximal(proximals()[i], gamma(), x);
@@ -129,8 +129,8 @@ template<class SCALAR> class L1SDMM {
 };
 
 template<class SCALAR>
-  typename L1SDMM<SCALAR>::Diagnostic
-  L1SDMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
+  typename SDMM<SCALAR>::Diagnostic
+  SDMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
     ConjugateGradient::Diagnostic cg_diagnostic;
     bool  convergence = false;
     t_uint niters (0);
@@ -160,7 +160,7 @@ template<class SCALAR>
   }
 
 template<class SCALAR>
-  ConjugateGradient::Diagnostic L1SDMM<SCALAR>::solve_for_xn(
+  ConjugateGradient::Diagnostic SDMM<SCALAR>::solve_for_xn(
       t_Vector &out, t_Vectors const &y, t_Vectors const &z) const {
 
     assert(z.size() == transforms().size());
@@ -193,7 +193,7 @@ template<class SCALAR>
   }
 
 template<class SCALAR>
-  void L1SDMM<SCALAR>::update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
+  void SDMM<SCALAR>::update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
     for(t_uint i(0); i < transforms().size(); ++i) {
       t_Vector const Lx_i = transforms(i) * x;
       z[i] += Lx_i;
@@ -203,9 +203,9 @@ template<class SCALAR>
   }
 
 template<class SCALAR>
-  void L1SDMM<SCALAR>::initialization(t_Vectors& y, t_Vector const& x) const {
+  void SDMM<SCALAR>::initialization(t_Vectors& y, t_Vector const& x) const {
     for(t_uint i(0); i < transforms().size(); i++)
       y[i] = transforms(i) * x;
   }
-} /* sopt */
+}} /* sopt::algorithm */
 #endif

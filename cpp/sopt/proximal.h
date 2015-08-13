@@ -1,5 +1,5 @@
-#ifndef SOPT_PROXIMALS_H
-#define SOPT_PROXIMALS_H
+#ifndef SOPT_PROXIMAL_H
+#define SOPT_PROXIMAL_H
 
 #include <iostream>
 #include <Eigen/Core>
@@ -7,7 +7,7 @@
 
 namespace sopt {
 //! Holds some standard proximals
-namespace proximals {
+namespace proximal {
 
 namespace details {
   //! Expression referencing a lazy proximal function call
@@ -117,11 +117,11 @@ template<class FUNCTION, class VECTOR>
     return Translation<FUNCTION, VECTOR>(func, translation);
   }
 
-}} /* proximals::sopt */
+}} /* sopt::proximal */
 
 namespace Eigen { namespace internal {
   template<class FUNCTION, class VECTOR>
-    struct traits<sopt::proximals::details::AppliedProximalFunction<FUNCTION, VECTOR>> {
+    struct traits<sopt::proximal::details::AppliedProximalFunction<FUNCTION, VECTOR>> {
       typedef typename VECTOR::PlainObject ReturnType;
     };
 }}

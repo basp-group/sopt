@@ -1,8 +1,8 @@
 #include <random>
 #include "catch.hpp"
 
-#include "sopt/proximals.h"
-#include "sopt/l1.h"
+#include "sopt/proximal.h"
+#include "sopt/sdmm.h"
 
 std::random_device rd;
 std::default_random_engine rengine(rd());
@@ -18,26 +18,26 @@ typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
 auto const N = 3;
 
 // Makes members public so we can test one at a time
-class IntrospectSDMM : public sopt::L1SDMM<sopt::t_real> {
+class IntrospectSDMM : public sopt::algorithm::SDMM<sopt::t_real> {
   public:
     virtual void initialization(t_Vectors &y, t_Vector const &x) const {
-      return sopt::L1SDMM<sopt::t_real>::initialization(y, x);
+      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, x);
     }
     sopt::ConjugateGradient::Diagnostic solve_for_xn(
         t_Vector &out, t_Vectors const &y, t_Vectors const &z) const {
-      return sopt::L1SDMM<sopt::t_real>::solve_for_xn(out, y, z);
+      return sopt::algorithm::SDMM<sopt::t_real>::solve_for_xn(out, y, z);
     }
     virtual void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
-      return sopt::L1SDMM<sopt::t_real>::update_directions(y, z, x);
+      return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
     }
-    using sopt::L1SDMM<sopt::t_real>::t_Vectors;
+    using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
 };
 
 TEST_CASE("Proximal translation", "[proximal]") {
   using namespace sopt;
   t_Vector const translation = t_Vector::Ones(N) * 5;
-  auto const g = proximals::EuclidianNorm();
-  auto const gT= proximals::translate(g, -translation);
+  auto const g = proximal::EuclidianNorm();
+  auto const gT= proximal::translate(g, -translation);
   t_Vector const input = t_Vector::Random(N).array() + 1e0;
   CHECK(g(0.1, input).isApprox((1e0 - 0.1/input.stableNorm()) * input));
   auto const gamma = input.stableNorm() * 0.5;
@@ -59,9 +59,9 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   t_Vector const target0 = t_Vector::Zero(N);
   t_Vector const target1 = t_Vector::Random(N);
 
-  auto always_false = [](L1SDMM<Scalar> const&, t_Vector const &) { return false; };
-  auto const g0 = proximals::translate(proximals::EuclidianNorm(), -target0);
-  auto const g1 = proximals::translate(proximals::EuclidianNorm(), -target1);
+  auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
+  auto const g0 = proximal::translate(proximal::EuclidianNorm(), -target0);
+  auto const g1 = proximal::translate(proximal::EuclidianNorm(), -target1);
   t_Vector const input = 10 * t_Vector::Random(N);
 
   IntrospectSDMM sdmm = IntrospectSDMM();
@@ -180,14 +180,14 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[wavelet]") {
   t_Vector const target0 = t_Vector::Random(N) * 2;
   t_Vector const target1 = t_Vector::Random(N) * 4;
 
-  auto always_false = [](L1SDMM<Scalar> const&, t_Vector const &) { return false; };
-  auto sdmm = L1SDMM<Scalar>()
+  auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
+  auto sdmm = algorithm::SDMM<Scalar>()
     .itermax(500)
     .gamma(1)
     .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
     .is_converged(always_false) // iterates until itermax is reached
-    .append(proximals::translate(proximals::EuclidianNorm(), -target0), Id)
-    .append(proximals::translate(proximals::EuclidianNorm(), -target1), Id);
+    .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
+    .append(proximal::translate(proximal::EuclidianNorm(), -target1), Id);
 
   t_Vector result;
   SECTION("Just two operators") {
@@ -202,7 +202,7 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[wavelet]") {
 
   SECTION("Three operators") {
     t_Vector const target2 = t_Vector::Random(N) * 8;
-    sdmm.append(proximals::translate(proximals::EuclidianNorm(), -target2), Id);
+    sdmm.append(proximal::translate(proximal::EuclidianNorm(), -target2), Id);
     auto const diagnostic = sdmm(result, t_Vector::Random(N));
     CHECK(not diagnostic.good);
     CHECK(diagnostic.niters == sdmm.itermax());
