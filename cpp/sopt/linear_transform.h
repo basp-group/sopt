@@ -25,6 +25,18 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
 
     LinearTransform(t_Function const &direct, t_Function const &indirect)
       : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {}
+    LinearTransform(LinearTransform const &c)
+      : details::WrapFunction<VECTOR>(c), indirect_(c.indirect_) {}
+    LinearTransform(LinearTransform &&c)
+      : details::WrapFunction<VECTOR>(std::move(c)), indirect_(std::move(c.indirect_)) {}
+    void operator=(LinearTransform const &c) {
+      details::WrapFunction<VECTOR>::operator=(c);
+      indirect_ = c.indirect_;
+    }
+    void operator=(LinearTransform &&c) {
+      details::WrapFunction<VECTOR>::operator=(std::move(c));
+      indirect_ = std::move(c.indirect_);
+    }
 
     //! Indirect transform
     details::WrapFunction<VECTOR> dagger() const { return details::wrap(indirect_); }
@@ -32,7 +44,7 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
 
   private:
     //! Function applying conjugate transpose operator
-    t_Function const indirect_;
+    t_Function indirect_;
 };
 
 //! Helper function to creates a function operator

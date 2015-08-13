@@ -42,6 +42,8 @@ template<class VECTOR> class WrapFunction {
     WrapFunction(t_Function const &func) : func(func) {}
     WrapFunction(WrapFunction const &c) : func(c.func) {}
     WrapFunction(WrapFunction const &&c) : func(std::move(c.func)) {}
+    void operator=(WrapFunction const &c) { func = c.func; }
+    void operator=(WrapFunction &&c) { func = std::move(c.func); }
 
     //! Function application form
     template<class T0>
@@ -73,7 +75,7 @@ template<class VECTOR> class WrapFunction {
 
   private:
     //! Reference function
-    t_Function const func;
+    t_Function func;
 };
 
 //! Helper function to wrap functor into expression-able object
