@@ -1,6 +1,7 @@
 #include <random>
 #include "catch.hpp"
 
+#include <Eigen/Dense>
 #include "sopt/proximal.h"
 #include "sopt/sdmm.h"
 
@@ -18,16 +19,16 @@ typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
 auto const N = 3;
 
 // Makes members public so we can test one at a time
-class IntrospectSDMM : public sopt::algorithm::SDMM<sopt::t_real> {
+class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
   public:
-    virtual void initialization(t_Vectors &y, t_Vector const &x) const {
+    void initialization(t_Vectors &y, t_Vector const &x) const override {
       return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, x);
     }
     sopt::ConjugateGradient::Diagnostic solve_for_xn(
-        t_Vector &out, t_Vectors const &y, t_Vectors const &z) const {
+        t_Vector &out, t_Vectors const &y, t_Vectors const &z) const override {
       return sopt::algorithm::SDMM<sopt::t_real>::solve_for_xn(out, y, z);
     }
-    virtual void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
+    void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const override {
       return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
     }
     using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
@@ -173,12 +174,13 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   }
 }
 
-TEST_CASE("SDMM with ||x - x0||_2 functions", "[wavelet]") {
+TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
   using namespace sopt;
 
   t_Matrix const Id = t_Matrix::Identity(N, N).eval();
-  t_Vector const target0 = t_Vector::Random(N) * 2;
-  t_Vector const target1 = t_Vector::Random(N) * 4;
+  t_Vector const target0 = t_Vector::Random(N);
+  t_Vector target1 = t_Vector::Random(N) * 4;
+  // for(t_uint i(0); i < N; ++i) target1(i) = i + 1;
 
   auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
   auto sdmm = algorithm::SDMM<Scalar>()
@@ -215,6 +217,29 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[wavelet]") {
       epsilon(i) = 1e-6;
       CHECK(func(result) < func(result + epsilon));
       CHECK(func(result) < func(result - epsilon));
+    }
+  }
+
+  SECTION("With different L") {
+    t_Matrix const L0 = t_Matrix::Random(N, N) * 2;
+    t_Matrix const L1 = t_Matrix::Random(N, N) * 4;
+    REQUIRE(std::abs((L0.transpose() * L0 + L1.transpose() * L1).determinant()) > 1e-8);
+    sdmm.itermax(300);
+    sdmm.transforms(0) = linear_transform(L0);
+    sdmm.transforms(1) = linear_transform(L1);
+    auto const diagnostic = sdmm(result, t_Vector::Random(N));
+    CHECK(not diagnostic.good);
+    CHECK(diagnostic.niters == sdmm.itermax());
+    CAPTURE(result.transpose());
+    auto const func = [&target0, &target1, &L0, &L1](t_Vector const&x) {
+      return (L0 * x - target0).stableNorm() + (L1 * x - target1).stableNorm();
+    };
+    for(int i(0); i < N; ++i) {
+      t_Vector epsilon = t_Vector::Zero(N);
+      epsilon(i) = 1e-4;
+      CAPTURE(epsilon.transpose());
+      CHECK(func(result) <= func(result + epsilon));
+      CHECK(func(result) <= func(result - epsilon));
     }
   }
 }

@@ -4,12 +4,13 @@
 #include <vector>
 #include <limits>
 
-#include "types.h"
-#include "linear_transform.h"
-#include "proximal.h"
-#include "wrapper.h"
-#include "exception.h"
-#include "conjugate_gradient.h"
+#include "sopt/types.h"
+#include "sopt/linear_transform.h"
+#include "sopt/proximal.h"
+#include "sopt/wrapper.h"
+#include "sopt/exception.h"
+#include "sopt/conjugate_gradient.h"
+#include "sopt/logging.h"
 
 namespace sopt { namespace algorithm {
 
@@ -85,6 +86,8 @@ template<class SCALAR> class SDMM {
     std::vector<t_LinearTransform> & transforms() { return transforms_; }
     //! Linear transform associated with a given objective function
     t_LinearTransform const & transforms(t_uint i) const { return transforms_[i]; }
+    //! Linear transform associated with a given objective function
+    t_LinearTransform & transforms(t_uint i) { return transforms_[i]; }
 
     //! Proximal of each objective function
     std::vector<t_Proximal> const & proximals() const { return proximals_; }
@@ -140,6 +143,7 @@ template<class SCALAR>
       return niters >= itermax() or convergence;
     };
 
+    SOPT_INFO("Performing SDMM ");
     out = input;
     t_Vectors y(transforms().size(), t_Vector::Zero(out.size()));
     t_Vectors z(transforms().size(), t_Vector::Zero(out.size()));
@@ -149,10 +153,21 @@ template<class SCALAR>
     cg_diagnostic = solve_for_xn(out, y, z);
 
     while(not has_finished(out)) {
+      SOPT_INFO("Iteration {}/{}. ", niters, itermax());
       // computes y and z from out and transforms
       update_directions(y, z, out);
+      SOPT_INFO(
+          "   - sum z_ij = {}",
+          std::accumulate(
+            z.begin(), z.end(), 0e0, [](Scalar const &a, t_Vector const &z) { return a + z.sum(); })
+      );
       // computes x = L^-1 y
       cg_diagnostic = solve_for_xn(out, y, z);
+      SOPT_INFO(
+          "   - CG Residual = {} in {}/{} iterations",
+          cg_diagnostic.residual, cg_diagnostic.niters, conjugate_gradient().itermax()
+      );
+      SOPT_TRACE("  - x {}", out.transpose());
 
       ++niters;
     }
@@ -169,25 +184,26 @@ template<class SCALAR>
     // Initialize b of A x = b = sum_i L_i^T(z_i - y_i)
     t_Vector b = out.Zero(out.size());
     for(t_uint i(0); i < transforms().size(); ++i)
-      b += (transforms(i).dagger() * (y[i] - z[i]));
+      b += transforms(i).dagger() * (y[i] - z[i]);
 
     // Then create operator A
     auto A = [this](t_Vector &out, t_Vector const &input) {
       out = out.Zero(input.size());
-      for(auto const &transform: this->transforms()) {
-        t_Vector const a = transform * input;
-        t_Vector const LtLb_i = transform.dagger() * a;
-        out += LtLb_i;
-      }
+      for(auto const &transform: this->transforms())
+        out += transform.dagger() * (transform * input).eval();
     };
 
     // Call conjugate gradient
     auto const diagnostic = this->conjugate_gradient(out, A, b);
-    if(not diagnostic.good)
-      SOPT_THROW("CG error:\n")
-        << "  - itermax: " << conjugate_gradient().itermax() << "\n"
-        << "  - iter: " << diagnostic.niters << "\n"
-        << "  - residuals: " << diagnostic.residual << "\n";
+    if(not diagnostic.good) {
+      SOPT_ERROR(
+          "CG error - iterations: {}/{} - residuals {}\n", 
+          diagnostic.niters,
+          conjugate_gradient().itermax(),
+          diagnostic.residual
+      );
+      SOPT_THROW("Conjugate gradient failed to converge");
+    }
 
     return diagnostic;
   }
@@ -195,8 +211,7 @@ template<class SCALAR>
 template<class SCALAR>
   void SDMM<SCALAR>::update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
     for(t_uint i(0); i < transforms().size(); ++i) {
-      t_Vector const Lx_i = transforms(i) * x;
-      z[i] += Lx_i;
+      z[i] += transforms(i) * x;
       y[i] = proximals(i, z[i]);
       z[i] -= y[i];
     }
