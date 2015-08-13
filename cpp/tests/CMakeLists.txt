@@ -1,3 +1,9 @@
+if(logging)
+  set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
+  add_definitions(-DSOPT_TEST_DEBUG_LEVEL=${SOPT_TEST_LOG_LEVEL})
+  add_library(common_catch_main_object OBJECT "common_catch_main.cc")
+endif()
+
 add_catch_test(wavelets LIBRARIES wavelets)
 add_catch_test(sara LIBRARIES wavelets)
 add_catch_test(utility LIBRARIES wavelets)
