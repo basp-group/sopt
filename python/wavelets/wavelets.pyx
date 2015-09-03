@@ -11,19 +11,20 @@ cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
 
 def _getInDim(input):
     """ initialise output """
-    assert input.ndim < 3
     if input.ndim == 1:
         nrow = input.size
         ncol = 1
-    if input.ndim == 2:
+    elif input.ndim == 2:
         nrow, ncol = input.shape
         input = input.reshape(nrow * ncol)
+    else:
+        raise ValueError('input dimension should be either 1D or 2D')
     return input, nrow, ncol
 
-def dwt(input, name, level, inverse = False):
+def rdwt(input, name, level, inverse = False):
+    in_ndim = input.ndim
     input, nrow, ncol = _getInDim(input)
     output = np.zeros(nrow * ncol, dtype=input.dtype)
-       
     cdef:
         double[:] input_view = input
         double[:] output_view = output
@@ -33,17 +34,20 @@ def dwt(input, name, level, inverse = False):
         int c_ncol = ncol
         unsigned long c_level = level 
         string c_name = name
-    
-    if inverse: direct(inptr, outptr, c_name, c_level,c_nrow, c_ncol)
-    else: indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    
-    return output.reshape(nrow,ncol)
+
+    if inverse: 
+        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+    else: 
+        indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+    if in_ndim == 1:
+        return output.reshape(nrow)
+    else:
+        return output.reshape(nrow, ncol)
 
 def cdwt(input, name, level, inverse = False):
-    
+    in_ndim = input.ndim
     input, nrow, ncol = _getInDim(input)
     output = np.zeros(nrow * ncol, dtype=input.dtype)
-       
     cdef:
         double complex[:] input_view = input
         double complex[:] output_view = output
@@ -53,8 +57,21 @@ def cdwt(input, name, level, inverse = False):
         int c_ncol = ncol
         unsigned long c_level = level 
         string c_name = name
-    
-    if inverse: indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    else: direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    
-    return output.reshape(nrow,ncol)
+    if inverse: 
+        indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+    else:
+        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+    if in_ndim == 1:    
+        return output.reshape(nrow)
+    else:
+        return output.reshape(nrow, ncol)
+
+def dwt(input, name, level, inverse = False):
+    if input.dtype == "float64":
+        return rdwt(input, name, level, inverse = inverse)
+    elif input.dtype == "complex128":
+        return cdwt(input, name, level, inverse = inverse)
+    else:
+        raise ValueError("input data type should be either 'float64' or 'complex128'.")
+
+
