@@ -36,9 +36,9 @@ def rdwt(input, name, level, inverse = False):
         string c_name = name
 
     if inverse: 
-        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    else: 
         indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+    else: 
+        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
     if in_ndim == 1:
         return output.reshape(nrow)
     else:
