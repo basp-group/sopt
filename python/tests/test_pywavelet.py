@@ -1,3 +1,4 @@
+"""test cython binding of wavelets"""
 def test_1D():
     import wavelets.wavelets as wv
     import numpy as np
@@ -31,6 +32,8 @@ def test_complex():
     np.testing.assert_allclose(signal, inv_signal)
 
 def test_1D_pywt():
+    """compare the result of 1D DB1 direct transform 
+    with pywt library"""
     import numpy as np
     import wavelets.wavelets as wv
     import pywt
