@@ -4,9 +4,9 @@ from libcpp.string cimport string
 
 cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
     void direct[T](T *signal, T* out, string name, 
-                   unsigned long level, int nrow, int ncol);
+                   unsigned long level, int nrow, int ncol) except +
     void indirect[T](T *signal, T* out, string name, 
-                   unsigned long level, int nrow, int ncol);
+                     unsigned long level, int nrow, int ncol) except +
 
 
 def _getInDim(input):
@@ -71,7 +71,10 @@ def dwt(input, name, level, inverse = False):
         return rdwt(input, name, level, inverse = inverse)
     elif input.dtype == "complex128":
         return cdwt(input, name, level, inverse = inverse)
+    elif input.dtype == "int64":
+        input = np.array(input, dtype = "float64")
+        return rdwt(input, name, level, inverse = inverse) 
     else:
-        raise ValueError("input data type should be either 'float64' or 'complex128'.")
+        raise ValueError("input data type should be either 'float64' or 'int64' or 'complex128'.")
 
 
