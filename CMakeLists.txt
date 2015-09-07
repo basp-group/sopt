@@ -19,13 +19,19 @@ option(benchmarks     "Enable benchmarking"                    on)
 # Add c++11 stuff
 include(AddCPP11Flags)
 include(CheckCXX11Features)
+include(AddPyTest)
 cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 
 # search/install dependencies
 include(dependencies)
-
 # sets rpath policy explicitly
 cmake_policy(SET CMP0042 NEW)
+
+if(python)
+  include(python_dependencies)
+  include(PythonModule)
+  add_subdirectory(python)
+endif()
 
 if(tests)
   enable_testing()
@@ -37,8 +43,4 @@ if(benchmarks)
 endif()
 
 add_subdirectory(cpp)
-if(python)
-  include(python_dependencies)
-  include(PythonModule)
-  add_subdirectory(python)
-endif()
+

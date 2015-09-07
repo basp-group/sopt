@@ -15,7 +15,6 @@ namespace sopt { namespace pyWavelets{
       return(eigenMat);
     }
 
-  //! direct transform of 2D data
   template <class T>
     void direct(T *py_input, T* py_output, std::string name, t_uint level,
         const int nrow, const int ncol){
@@ -24,7 +23,7 @@ namespace sopt { namespace pyWavelets{
       if(eigen_input.cols() == 1){
         auto coefficient = wavelets.direct(eigen_input.col(0));
         for(int i=0; i<nrow*ncol; ++i)
-          py_output[i]=coefficient.data()[i];
+          py_output[i] = coefficient.data()[i];
       }
       else{
         auto coefficient = wavelets.direct(eigen_input);
