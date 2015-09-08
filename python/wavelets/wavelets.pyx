@@ -3,14 +3,14 @@ from cython cimport view
 from libcpp.string cimport string
 
 cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
-    void direct[T](T *signal, T* out, string name, 
+    void direct[T](T* signal, T* out, string name,
                    unsigned long level, int nrow, int ncol) except +
-    void indirect[T](T *signal, T* out, string name, 
+    void indirect[T](T* signal, T* out, string name,
                      unsigned long level, int nrow, int ncol) except +
 
 
 def _getInDim(input):
-    """ convert input to 1D vector and return 
+    """ convert input to 1D vector and return
     dimention information"""
     if input.ndim == 1:
         nrow = input.size
@@ -22,7 +22,8 @@ def _getInDim(input):
         raise ValueError('input dimension should be either 1D or 2D')
     return input, nrow, ncol
 
-def _rdwt(input, name, level, inverse = False):
+
+def _rdwt(input, name, level, inverse=False):
     in_ndim = input.ndim
     input, nrow, ncol = _getInDim(input)
     output = np.zeros(nrow * ncol, dtype=input.dtype)
@@ -33,19 +34,20 @@ def _rdwt(input, name, level, inverse = False):
         double *outptr = &output_view[0]
         int c_nrow = nrow
         int c_ncol = ncol
-        unsigned long c_level = level 
+        unsigned long c_level = level
         string c_name = name
 
-    if inverse: 
+    if inverse:
         indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    else: 
+    else:
         direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    if in_ndim == 1:# vector case
+    if in_ndim == 1:  # vector case
         return output.reshape(nrow)
     else:
         return output.reshape(nrow, ncol)
 
-def _cdwt(input, name, level, inverse = False):
+
+def _cdwt(input, name, level, inverse=False):
     in_ndim = input.ndim
     input, nrow, ncol = _getInDim(input)
     output = np.zeros(nrow * ncol, dtype=input.dtype)
@@ -56,25 +58,26 @@ def _cdwt(input, name, level, inverse = False):
         double complex *outptr = &output_view[0]
         int c_nrow = nrow
         int c_ncol = ncol
-        unsigned long c_level = level 
+        unsigned long c_level = level
         string c_name = name
-    if inverse: 
+    if inverse:
         indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
     else:
         direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    if in_ndim == 1:    
+    if in_ndim == 1:
         return output.reshape(nrow)
     else:
         return output.reshape(nrow, ncol)
 
-def dwt(input, name, level, inverse = False):
-    """ direct/inverse Daubechies wavelet transform 
-    
+
+def dwt(input, name, level, inverse=False):
+    """ direct/inverse Daubechies wavelet transform
+
     Parameters:
     ------------
     inputs: array_like
         1D/2D input signal which can be either float64, int64, or complex128
-    name: string 
+    name: string
         Daubechies wavelets coefficients, e.g. "DB3"
     level: int
         Wavlets transform level
@@ -99,15 +102,13 @@ def dwt(input, name, level, inverse = False):
     recover = wv.dwt(coefficient, "DB4", 2, inverse = True) # inverse transform
 
     """
-
     if input.dtype == "float64":
-        return _rdwt(input, name, level, inverse = inverse)
+        return _rdwt(input, name, level, inverse=inverse)
     elif input.dtype == "complex128":
-        return _cdwt(input, name, level, inverse = inverse)
-    elif input.dtype == "int64":#convert int to float64
-        input = np.array(input, dtype = "float64")
-        return _rdwt(input, name, level, inverse = inverse) 
+        return _cdwt(input, name, level, inverse=inverse)
+    elif input.dtype == "int64":  # convert int to float64
+        input = np.array(input, dtype="float64")
+        return _rdwt(input, name, level, inverse=inverse)
     else:
-        raise ValueError("input data type should be either 'float64' or 'int64' or 'complex128'.")
-
-
+        raise ValueError("input data type should be either \
+                         'float64' or 'int64' or 'complex128'.")
