@@ -43,5 +43,7 @@ find_package(Numpy REQUIRED)
 if(tests)
     include(AddPyTest)
     setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
+
+    lookup_python_package(pywt PIPNAME PyWavelets REQUIRED PATH "${EXTERNAL_ROOT}/python")
 endif()
 
