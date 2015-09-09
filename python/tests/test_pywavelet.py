@@ -2,7 +2,7 @@
 
 
 def test_1D():
-    import wavelets.wavelets as wv
+    import sopt.wavelets as wv
     import numpy as np
     signal = np.ones((64, 1), dtype="float64")
     coefficient = wv.dwt(signal, "DB4", 1)
@@ -11,7 +11,7 @@ def test_1D():
 
 
 def test_2D():
-    import wavelets.wavelets as wv
+    import sopt.wavelets as wv
     import numpy as np
     db_name = ["DB1", "DB2", "DB3", "DB4", "DB5", "DB6", "DB7"]
     for ncol in [1, 4, 32, 64]:
@@ -23,7 +23,7 @@ def test_2D():
 
 
 def test_complex():
-    import wavelets.wavelets as wv
+    import sopt.wavelets as wv
     import numpy as np
     s_real = np.random.random((64, 64))
     s_img = np.random.random((64, 64))
@@ -37,7 +37,7 @@ def test_1D_pywt():
     """compare the result of 1D DB1 direct transform
     with pywt library"""
     import numpy as np
-    import wavelets.wavelets as wv
+    import sopt.wavelets as wv
     import pywt
     input = np.random.random(128)
     coefficient_sopt = wv.dwt(input, "DB1", 1)

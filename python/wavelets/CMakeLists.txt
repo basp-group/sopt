@@ -10,4 +10,4 @@ include_directories(
      ${CMAKE_SOURCE_DIR}/cpp/wavelets
      ${EIGEN3_INCLUDE_DIR})
 
- add_python_module(wavelets CPP TARGETNAME pywavelets LIBRARIES wavelets FAKE_INIT wavelets.pyx)
+ add_python_module(sopt CPP TARGETNAME pywavelets LIBRARIES wavelets FAKE_INIT wavelets.pyx)
