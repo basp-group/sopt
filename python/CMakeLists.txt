@@ -1,2 +1,4 @@
 add_subdirectory(wavelets)
-add_subdirectory(tests)
+if(tests)
+  add_subdirectory(tests)
+endif()

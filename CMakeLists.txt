@@ -16,6 +16,10 @@ option(tests          "Enable testing"                         on)
 option(python         "Enable python"                          on)
 option(benchmarks     "Enable benchmarking"                    on)
 
+if(tests)
+  enable_testing()
+endif()
+
 # Add c++11 stuff
 include(AddCPP11Flags)
 include(CheckCXX11Features)
@@ -34,10 +38,10 @@ if(python)
 endif()
 
 if(tests)
-  enable_testing()
   include(catch)
   include(AddExample)
 endif()
+
 if(benchmarks)
   include(AddBenchmark)
 endif()
