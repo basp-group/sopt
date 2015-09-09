@@ -42,6 +42,6 @@ def test_1D_pywt():
     input = np.random.random(128)
     coefficient_sopt = wv.dwt(input, "DB1", 1)
     cA_pywt, cD_pywt = pywt.dwt(input, "DB1")
-    coefficient_pywt =
-    np.concatenate((cA_pywt, -1*cD_pywt)).reshape(coefficient_sopt.shape)
+    coefficient_pywt = np.concatenate(\
+                       (cA_pywt, -1*cD_pywt)).reshape(coefficient_sopt.shape)
     np.testing.assert_allclose(coefficient_sopt, coefficient_pywt)
