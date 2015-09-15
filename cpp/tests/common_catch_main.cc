@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_RUNNER
 
 #include "catch.hpp"
-#include <sopt/logging.h>
+#include "sopt/logging.h"
 
 int main( int argc, char* const argv[] )
 {
