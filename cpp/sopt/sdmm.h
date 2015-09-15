@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <limits>
+#include <numeric>
 
 #include "sopt/types.h"
 #include "sopt/linear_transform.h"
@@ -29,12 +30,14 @@ template<class SCALAR> class SDMM {
     typedef SCALAR value_type;
     //! Scalar type
     typedef value_type Scalar;
+    //! Real type
+    typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
     typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> t_Vector;
     //! Type of the A and A^t operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions
-    typedef std::function<void(t_Vector &, Scalar, t_Vector const &)> t_Proximal;
+    typedef std::function<void(t_Vector &, Real, t_Vector const &)> t_Proximal;
     //! Type of the convergence function
     typedef std::function<bool(SDMM const&, t_Vector const&)> t_IsConverged;
 
@@ -54,7 +57,7 @@ template<class SCALAR> class SDMM {
     //! Maximum number of iterations
     SOPT_MACRO(itermax, t_uint);
     //! Gamma
-    SOPT_MACRO(gamma, Scalar);
+    SOPT_MACRO(gamma, Real);
     //! Conjugate gradient
     SOPT_MACRO(conjugate_gradient, ConjugateGradient);
     //! A function verifying convergence
@@ -159,7 +162,8 @@ template<class SCALAR>
       SOPT_INFO(
           "   - sum z_ij = {}",
           std::accumulate(
-            z.begin(), z.end(), 0e0, [](Scalar const &a, t_Vector const &z) { return a + z.sum(); })
+            z.begin(), z.end(), Scalar(0e0),
+            [](Scalar const &a, t_Vector const &z) { return a + z.sum(); })
       );
       // computes x = L^-1 y
       cg_diagnostic = solve_for_xn(out, y, z);

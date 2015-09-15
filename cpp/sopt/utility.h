@@ -73,6 +73,8 @@ template<class T> class underlying_value_type<T, true> {
   public:
     typedef typename underlying_value_type<typename T::value_type>::type type;
 };
+//! Gets to the underlying real type
+template<class T> using real_type = underlying_value_type<T>;
 
 //! Expression to create projection onto positive quadrant
 template<class T>

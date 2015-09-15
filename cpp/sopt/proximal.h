@@ -17,9 +17,9 @@ namespace details {
       public:
         typedef typename DERIVED::PlainObject PlainObject;
         typedef typename DERIVED::Index Index;
+        typedef typename real_type<typename DERIVED::Scalar>::type Real;
 
-        AppliedProximalFunction(
-            FUNCTION const &func, typename DERIVED::Scalar const &gamma, DERIVED const &x)
+        AppliedProximalFunction(FUNCTION const &func, Real const &gamma, DERIVED const &x)
               : func(func), gamma(gamma), x(x) {}
         AppliedProximalFunction(AppliedProximalFunction const &c)
             : func(c.func), gamma(c.gamma), x(c.x) {}
@@ -36,7 +36,7 @@ namespace details {
 
       private:
         FUNCTION const func;
-        typename DERIVED::Scalar const gamma;
+        Real const gamma;
         DERIVED const &x;
     };
 
@@ -46,7 +46,10 @@ namespace details {
 struct EuclidianNorm {
   template<class VECTOR, class T0>
     void operator()(
-        VECTOR &out, typename T0::Scalar const &t, Eigen::MatrixBase<T0> const &x) const {
+        VECTOR &out,
+        typename real_type<typename T0::Scalar>::type const &t,
+        Eigen::MatrixBase<T0> const &x
+    ) const {
       typedef typename T0::Scalar Scalar;
       auto const norm = x.stableNorm();
       if(norm > t)
@@ -68,7 +71,10 @@ template<class T0>
   details::AppliedProximalFunction<
     EuclidianNorm,
     Eigen::MatrixBase<T0>
-  > euclidian_norm(typename T0::Scalar const & t, Eigen::MatrixBase<T0> const &x) {
+  > euclidian_norm(
+      typename real_type<typename T0::Scalar>::type const & t,
+      Eigen::MatrixBase<T0> const &x
+  ) {
     typedef details::AppliedProximalFunction<EuclidianNorm, Eigen::MatrixBase<T0>>
       t_Lazy;
     return t_Lazy(EuclidianNorm(), t, x);
@@ -78,9 +84,10 @@ template<class T>
   Eigen::CwiseUnaryOp<
     const sopt::details::SoftThreshhold<typename T::Scalar>,
     const T
-  > l1_norm(typename T::Scalar const &t, Eigen::MatrixBase<T> const &input) {
-    return soft_threshhold(input, t);
-  }
+  > l1_norm(
+      typename real_type<typename T::Scalar>::type const &t,
+      Eigen::MatrixBase<T> const &input
+  ) { return soft_threshhold(input, t); }
 
 //! Translation over proximal function
 template<class FUNCTION, class VECTOR> class Translation {
@@ -91,7 +98,10 @@ template<class FUNCTION, class VECTOR> class Translation {
     //! Computes proximal of translated function
     template<class OUTPUT, class T0>
       void operator()(
-          OUTPUT &out, typename T0::Scalar const &t, Eigen::MatrixBase<T0> const &x) const {
+          OUTPUT &out,
+          typename real_type<typename T0::Scalar>::type const &t,
+          Eigen::MatrixBase<T0> const &x
+      ) const {
         typedef typename T0::Scalar Scalar;
         func(out, t, x + trans);
         out -= trans;
