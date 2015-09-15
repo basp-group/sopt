@@ -10,6 +10,7 @@ if(logging)
   set(SOPT_DO_LOGGING 1)
 endif()
 configure_file(sopt/logging.in.h ${EXTERNAL_ROOT}/include/sopt/logging.h)
+include_directories("${EXTERNAL_ROOT}/include/")
 
 add_subdirectory(wavelets)
 if(tests)
