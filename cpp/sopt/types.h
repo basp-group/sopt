@@ -17,13 +17,13 @@ namespace sopt {
 
 
   //! Real vectors
-  typedef Eigen::Matrix<t_real, Eigen::Dynamic, 1> t_rVector;
+  typedef Eigen::Array<t_real, Eigen::Dynamic, 1> t_rVector;
   //! Complex vectors
-  typedef Eigen::Matrix<t_complex, Eigen::Dynamic, 1> t_cVector;
+  typedef Eigen::Array<t_complex, Eigen::Dynamic, 1> t_cVector;
   //! Real matrices
-  typedef Eigen::Matrix<t_real, Eigen::Dynamic, Eigen::Dynamic> t_rMatrix;
+  typedef Eigen::Array<t_real, Eigen::Dynamic, Eigen::Dynamic> t_rMatrix;
   //! Complex matrices
-  typedef Eigen::Matrix<t_complex, Eigen::Dynamic, Eigen::Dynamic> t_cMatrix;
+  typedef Eigen::Array<t_complex, Eigen::Dynamic, Eigen::Dynamic> t_cMatrix;
 }
 #endif
 

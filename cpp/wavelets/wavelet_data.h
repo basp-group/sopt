@@ -1,7 +1,7 @@
 #ifndef SOPT_WAVELET_WAVELET_DATA_H
 #define SOPT_WAVELET_WAVELET_DATA_H
 
-#include "types.h"
+#include "sopt/types.h"
 #include "innards.impl.h"
 
 namespace sopt { namespace wavelets {
@@ -11,7 +11,7 @@ struct WaveletData {
   //! Type of the underlying scalar
   typedef t_real t_scalar;
   //! Type of the underlying vector
-  typedef Eigen::Matrix<t_scalar, Eigen::Dynamic, 1> t_vector;
+  typedef Eigen::Array<t_scalar, Eigen::Dynamic, 1> t_vector;
   //! Wavelet coefficient per-se
   const t_vector coefficients;
 

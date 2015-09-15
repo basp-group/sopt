@@ -1,6 +1,7 @@
 #ifndef SOPT_WAVELETS_INNARDS_H
 #define SOPT_WAVELETS_INNARDS_H
 
+#include <iostream>
 #include<Eigen/Core>
 
 // Function inside anonymouns namespace won't appear in library
@@ -9,7 +10,7 @@ namespace sopt { namespace wavelets { namespace {
 //! \details Gets C++ to figure out what the exact type is. Eigen tries and avoids copies. But
 //! sometimes we actually want a copy, to make sure the arguments of a function are not modified
 template<class T0>
-  auto copy(Eigen::MatrixBase<T0> const &a)
+  auto copy(Eigen::ArrayBase<T0> const &a)
   -> typename std::remove_const<typename std::remove_reference<decltype(a.eval())>::type>::type {
     return a.eval();
   }
@@ -21,15 +22,16 @@ template<class T0>
 //! - the result is the scalar product of `a'` by `b`.
 template<class T0, class T2>
   typename T0::Scalar periodic_scalar_product(
-      Eigen::MatrixBase<T0> const &a, Eigen::MatrixBase<T2> const &b, typename T0::Index offset) {
+      Eigen::ArrayBase<T0> const &a, Eigen::ArrayBase<T2> const &b, typename T0::Index offset) {
     auto const Na = static_cast<typename T0::Index>(a.size());
     auto const Nb = static_cast<typename T0::Index>(b.size());
     // offset in [0, a.size()[
     offset %= Na;
     if(offset < 0) offset += Na;
     // Simple case, just do it
-    if(Na > Nb + offset)
-      return (a.segment(offset, Nb).transpose() * b);
+    if(Na > Nb + offset) {
+      return (a.segment(offset, Nb) * b).sum();
+    }
     // Wrap around, do it, but carefully
     typename T0::Scalar result(0);
     for(typename T0::Index i(0), j(offset); i < Nb; ++i, ++j)
@@ -41,9 +43,9 @@ template<class T0, class T2>
 //! \details The signal is seen as a periodic vector during convolution
 template<class T0, class T1, class T2>
   void convolve(
-      Eigen::MatrixBase<T0> &result,
-      Eigen::MatrixBase<T1> const &signal,
-      Eigen::MatrixBase<T2> const &filter)
+      Eigen::ArrayBase<T0> &result,
+      Eigen::ArrayBase<T1> const &signal,
+      Eigen::ArrayBase<T2> const &filter)
 {
   assert(result.size() == signal.size());
   for(typename T0::Index i(0); i < t_int(signal.size()); ++i)
@@ -53,8 +55,8 @@ template<class T0, class T1, class T2>
 template<class T0, class T1, class T2>
   void convolve(
       Eigen::VectorBlock<T0> &&result,
-      Eigen::MatrixBase<T1> const &signal,
-      Eigen::MatrixBase<T2> const &filter) {
+      Eigen::ArrayBase<T1> const &signal,
+      Eigen::ArrayBase<T2> const &filter) {
     return convolve(result, signal, filter);
 }
 
@@ -63,20 +65,24 @@ template<class T0, class T1, class T2>
 //! \details Just like convolve, but does every other point.
 template<class T0, class T1, class T2>
   void down_convolve(
-      Eigen::MatrixBase<T0> &result,
-      Eigen::MatrixBase<T1> const &signal,
-      Eigen::MatrixBase<T2> const &filter)
+      Eigen::ArrayBase<T0> &result,
+      Eigen::ArrayBase<T1> const &signal,
+      Eigen::ArrayBase<T2> const &filter)
 {
   assert(result.size() * 2 <= signal.size());
-  for(typename T0::Index i(0); i < result.size(); ++i)
-    result(i) = periodic_scalar_product(signal, filter, 2 * i);
+  if(signal.rows() == 1)
+    for(typename T0::Index i(0); i < result.size(); ++i)
+      result(i) = periodic_scalar_product(signal.transpose(), filter, 2 * i);
+  else
+    for(typename T0::Index i(0); i < result.size(); ++i)
+      result(i) = periodic_scalar_product(signal, filter, 2 * i);
 }
 //! \brief Dowsampling + convolve variation for vector blocks
 template<class T0, class T1, class T2>
   void down_convolve(
       Eigen::VectorBlock<T0> &&result,
-      Eigen::MatrixBase<T1> const &signal,
-      Eigen::MatrixBase<T2> const &filter)
+      Eigen::ArrayBase<T1> const &signal,
+      Eigen::ArrayBase<T2> const &filter)
 {
   down_convolve(result, signal, filter);
 }
@@ -84,11 +90,11 @@ template<class T0, class T1, class T2>
 //! Convolve and sims low and high pass of a signal
 template<class T0, class T1, class T2, class T3, class T4>
   void convolve_sum(
-      Eigen::MatrixBase<T0> &result,
-      Eigen::MatrixBase<T1> const &low_pass_signal,
-      Eigen::MatrixBase<T2> const &low_pass,
-      Eigen::MatrixBase<T3> const &high_pass_signal,
-      Eigen::MatrixBase<T4> const &high_pass)
+      Eigen::ArrayBase<T0> &result,
+      Eigen::ArrayBase<T1> const &low_pass_signal,
+      Eigen::ArrayBase<T2> const &low_pass,
+      Eigen::ArrayBase<T3> const &high_pass_signal,
+      Eigen::ArrayBase<T4> const &high_pass)
 {
   assert(result.size() == low_pass_signal.size());
   assert(result.size() == high_pass_signal.size());
@@ -112,12 +118,12 @@ template<class T0, class T1, class T2, class T3, class T4>
 //! I certainly cannot show how on paper.
 template<class T0, class T1, class T2, class T3, class T4, class T5>
   void up_convolve_sum(
-      Eigen::MatrixBase<T0> &result,
-      Eigen::MatrixBase<T1> const &coeffs,
-      Eigen::MatrixBase<T2> const &low_even,
-      Eigen::MatrixBase<T3> const &low_odd,
-      Eigen::MatrixBase<T4> const &high_even,
-      Eigen::MatrixBase<T5> const &high_odd)
+      Eigen::ArrayBase<T0> &result,
+      Eigen::ArrayBase<T1> const &coeffs,
+      Eigen::ArrayBase<T2> const &low_even,
+      Eigen::ArrayBase<T3> const &low_odd,
+      Eigen::ArrayBase<T4> const &high_even,
+      Eigen::ArrayBase<T5> const &high_odd)
 {
   assert(result.size() <= coeffs.size());
   assert(result.size() % 2 == 0);

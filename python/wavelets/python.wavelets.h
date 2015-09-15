@@ -3,13 +3,13 @@
 #include <Eigen/Core>
 #include <iostream>
 #include <wavelets.h>
-#include <types.h>
+#include <sopt/types.h>
 
 namespace sopt { namespace pyWavelets{
   //! Convert 1D or 2D data from cython in either double or complex format to Eigen matrix. 
   template<class T>
     Eigen::Matrix<T,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    FromPyMat2EigenMat(T *pyMat, const int nrow, const int ncol){
+    from_pymat_to_eigen_mat(T *pyMat, const int nrow, const int ncol){
       typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> t_pyMatrix;
       t_pyMatrix eigenMat(nrow, ncol);
       eigenMat = Eigen::Map<t_pyMatrix>(&pyMat[0], nrow, ncol);
@@ -27,15 +27,15 @@ namespace sopt { namespace pyWavelets{
     void direct(T *py_input, T* py_output, const std::string name, const t_uint level,
         const int nrow, const int ncol){
       auto const wavelets = sopt::wavelets::factory(name, level);
-      auto eigen_input  = FromPyMat2EigenMat(py_input, nrow, ncol);
+      auto eigen_input  = from_pymat_to_eigen_mat(py_input, nrow, ncol);
       //! 
       if(eigen_input.cols() == 1){
-        auto coefficient = wavelets.direct(eigen_input.col(0));
+        auto coefficient = wavelets.direct(eigen_input.col(0).array());
         for(int i=0; i<nrow*ncol; ++i)
           py_output[i] = coefficient.data()[i];
       }
       else{
-        auto coefficient = wavelets.direct(eigen_input);
+        auto coefficient = wavelets.direct(eigen_input.array());
         for(int i=0; i<nrow*ncol; ++i)
           py_output[i]=coefficient.data()[i];
       }
@@ -51,14 +51,14 @@ namespace sopt { namespace pyWavelets{
     void indirect(T *py_input, T *py_output,const std::string name, const t_uint level,\
         const int nrow, const int ncol){
       auto const wavelets = sopt::wavelets::factory(name, level);
-      auto eigen_input  = FromPyMat2EigenMat(py_input, nrow, ncol);
+      auto const eigen_input  = from_pymat_to_eigen_mat(py_input, nrow, ncol);
       if(eigen_input.cols() == 1){
-        auto coefficient = wavelets.indirect(eigen_input.col(0));
+        auto coefficient = wavelets.indirect(eigen_input.col(0).array());
         for(int i=0; i<nrow*ncol; ++i)
           py_output[i]=coefficient.data()[i];
       }
       else{
-        auto coefficient = wavelets.indirect(eigen_input);
+        auto coefficient = wavelets.indirect(eigen_input.array());
         for(int i=0; i<nrow*ncol; ++i)
           py_output[i]=coefficient.data()[i];
       }

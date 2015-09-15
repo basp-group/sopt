@@ -10,8 +10,7 @@ cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
 
 
 def _getInDim(input):
-    """ convert input to 1D vector and return
-    dimention information"""
+    """ convert input to 1D vector and return dimention information"""
     if input.ndim == 1:
         nrow = input.size
         ncol = 1

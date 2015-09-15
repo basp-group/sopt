@@ -1,1 +1,2 @@
 add_benchmark(wavelets LIBRARIES wavelets)
+add_benchmark(conjugate_gradient DEPENDS lookup_dependencies)
