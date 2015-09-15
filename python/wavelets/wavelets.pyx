@@ -88,10 +88,11 @@ def dwt(input, name, level, inverse=False):
 
     """
     if input.dtype == "float64" or input.dtype == "complex128":
-        return _dwt(input, name, level, inverse=inverse)
+        return _dwt(np.require(input, requirements=['C']),\
+                    name, level, inverse=inverse)
     elif input.dtype == "int64":  # convert int to float64
-        input = input.astype("float64")
-        return _dwt(input, name, level, inverse=inverse)
+        return _dwt(np.require(input, dtype="float64", requirements=['C']),\
+                    name, level, inverse=inverse)
     else:
         raise ValueError("input data type should be either \
                          'float64' or 'int64' or 'complex128'.")
