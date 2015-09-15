@@ -45,3 +45,30 @@ def test_1D_pywt():
     coefficient_pywt = np.concatenate(
                        (cA_pywt, -1*cD_pywt)).reshape(coefficient_sopt.shape)
     np.testing.assert_allclose(coefficient_sopt, coefficient_pywt)
+
+
+def test_wrong_dims():
+    from pytest import raises
+    import sopt.wavelets as wv
+    import numpy as np
+    signal = np.random.random((32, 32, 32))
+    with raises(ValueError):
+        wv.dwt(signal, "DB1", 1)
+
+
+def test_wrong_type():
+    from pytest import raises
+    import sopt.wavelets as wv
+    import numpy as np
+    signal = np.random.random((32, 32))
+    with raises(ValueError):
+        wv.dwt(signal.astype("int32"), "DB1", 1)
+
+
+def test_noncontiguous():
+    import sopt.wavelets as wv
+    import numpy as np
+    signal = np.random.random((32, ))
+    coeff_nc = wv.dwt(signal[::4], "DB1", 1)
+    coeff_cont = wv.dwt(signal[::4].copy(), "DB1", 1)
+    np.testing.assert_allclose(coeff_nc, coeff_cont)
