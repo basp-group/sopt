@@ -11,13 +11,8 @@ int main( int argc, char* const argv[] )
   if( returnCode != 0 ) // Indicates a command line error
     return returnCode;
 
-# ifdef SOPT_DO_LOGGING
-#  ifndef SOPT_TEST_DEBUG_LEVEL
-#    define SOPT_TEST_DEBUG_LEVEL debug
-#  endif
-    auto const logger = sopt::logging::initialize();
-    logger->set_level(spdlog::level::SOPT_TEST_DEBUG_LEVEL);
-# endif
+  sopt::logging::initialize();
+  sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   return session.run();
 }

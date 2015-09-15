@@ -10,6 +10,10 @@
 # include "sopt/logging.disabled.h"
 #endif
 
+#ifndef SOPT_TEST_DEBUG_LEVEL
+#  define SOPT_TEST_DEBUG_LEVEL "debug"
+#endif
+
 //! \macro Informational message about normal condition
 //! \details Say "Residuals == "
 #define SOPT_INFO(...)     SOPT_LOG_(, info, __VA_ARGS__)
