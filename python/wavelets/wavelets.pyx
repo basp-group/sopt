@@ -22,51 +22,37 @@ def _getInDim(input):
     return input, nrow, ncol
 
 
-def _rdwt(input, name, level, inverse=False):
+def _dwt(input, name, level, inverse=False):
     in_ndim = input.ndim
     input, nrow, ncol = _getInDim(input)
-    output = np.zeros(nrow * ncol, dtype=input.dtype)
+    output = np.zeros((nrow, ncol), dtype=input.dtype)
     cdef:
-        double[:] input_view = input
-        double[:] output_view = output
-        double *inptr = &input_view[0]
-        double *outptr = &output_view[0]
-        int c_nrow = nrow
-        int c_ncol = ncol
-        unsigned long c_level = level
-        string c_name = name
+        long input_data = input.ctypes.data
+        long output_data = output.ctypes.data
 
     if inverse:
-        indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
+        if input.dtype == "float64":
+            indirect[double](
+                <double*>input_data, <double*>output_data,
+                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+            )
+        elif input.dtype == "complex128":
+            indirect[complex](
+                <double complex*>input_data, <double complex*>output_data,
+                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+            )
     else:
-        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    if in_ndim == 1:  # vector case
-        return output.reshape(nrow)
-    else:
-        return output.reshape(nrow, ncol)
-
-
-def _cdwt(input, name, level, inverse=False):
-    in_ndim = input.ndim
-    input, nrow, ncol = _getInDim(input)
-    output = np.zeros(nrow * ncol, dtype=input.dtype)
-    cdef:
-        double complex[:] input_view = input
-        double complex[:] output_view = output
-        double complex *inptr = &input_view[0]
-        double complex *outptr = &output_view[0]
-        int c_nrow = nrow
-        int c_ncol = ncol
-        unsigned long c_level = level
-        string c_name = name
-    if inverse:
-        indirect(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    else:
-        direct(inptr, outptr, c_name, c_level, c_nrow, c_ncol)
-    if in_ndim == 1:
-        return output.reshape(nrow)
-    else:
-        return output.reshape(nrow, ncol)
+        if input.dtype == "float64":
+            direct[double](
+                <double*>input_data, <double*>output_data,
+                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+            )
+        elif input.dtype == "complex128":
+            direct[complex](
+                <double complex*>input_data, <double complex*>output_data,
+                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+            )
+    return output
 
 
 def dwt(input, name, level, inverse=False):
@@ -101,13 +87,11 @@ def dwt(input, name, level, inverse=False):
     recover = wv.dwt(coefficient, "DB4", 2, inverse = True) # inverse transform
 
     """
-    if input.dtype == "float64":
-        return _rdwt(input, name, level, inverse=inverse)
-    elif input.dtype == "complex128":
-        return _cdwt(input, name, level, inverse=inverse)
+    if input.dtype == "float64" or input.dtype == "complex128":
+        return _dwt(input, name, level, inverse=inverse)
     elif input.dtype == "int64":  # convert int to float64
-        input = np.array(input, dtype="float64")
-        return _rdwt(input, name, level, inverse=inverse)
+        input = input.astype("float64")
+        return _dwt(input, name, level, inverse=inverse)
     else:
         raise ValueError("input data type should be either \
                          'float64' or 'int64' or 'complex128'.")
