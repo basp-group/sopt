@@ -29,9 +29,9 @@ namespace sopt {
      }
 
      //! Adds to message
-     template<class OBJECT> 
+     template<class OBJECT>
        Exception& operator<<(OBJECT const &object) {
-         message = (std::ostringstream(message) << object).str();
+         message = (std::ostringstream() << message << object).str();
          return *this;
        }
 
@@ -40,7 +40,7 @@ namespace sopt {
      std::string message;
   };
 
-# define SOPT_THROW(MSG) throw sopt::Exception(__FILE__, __LINE__) << "\n" << MSG
+# define SOPT_THROW(MSG) throw (sopt::Exception(__FILE__, __LINE__) << "\n" << MSG)
 
 } /* sopt */ 
 #endif
