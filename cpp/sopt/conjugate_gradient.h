@@ -7,6 +7,7 @@
 #include "types.h"
 #include "utility.h"
 #include "wrapper.h"
+#include "sopt/logging.h"
 
 namespace sopt {
 //! Solves $Ax = b$ for $x$, given $A$ and $b$.
@@ -111,7 +112,6 @@ template<class VECTOR, class T1, class MATRIXLIKE>
     typedef typename underlying_value_type<Scalar>::type Real;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
 
-
     x.resize(b.size());
     if(std::abs((b.transpose().conjugate() * b)(0)) < tolerance()) {
       x.fill(0);
@@ -134,6 +134,7 @@ template<class VECTOR, class T1, class MATRIXLIKE>
       residuals -= alpha * Ap;
 
       Real new_residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
+      SOPT_DEBUG("CG iteration {} - residuals: {}", i, new_residual);
       if(std::abs(new_residual) < tolerance()) {
         residual = new_residual;
         break;
