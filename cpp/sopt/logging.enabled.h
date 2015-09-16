@@ -50,7 +50,7 @@ namespace sopt { namespace logging {
       else SOPT_MACRO(off);
 #   undef SOPT_MACRO
       else
-        SOPT_THROW("Unknown logging level {}") << level << "\n";
+        SOPT_THROW("Unknown logging level ") << level << "\n";
   }
 }}
 
