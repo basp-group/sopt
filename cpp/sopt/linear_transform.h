@@ -54,6 +54,12 @@ template<class VECTOR>
       typename LinearTransform<VECTOR>::t_Function const& indirect
   ) { return LinearTransform<VECTOR>(direct, indirect); }
 
+//! Convenience no-op function
+template<class VECTOR>
+  LinearTransform<VECTOR>& linear_transform(LinearTransform<VECTOR> &passthrough) {
+    return passthrough;
+  }
+
 
 namespace details {
 
