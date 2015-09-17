@@ -34,7 +34,6 @@ endif()
 # Also required for production
 find_python_package(numpy)
 find_python_package(scipy)
-find_python_package(pandas)
 # Finds additional info, like libraries, include dirs...
 # no need check numpy features, it's all handled by cython.
 set(no_numpy_feature_tests TRUE)
