@@ -60,25 +60,26 @@ def dwt(input, name, level, inverse=False):
 
     Parameters:
     ------------
-    inputs: array_like
-        1D/2D input signal which can be either float64, int64, or complex128
+    inputs: numpy array
+        1D/2D numerical input signal
     name: string
-        Daubechies wavelets coefficients, e.g. "DB3"
+        Daubechies wavelets coefficients, e.g. "DB1" through "DB38"
     level: int
-        Wavlets transform level
+        Wavelets transform level
     inverse: bool
         True - indirect transform
         False - direct transform
 
     Returns
     ------------
-    array_like
-        Approximation matrix in the same size as input.
+    numpy array
+        Approximation matrix in the same size as input
 
     Notes
     ------------
-    * Input that is 'int64' will be converted to 'float64' automatically.
-    * Size of signal must be number a multiple of 2^levels.
+    * Input will be converted to "float64" or "complex128" automatically
+    * To avoid extra copies, please use those types exclusively
+    * Size of signal must be a multiple of 2^levels
 
     Examples
     -----------
@@ -87,12 +88,10 @@ def dwt(input, name, level, inverse=False):
     recover = wv.dwt(coefficient, "DB4", 2, inverse = True) # inverse transform
 
     """
-    if input.dtype == "float64" or input.dtype == "complex128":
-        return _dwt(np.require(input, requirements=['C']),\
-                    name, level, inverse=inverse)
-    elif input.dtype == "int64":  # convert int to float64
-        return _dwt(np.require(input, dtype="float64", requirements=['C']),\
-                    name, level, inverse=inverse)
-    else:
-        raise ValueError("input data type should be either \
-                         'float64' or 'int64' or 'complex128'.")
+    from numpy import iscomplex, isreal, require, all
+    is_complex = all(iscomplex(input))
+    if (not is_complex) and not all(isreal(input)):
+        raise ValueError("Incorrect array type")
+    dtype = "complex128" if is_complex else "float64"
+    normalized_input = require(input, requirements=['C'], dtype=dtype)
+    return _dwt(normalized_input, name, level, inverse=inverse).astype(input.dtype)
