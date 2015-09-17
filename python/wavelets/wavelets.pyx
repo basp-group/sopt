@@ -3,10 +3,11 @@ from cython cimport view
 from libcpp.string cimport string
 
 cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
-    void direct[T](T* signal, T* out, string name,
-                   unsigned long level, int nrow, int ncol) except +
-    void indirect[T](T* signal, T* out, string name,
-                     unsigned long level, int nrow, int ncol) except +
+    ctypedef unsigned t_uint
+    void direct[T](T * signal, T* out, const string & name,
+                   t_uint level, t_uint nrow, t_uint ncol) except +
+    void indirect[T](T * signal, T* out, const string & name,
+                     t_uint level, t_uint nrow, t_uint ncol) except +
 
 
 def _getInDim(input):
@@ -34,23 +35,23 @@ def _dwt(input, name, level, inverse=False):
         if input.dtype == "float64":
             indirect[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             indirect[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     else:
         if input.dtype == "float64":
             direct[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             direct[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     return output
 
