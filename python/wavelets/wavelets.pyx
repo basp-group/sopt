@@ -10,23 +10,11 @@ cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
                      t_uint level, t_uint nrow, t_uint ncol) except +
 
 
-def _getInDim(input):
-    """ convert input to 1D vector and return dimention information"""
-    if input.ndim == 1:
-        nrow = input.size
-        ncol = 1
-    elif input.ndim == 2:
-        nrow, ncol = input.shape
-        input = input.reshape(nrow * ncol)
-    else:
-        raise ValueError('input dimension should be either 1D or 2D')
-    return input, nrow, ncol
-
-
-def _dwt(input, name, level, inverse=False):
-    in_ndim = input.ndim
-    input, nrow, ncol = _getInDim(input)
-    output = np.zeros((nrow, ncol), dtype=input.dtype)
+cdef _dwt(input, name, level, inverse=False):
+    if input.ndim > 2:
+        raise ValueError("Expect 1D or 2D arrays")
+    nrow, ncol = input.shape if input.ndim == 2 else (input.size, 1)
+    output = np.zeros(input.shape, dtype=input.dtype)
     cdef:
         long input_data = input.ctypes.data
         long output_data = output.ctypes.data
