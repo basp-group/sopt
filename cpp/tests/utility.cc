@@ -1,8 +1,10 @@
 #include <random>
 #include <utility>
+#include <numeric>
 #include "catch.hpp"
 
 #include "sopt/utility.h"
+#include "sopt/sampling.h"
 #include "sopt/types.h"
 
 TEST_CASE("Projector on positive quadrant", "[utility][project]") {
@@ -78,6 +80,26 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
   CAPTURE(b - a);
   CAPTURE(c - b);
   CHECK((b - a) == Approx(2*(c - b)));
+}
+
+TEST_CASE("Sampling", "[utility][sampling]") {
+  typedef Eigen::Matrix<int, Eigen::Dynamic, 1> t_Vector;
+  t_Vector const input = t_Vector::Random(12);
+
+  sopt::Sampling const sampling{1, 3, 6, 5};
+
+  t_Vector down = t_Vector::Zero(4);
+  sampling(down, input);
+  CHECK(down.size() == 4);
+  CHECK(down(0) == input(1)); CHECK(down(1) == input(3));
+  CHECK(down(2) == input(6)); CHECK(down(3) == input(5));
+
+  t_Vector up = t_Vector::Zero(input.size());
+  sampling.dagger(up, down);
+  CHECK(up(1) == input(1)); CHECK(up(3) == input(3));
+  CHECK(up(6) == input(6)); CHECK(up(5) == input(5));
+  up(1) = 0; up(3) = 0; up(6) = 0; up(5) = 0;
+  CHECK(up == t_Vector::Zero(up.size()));
 }
 
 // Checks type traits work

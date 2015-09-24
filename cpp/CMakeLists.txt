@@ -17,6 +17,7 @@ configure_file(sopt/logging.in.h ${EXTERNAL_ROOT}/include/sopt/logging.h)
 include_directories("${EXTERNAL_ROOT}/include/")
 
 add_subdirectory(wavelets)
+add_subdirectory(sopt)
 if(tests)
   add_subdirectory(tests)
   add_subdirectory(examples)
