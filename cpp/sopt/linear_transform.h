@@ -192,8 +192,8 @@ namespace details {
 
 //! Helper function to creates a function operator
 template<class DERIVED>
-  auto linear_transform(Eigen::MatrixBase<DERIVED> const &A)
-  -> LinearTransform<Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1>> {
+  LinearTransform<Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1>>
+  linear_transform(Eigen::MatrixBase<DERIVED> const &A) {
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1> t_Vector;
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
     details::MatrixToLinearTransform<t_Matrix> const matrix(A);
