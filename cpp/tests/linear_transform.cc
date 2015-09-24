@@ -21,6 +21,10 @@ TEST_CASE("Linear Transforms", "[ops]") {
 
     auto op = sopt::linear_transform<t_Vector>(direct, indirect);
 
+    CHECK((op * x).eval().cols() == x.cols());
+    CHECK((op * x).eval().rows() == x.rows());
+    CHECK((op * x).cols() == x.cols());
+    CHECK((op * x).rows() == x.rows());
     CHECK((op * x).matrix() == (2 * x - 1).matrix());
     CHECK((op.dagger() * x).matrix() == (4 * x - 1).matrix());
   }
@@ -31,8 +35,27 @@ TEST_CASE("Linear Transforms", "[ops]") {
 
     auto op = sopt::linear_transform(L.matrix());
 
+    CHECK((op * x.matrix()).eval().cols() == x.cols());
+    CHECK((op * x.matrix()).eval().rows() == x.rows());
+    CHECK((op * x.matrix()).cols() == x.cols());
+    CHECK((op * x.matrix()).rows() == x.rows());
     CHECK(op * x.matrix() == L.matrix() * x.matrix());
     CHECK(op.dagger() * x.matrix() == L.conjugate().transpose().matrix() * x.matrix());
+  }
+
+  SECTION("Rectangular matrix") {
+    t_Matrix const L = t_Matrix::Random(N, 2*N);
+    t_Vector const x = t_Vector::Random(2*N) * 5;
+
+    auto op = sopt::linear_transform(L.matrix());
+
+    CHECK((op * x.matrix()).eval().cols() == 1);
+    CHECK((op * x.matrix()).eval().rows() == N);
+    CHECK((op * x.matrix()).cols() == 1);
+    CHECK((op * x.matrix()).rows() == N);
+    CHECK(op * x.matrix() == L.matrix() * x.matrix());
+    CHECK(op.dagger() * x.head(N).matrix()
+        == L.conjugate().transpose().matrix() * x.head(N).matrix());
   }
 }
 

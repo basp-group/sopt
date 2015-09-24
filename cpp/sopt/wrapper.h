@@ -52,16 +52,16 @@ template<class VECTOR> class WrapFunction {
     //! if N is the size of the input, then (N * a) / b  + c is the output
     //! b cannot be zero.
     WrapFunction(t_Function const &func, std::array<t_int, 3> sizes = {{1, 1, 0}})
-      : func(func), sizes(sizes) {
-      if(sizes[1] == 0)
+      : func(func), sizes_(sizes) {
+      if(sizes_[1] == 0)
         SOPT_THROW("Second element of sizes cannot be zero");
     }
-    WrapFunction(WrapFunction const &c) : func(c.func), sizes(c.sizes) {}
+    WrapFunction(WrapFunction const &c) : func(c.func), sizes_(c.sizes_) {}
     WrapFunction(WrapFunction const &&c)
-      : func(std::move(c.func)), sizes(std::move(c.sizes)) {}
-    void operator=(WrapFunction const &c) { func = c.func; sizes = c.sizes; }
+      : func(std::move(c.func)), sizes_(std::move(c.sizes_)) {}
+    void operator=(WrapFunction const &c) { func = c.func; sizes_ = c.sizes_; }
     void operator=(WrapFunction &&c) {
-      func = std::move(c.func); sizes = std::move(c.sizes);
+      func = std::move(c.func); sizes_ = std::move(c.sizes_);
     }
 
     //! Function application form
@@ -92,16 +92,19 @@ template<class VECTOR> class WrapFunction {
         return AppliedFunction<t_Function const &, Eigen::MatrixBase<T0>>(func, x, rows(x));
       }
 
-  private:
+    std::array<t_int, 3> const & sizes() const { return sizes_; }
+
+  protected:
     template<class T>
       t_uint rows(Eigen::DenseBase<T> const &x) const {
-        return (x.rows() * sizes[0]) / sizes[1] + sizes[2];
+        return (x.rows() * sizes_[0]) / sizes_[1] + sizes_[2];
       }
 
+  private:
     //! Reference function
     t_Function func;
     //! Ratio between input and output size
-    std::array<t_int, 3> sizes;
+    std::array<t_int, 3> sizes_;
 };
 
 //! Helper function to wrap functor into expression-able object

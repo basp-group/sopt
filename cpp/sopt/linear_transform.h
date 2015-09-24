@@ -2,9 +2,12 @@
 #define SOPT_OPERATORS_H
 
 #include <type_traits>
+#include <array>
 #include <Eigen/Core>
-#include "types.h"
-#include "wrapper.h"
+#include "sopt/types.h"
+#include "sopt/wrapper.h"
+#include "sopt/utility.h"
+#include "sopt/logging.h"
 
 namespace sopt {
 
@@ -23,8 +26,43 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
     //! Type of the wrapped functions
     typedef std::function<void(VECTOR &, VECTOR const &)> t_Function;
 
-    LinearTransform(t_Function const &direct, t_Function const &indirect)
-      : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {}
+    //! Constructor
+    //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
+    //!    linear operator to a vector.
+    //! \param[in] indirect: function with signature void(VECTOR&, VECTOR const&) which applies a
+    //!    the conjugate transpose linear operator to a vector.
+    //! \param[in] sizes: 3 integer elements (a, b, c) such that if the input to linear operator is
+    //!     of size N, then the output is of size (a * N) / b + c. A similar quantity is deduced for
+    //!     the indirect operator.
+    LinearTransform(
+        t_Function const &direct, t_Function const &indirect,
+        std::array<t_int, 3> sizes = {{1, 1, 0}}
+    ) : LinearTransform(
+          direct, sizes,
+          indirect, {{sizes[1], sizes[0], sizes[0] == 0? 0: -(sizes[2]*sizes[1])/sizes[0]}}
+        ) {
+      assert(sizes[0] == 0);
+    }
+    //! Constructor
+    //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
+    //!    linear operator to a vector.
+    //! \param[in] dsizes: 3 integer elements (a, b, c) such that if the input to the linear
+    //!    operator is of size N, then the output is of size (a * N) / b + c.
+    //! \param[in] indirect: function with signature void(VECTOR&, VECTOR const&) which applies a
+    //!    the conjugate transpose linear operator to a vector.
+    //! \param[in] dsizes: 3 integer elements (a, b, c) such that if the input to the indirect
+    //!    linear operator is of size N, then the output is of size (a * N) / b + c.
+    LinearTransform(
+        t_Function const &direct, std::array<t_int, 3> dsizes,
+        t_Function const &indirect, std::array<t_int, 3> isizes
+    ) : LinearTransform(details::wrap(direct, dsizes), details::wrap(indirect, isizes)) {}
+    LinearTransform(
+        details::WrapFunction<VECTOR> const &direct,
+        details::WrapFunction<VECTOR> const &indirect
+    ) : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {
+      assert(dagger().rows(rows(1)) != 1);
+      assert(dagger().rows(rows(2)) != 2);
+    }
     LinearTransform(LinearTransform const &c)
       : details::WrapFunction<VECTOR>(c), indirect_(c.indirect_) {}
     LinearTransform(LinearTransform &&c)
@@ -39,20 +77,47 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
     }
 
     //! Indirect transform
-    details::WrapFunction<VECTOR> dagger() const { return details::wrap(indirect_); }
+    details::WrapFunction<VECTOR> dagger() const { return indirect_; }
+
     using details::WrapFunction<VECTOR>::operator*;
+    using details::WrapFunction<VECTOR>::sizes;
 
   private:
+    using details::WrapFunction<VECTOR>::rows;
     //! Function applying conjugate transpose operator
-    t_Function indirect_;
+    details::WrapFunction<VECTOR> indirect_;
 };
 
 //! Helper function to creates a function operator
+//! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
+//!    linear operator to a vector.
+//! \param[in] indirect: function with signature void(VECTOR&, VECTOR const&) which applies a
+//!    the conjugate transpose linear operator to a vector.
+//! \param[in] sizes: 3 integer elements (a, b, c) such that if the input to linear operator is
+//!     of size N, then the output is of size (a * N) / b + c. A similar quantity is deduced for
+//!     the indirect operator.
 template<class VECTOR>
   LinearTransform<VECTOR> linear_transform(
-      typename LinearTransform<VECTOR>::t_Function const& direct,
-      typename LinearTransform<VECTOR>::t_Function const& indirect
-  ) { return LinearTransform<VECTOR>(direct, indirect); }
+      std::function<void(VECTOR&, VECTOR const&)> const& direct,
+      std::function<void(VECTOR&, VECTOR const&)> const& indirect,
+      std::array<t_int, 3> const &sizes = {{1, 1, 0}}
+  ) { return LinearTransform<VECTOR>(direct, indirect, sizes); }
+//! Helper function to creates a function operator
+ //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
+ //!    linear operator to a vector.
+ //! \param[in] dsizes: 3 integer elements (a, b, c) such that if the input to the linear
+ //!    operator is of size N, then the output is of size (a * N) / b + c.
+ //! \param[in] indirect: function with signature void(VECTOR&, VECTOR const&) which applies a
+ //!    the conjugate transpose linear operator to a vector.
+ //! \param[in] dsizes: 3 integer elements (a, b, c) such that if the input to the indirect
+ //!    linear operator is of size N, then the output is of size (a * N) / b + c.
+template<class VECTOR>
+  LinearTransform<VECTOR> linear_transform(
+      std::function<void(VECTOR&, VECTOR const&)> const& direct,
+      std::array<t_int, 3> const &dsizes,
+      std::function<void(VECTOR&, VECTOR const&)> const& indirect,
+      std::array<t_int, 3> const &isizes
+  ) { return LinearTransform<VECTOR>(direct, dsizes, indirect, isizes); }
 
 //! Convenience no-op function
 template<class VECTOR>
@@ -132,7 +197,14 @@ template<class DERIVED>
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1> t_Vector;
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
     details::MatrixToLinearTransform<t_Matrix> const matrix(A);
-      return LinearTransform<t_Vector>(matrix, matrix.dagger());
+    if(A.rows() == A.cols())
+      return LinearTransform<t_Vector>(matrix, matrix.dagger(), {{1, 1, 0}});
+    else {
+      t_int const gcd = details::gcd(A.cols(), A.rows());
+      t_int const a = A.cols() / gcd;
+      t_int const b = A.rows() / gcd;
+      return LinearTransform<t_Vector>(matrix, matrix.dagger(), {{b, a,  0}});
+    }
   }
 }
 #endif

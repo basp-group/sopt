@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <complex>
 
+#include "sopt/types.h"
+
 namespace sopt {
 
 namespace details {
@@ -120,5 +122,11 @@ template<class T0>
     return l1_norm(input.array());
   }
 
-} /* sopt */ 
+namespace details {
+  //! Greatest common divisor
+  inline t_int gcd(t_int a, t_int b) { return b == 0 ? a : gcd(b, a % b); }
+}
+
+
+} /* sopt */
 #endif
