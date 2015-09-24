@@ -14,6 +14,7 @@ get_gitref()
 
 option(tests          "Enable testing"                         on)
 option(benchmarks     "Enable benchmarking"                    on)
+option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 
 # Add c++11 stuff
@@ -27,10 +28,15 @@ include(dependencies)
 # sets rpath policy explicitly
 cmake_policy(SET CMP0042 NEW)
 
-if(tests)
+if(tests OR examples)
   enable_testing()
+endif()
+if(tests)
   include(catch)
+endif()
+if(examples)
   include(AddExample)
+  find_package(TIFF REQUIRED)
 endif()
 if(benchmarks)
   include(AddBenchmark)
