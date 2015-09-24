@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <Eigen/Core>
-#include "utility.h"
+#include "sopt/utility.h"
 
 namespace sopt {
 //! Holds some standard proximals
@@ -80,6 +80,7 @@ template<class T0>
     return t_Lazy(EuclidianNorm(), t, x);
   }
 
+//! Proximal of the l1 norm
 template<class T>
   Eigen::CwiseUnaryOp<
     const sopt::details::SoftThreshhold<typename T::Scalar>,
@@ -88,6 +89,7 @@ template<class T>
       typename real_type<typename T::Scalar>::type const &t,
       Eigen::MatrixBase<T> const &input
   ) { return soft_threshhold(input, t); }
+
 
 //! Translation over proximal function
 template<class FUNCTION, class VECTOR> class Translation {
