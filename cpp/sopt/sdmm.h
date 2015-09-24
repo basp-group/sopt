@@ -70,10 +70,34 @@ template<class SCALAR> class SDMM {
       return *this;
     }
     //! \brief Appends a proximal and linear transform
-    //! \details Makes for easier construction
-    template<class PROXIMAL, class ... T> SDMM<SCALAR>& append(PROXIMAL proximal, T ... args) {
-      proximals().emplace_back(proximal);
-      transforms().emplace_back(linear_transform(args...));
+    template<class PROXIMAL, class ... T>
+      SDMM<SCALAR>& append(PROXIMAL proximal, T ... args) {
+        proximals().emplace_back(proximal);
+        transforms().emplace_back(linear_transform(args ...));
+        return *this;
+      }
+    //! \brief Appends a proximal with identity as the linear transform
+    template<class PROXIMAL> SDMM<SCALAR>& append(PROXIMAL proximal) {
+      return append(
+          proximal,
+          linear_transform<t_Vector>(
+            [](t_Vector &out, t_Vector const &in) { out = in; },
+            [](t_Vector &out, t_Vector const &in) { out = in; }
+          )
+      );
+    }
+    //! \brief Appends a proximal with the linear transform as pair of functions
+    template<class PROXIMAL, class L, class LDAGGER>
+      SDMM<SCALAR>& append(PROXIMAL proximal, L l, LDAGGER ldagger) {
+      return append(
+          proximal,
+          linear_transform<t_Vector>(l, ldagger)
+      );
+    }
+
+    //! Sets convergence functions that ignore this object
+    SDMM<SCALAR>& is_converged(std::function<bool(t_Vector const&x)> const& conv) {
+      is_converged_ = [conv](SDMM<Scalar> const &, t_Vector const &x) { return conv(x); };
       return *this;
     }
 
@@ -82,6 +106,8 @@ template<class SCALAR> class SDMM {
     //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
     //! See therein for notation
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
+    //! \brief SDMM with input vector == 0
+    Diagnostic operator()(t_Vector& out) const { return operator()(out, out.Zero(out.size())); }
 
     //! Linear transforms associated with each objective function
     std::vector<t_LinearTransform> const & transforms() const { return transforms_; }
@@ -184,6 +210,7 @@ template<class SCALAR>
 
     assert(z.size() == transforms().size());
     assert(y.size() == transforms().size());
+    SOPT_DEBUG("Solving for x_n");
 
     // Initialize b of A x = b = sum_i L_i^T(z_i - y_i)
     t_Vector b = out.Zero(out.size());
@@ -201,7 +228,7 @@ template<class SCALAR>
     auto const diagnostic = this->conjugate_gradient(out, A, b);
     if(not diagnostic.good) {
       SOPT_ERROR(
-          "CG error - iterations: {}/{} - residuals {}\n", 
+          "CG error - iterations: {}/{} - residuals {}\n",
           diagnostic.niters,
           conjugate_gradient().itermax(),
           diagnostic.residual
@@ -223,8 +250,11 @@ template<class SCALAR>
 
 template<class SCALAR>
   void SDMM<SCALAR>::initialization(t_Vectors& y, t_Vector const& x) const {
-    for(t_uint i(0); i < transforms().size(); i++)
+    SOPT_DEBUG("Initializing SDMM");
+    for(t_uint i(0); i < transforms().size(); i++) {
+      SOPT_DEBUG("    - transform {}", i);
       y[i] = transforms(i) * x;
+    }
   }
 }} /* sopt::algorithm */
 #endif

@@ -63,7 +63,7 @@ int main(int, char const **) {
     // L_i can be a matrix
     .append(prox_g0, L0)
     // L_i can be a pair of functions applying a linear transform and its transpose
-    .append(prox_g1, sopt::linear_transform<t_Vector>(L1_direct, L1_dagger));
+    .append(prox_g1, L1_direct, L1_dagger);
 
   t_Vector result;
   t_Vector const input = t_Vector::Random(N);
