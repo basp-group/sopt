@@ -5,6 +5,7 @@
 
 #include "sopt/utility.h"
 #include "sopt/sampling.h"
+#include "sopt/relative_variation.h"
 #include "sopt/types.h"
 
 TEST_CASE("Projector on positive quadrant", "[utility][project]") {
@@ -100,6 +101,16 @@ TEST_CASE("Sampling", "[utility][sampling]") {
   CHECK(up(6) == input(6)); CHECK(up(5) == input(5));
   up(1) = 0; up(3) = 0; up(6) = 0; up(5) = 0;
   CHECK(up == t_Vector::Zero(up.size()));
+}
+
+TEST_CASE("Relative variation", "[utility][convergence]") {
+  sopt::RelativeVariation<double> relvar(1e-8);
+
+  sopt::t_rVector input = sopt::t_rVector::Random(6);
+  CHECK(not relvar(input));
+  CHECK(relvar(input));
+  CHECK(relvar(input + relvar.epsilon() * 0.5/6. * sopt::t_rVector::Random(6)));
+  CHECK(not relvar(input + relvar.epsilon() * 1.1 * sopt::t_rVector::Ones(6)));
 }
 
 // Checks type traits work
