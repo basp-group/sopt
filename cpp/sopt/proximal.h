@@ -82,14 +82,53 @@ template<class T0>
 
 //! Proximal of the l1 norm
 template<class T>
-  Eigen::CwiseUnaryOp<
-    const sopt::details::SoftThreshhold<typename T::Scalar>,
-    const T
-  > l1_norm(
-      typename real_type<typename T::Scalar>::type const &t,
-      Eigen::MatrixBase<T> const &input
-  ) { return soft_threshhold(input, t); }
+  void l1_norm(
+      Eigen::Matrix<T, Eigen::Dynamic, 1> &out,
+      typename real_type<T>::type gamma,
+      Eigen::Matrix<T, Eigen::Dynamic, 1> const &x
+  ) {
+    out = soft_threshhold(x, gamma);
+  }
 
+//! Proximal for projection on the positive quadrant
+template<class T>
+  void positive_quadrant(
+      Eigen::Matrix<T, Eigen::Dynamic, 1> &out,
+      typename real_type<T>::type,
+      Eigen::Matrix<T, Eigen::Dynamic, 1> const &x
+  ) {
+    out = sopt::positive_quadrant(x);
+  };
+
+//! Proximal for indicator function of L2 ball
+template<class T> class L2Ball {
+  public:
+    typedef typename real_type<T>::type Real;
+    //! Constructs an L2 ball proximal of size epsilon
+    L2Ball(Real epsilon) : epsilon_(epsilon) {}
+    //! Calls proximal function
+    void operator()(
+      Eigen::Matrix<T, Eigen::Dynamic, 1> &out,
+      typename real_type<T>::type,
+      Eigen::Matrix<T, Eigen::Dynamic, 1> const &x
+    ) const { return operator()(out, x); }
+    //! Calls proximal function
+    void operator()(
+      Eigen::Matrix<T, Eigen::Dynamic, 1> &out,
+      Eigen::Matrix<T, Eigen::Dynamic, 1> const &x
+    ) const {
+      auto const norm = x.stableNorm();
+      out = x * (norm < epsilon_ ? 1e0: epsilon_ / norm);
+    }
+
+    //! Size of the ball
+    Real epsilon() const { return epsilon_; }
+    //! Size of the ball
+    L2Ball epsilon(Real eps) const { epsilon_ = eps; return *this; }
+  protected:
+    //! Size of the ball
+    Real epsilon_;
+};
 
 //! Translation over proximal function
 template<class FUNCTION, class VECTOR> class Translation {
