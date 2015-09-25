@@ -17,10 +17,10 @@ int main(int, char const **) {
   auto const N = 10;
   t_Matrix const L0 = t_Matrix::Random(N, N) * 2;
   t_Matrix const L1 = t_Matrix::Random(N, N) * 4;
-  // L1_direct and L1_dagger are used to demonstrate that we can define L_i in SDMM both directly
+  // L1_direct and L1_adjoint are used to demonstrate that we can define L_i in SDMM both directly
   // as matrices, or as a pair of functions that apply a linear operator and its transpose.
   auto L1_direct = [&L1](t_Vector &out, t_Vector const &input) { out = L1 * input; };
-  auto L1_dagger = [&L1](t_Vector &out, t_Vector const &input) {
+  auto L1_adjoint = [&L1](t_Vector &out, t_Vector const &input) {
     out = L1.transpose().conjugate() * input;
   };
   // Creates the target vectors
@@ -63,7 +63,7 @@ int main(int, char const **) {
     // L_i can be a matrix
     .append(prox_g0, L0)
     // L_i can be a pair of functions applying a linear transform and its transpose
-    .append(prox_g1, L1_direct, L1_dagger);
+    .append(prox_g1, L1_direct, L1_adjoint);
 
   t_Vector result;
   t_Vector const input = t_Vector::Random(N);

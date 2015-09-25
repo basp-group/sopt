@@ -87,11 +87,11 @@ template<class SCALAR> class SDMM {
       );
     }
     //! \brief Appends a proximal with the linear transform as pair of functions
-    template<class PROXIMAL, class L, class LDAGGER>
-      SDMM<SCALAR>& append(PROXIMAL proximal, L l, LDAGGER ldagger) {
+    template<class PROXIMAL, class L, class LADJOINT>
+      SDMM<SCALAR>& append(PROXIMAL proximal, L l, LADJOINT ladjoint) {
       return append(
           proximal,
-          linear_transform<t_Vector>(l, ldagger)
+          linear_transform<t_Vector>(l, ladjoint)
       );
     }
 
@@ -215,13 +215,13 @@ template<class SCALAR>
     // Initialize b of A x = b = sum_i L_i^T(z_i - y_i)
     t_Vector b = out.Zero(out.size());
     for(t_uint i(0); i < transforms().size(); ++i)
-      b += transforms(i).dagger() * (y[i] - z[i]);
+      b += transforms(i).adjoint() * (y[i] - z[i]);
 
     // Then create operator A
     auto A = [this](t_Vector &out, t_Vector const &input) {
       out = out.Zero(input.size());
       for(auto const &transform: this->transforms())
-        out += transform.dagger() * (transform * input).eval();
+        out += transform.adjoint() * (transform * input).eval();
     };
 
     // Call conjugate gradient

@@ -96,7 +96,7 @@ TEST_CASE("Sampling", "[utility][sampling]") {
   CHECK(down(2) == input(6)); CHECK(down(3) == input(5));
 
   t_Vector up = t_Vector::Zero(input.size());
-  sampling.dagger(up, down);
+  sampling.adjoint(up, down);
   CHECK(up(1) == input(1)); CHECK(up(3) == input(3));
   CHECK(up(6) == input(6)); CHECK(up(5) == input(5));
   up(1) = 0; up(3) = 0; up(6) = 0; up(5) = 0;

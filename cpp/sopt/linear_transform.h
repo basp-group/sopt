@@ -17,7 +17,7 @@ namespace details {
   //! such that SDMM algorithms can refer to them.
   template<class EIGEN> class MatrixToLinearTransform;
   //! Wraps a tranposed matrix into a function and its conjugate transpose
-  template<class EIGEN> class MatrixDaggerToLinearTransform;
+  template<class EIGEN> class MatrixAdjointToLinearTransform;
 }
 
 //! Joins together direct and indirect operators
@@ -60,8 +60,8 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
         details::WrapFunction<VECTOR> const &direct,
         details::WrapFunction<VECTOR> const &indirect
     ) : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {
-      assert(dagger().rows(rows(1)) != 1);
-      assert(dagger().rows(rows(2)) != 2);
+      assert(adjoint().rows(rows(1)) != 1);
+      assert(adjoint().rows(rows(2)) != 2);
     }
     LinearTransform(LinearTransform const &c)
       : details::WrapFunction<VECTOR>(c), indirect_(c.indirect_) {}
@@ -77,7 +77,7 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
     }
 
     //! Indirect transform
-    details::WrapFunction<VECTOR> dagger() const { return indirect_; }
+    details::WrapFunction<VECTOR> adjoint() const { return indirect_; }
 
     using details::WrapFunction<VECTOR>::operator*;
     using details::WrapFunction<VECTOR>::sizes;
@@ -155,33 +155,33 @@ namespace details {
       }
       //! \brief Returns conjugate transpose operator
       //! \details The matrix is shared.
-      MatrixDaggerToLinearTransform<EIGEN> dagger() const {
-        return MatrixDaggerToLinearTransform<EIGEN>(matrix);
+      MatrixAdjointToLinearTransform<EIGEN> adjoint() const {
+        return MatrixAdjointToLinearTransform<EIGEN>(matrix);
       }
     private:
       //! Wrapped matrix
       std::shared_ptr<EIGEN> matrix;
   };
 
-  template<class EIGEN> class MatrixDaggerToLinearTransform {
+  template<class EIGEN> class MatrixAdjointToLinearTransform {
     public:
       typedef typename MatrixToLinearTransform<EIGEN>::PlainObject PlainObject;
       //! \brief Creates from an expression
       //! \details Expression is evaluated and the result stored internally. This object owns a
       //! copy of the matrix. It might share it with a few friendly neighbors.
       template<class T0>
-        MatrixDaggerToLinearTransform(Eigen::MatrixBase<T0> const& A)
+        MatrixAdjointToLinearTransform(Eigen::MatrixBase<T0> const& A)
           : matrix(std::make_shared<EIGEN>(A)) {}
       //! Creates from a shared matrix.
-      MatrixDaggerToLinearTransform(std::shared_ptr<EIGEN> const &x) : matrix(x) {};
+      MatrixAdjointToLinearTransform(std::shared_ptr<EIGEN> const &x) : matrix(x) {};
 
       //! Performs operation
       void operator()(PlainObject &out, PlainObject const& x) const {
         out = matrix->transpose().conjugate() * x;
       }
-      //! \brief Returns dagger operator
+      //! \brief Returns adjoint operator
       //! \details The matrix is shared.
-      MatrixToLinearTransform<EIGEN> dagger() const {
+      MatrixToLinearTransform<EIGEN> adjoint() const {
         return MatrixToLinearTransform<EIGEN>(matrix);
       }
 
@@ -198,12 +198,12 @@ template<class DERIVED>
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
     details::MatrixToLinearTransform<t_Matrix> const matrix(A);
     if(A.rows() == A.cols())
-      return LinearTransform<t_Vector>(matrix, matrix.dagger(), {{1, 1, 0}});
+      return LinearTransform<t_Vector>(matrix, matrix.adjoint(), {{1, 1, 0}});
     else {
       t_int const gcd = details::gcd(A.cols(), A.rows());
       t_int const a = A.cols() / gcd;
       t_int const b = A.rows() / gcd;
-      return LinearTransform<t_Vector>(matrix, matrix.dagger(), {{b, a,  0}});
+      return LinearTransform<t_Vector>(matrix, matrix.adjoint(), {{b, a,  0}});
     }
   }
 }

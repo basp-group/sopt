@@ -26,7 +26,7 @@ TEST_CASE("Linear Transforms", "[ops]") {
     CHECK((op * x).cols() == x.cols());
     CHECK((op * x).rows() == x.rows());
     CHECK((op * x).matrix() == (2 * x - 1).matrix());
-    CHECK((op.dagger() * x).matrix() == (4 * x - 1).matrix());
+    CHECK((op.adjoint() * x).matrix() == (4 * x - 1).matrix());
   }
 
   SECTION("Matrix") {
@@ -40,7 +40,7 @@ TEST_CASE("Linear Transforms", "[ops]") {
     CHECK((op * x.matrix()).cols() == x.cols());
     CHECK((op * x.matrix()).rows() == x.rows());
     CHECK(op * x.matrix() == L.matrix() * x.matrix());
-    CHECK(op.dagger() * x.matrix() == L.conjugate().transpose().matrix() * x.matrix());
+    CHECK(op.adjoint() * x.matrix() == L.conjugate().transpose().matrix() * x.matrix());
   }
 
   SECTION("Rectangular matrix") {
@@ -54,7 +54,7 @@ TEST_CASE("Linear Transforms", "[ops]") {
     CHECK((op * x.matrix()).cols() == 1);
     CHECK((op * x.matrix()).rows() == N);
     CHECK(op * x.matrix() == L.matrix() * x.matrix());
-    CHECK(op.dagger() * x.head(N).matrix()
+    CHECK(op.adjoint() * x.head(N).matrix()
         == L.conjugate().transpose().matrix() * x.head(N).matrix());
   }
 }
@@ -74,6 +74,6 @@ TEST_CASE("Array of Linear transforms", "[ops]") {
 
   for(decltype(Ls)::size_type i(0); i < ops.size(); ++i) {
     CHECK(ops[i] * x == Ls[i] * x);
-    CHECK(ops[i].dagger() * x == Ls[i].conjugate().transpose() * x);
+    CHECK(ops[i].adjoint() * x == Ls[i].conjugate().transpose() * x);
   }
 }

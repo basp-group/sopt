@@ -32,11 +32,11 @@ namespace sopt {
         }
       // Performs adjunct of sampling
       template<class T0, class T1>
-        void dagger(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const;
+        void adjoint(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const;
       // Performs adjunct sampling
       template<class T0, class T1>
-        void dagger(Eigen::DenseBase<T0> &&out, Eigen::DenseBase<T1> const &x) const {
-          dagger(out, x);
+        void adjoint(Eigen::DenseBase<T0> &&out, Eigen::DenseBase<T1> const &x) const {
+          adjoint(out, x);
         }
 
       //! Returns linear transform version of this object.
@@ -45,7 +45,7 @@ namespace sopt {
         Sampling const sampling(*this);
         return linear_transform<t_Vector>(
             [sampling](t_Vector &out, t_Vector const &x) { sampling(out, x); },
-            [sampling](t_Vector &out, t_Vector const &x) { sampling.dagger(out, x); }
+            [sampling](t_Vector &out, t_Vector const &x) { sampling.adjoint(out, x); }
         );
       }
 
@@ -64,7 +64,7 @@ namespace sopt {
     }
 
   template<class T0, class T1>
-    void Sampling::dagger(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
+    void Sampling::adjoint(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
       assert(x.size() == indices.size());
       for(decltype(indices.size()) i(0); i < indices.size(); ++i) {
         assert(indices[i] < out.size());
