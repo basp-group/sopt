@@ -53,8 +53,8 @@ template<class VECTOR> class WrapFunction {
     //! b cannot be zero.
     WrapFunction(t_Function const &func, std::array<t_int, 3> sizes = {{1, 1, 0}})
       : func(func), sizes_(sizes) {
-      if(sizes_[1] == 0)
-        SOPT_THROW("Second element of sizes cannot be zero");
+      // cannot devide by zero
+      assert(sizes_[1] != 0);
     }
     WrapFunction(WrapFunction const &c) : func(c.func), sizes_(c.sizes_) {}
     WrapFunction(WrapFunction const &&c)
