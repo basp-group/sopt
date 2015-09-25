@@ -4,6 +4,7 @@
 #include <Eigen/Core>
 
 #include "sopt/utility.h"
+#include "sopt/logging.h"
 
 namespace sopt {
 
@@ -29,9 +30,10 @@ namespace sopt {
             previous = input;
             return false;
           }
-          auto const result = (input - previous).matrix().squaredNorm() < epsilon() * epsilon();
+          auto const norm = (input - previous).matrix().squaredNorm();
           previous = input;
-          return result;
+          SOPT_DEBUG("    - relative variation: {} <? {}", std::sqrt(norm), epsilon());
+          return norm < epsilon() * epsilon();
         }
       //! Allowed variation
       Real epsilon() const { return epsilon_; }
