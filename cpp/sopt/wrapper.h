@@ -94,13 +94,17 @@ template<class VECTOR> class WrapFunction {
 
     std::array<t_int, 3> const & sizes() const { return sizes_; }
 
+    //! Output vector size for a input with `xsize` elements
+    t_uint rows(t_uint xsize) const {
+      auto const result = (static_cast<t_int>(xsize) * sizes_[0]) / sizes_[1] + sizes_[2];
+      assert(result > 0);
+      return static_cast<t_uint>(result);
+    }
+
   protected:
+
     template<class T>
-      t_uint rows(Eigen::DenseBase<T> const &x) const {
-        auto const result = (static_cast<t_int>(x.rows()) * sizes_[0]) / sizes_[1] + sizes_[2];
-        assert(result > 0);
-        return static_cast<t_uint>(result);
-      }
+      t_uint rows(Eigen::DenseBase<T> const &x) const { return rows(x.size()); }
 
   private:
     //! Reference function
