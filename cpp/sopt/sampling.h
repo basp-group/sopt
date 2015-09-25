@@ -15,10 +15,8 @@ namespace sopt {
   //! \details Picks some elements from a vector
   class Sampling {
     public:
-      //! Constructor using list of unsigned integers
-      Sampling(std::initializer_list<t_uint> const &indices) : indices(indices) {}
       //! Constructs from a vector
-      Sampling(std::vector<t_uint> const &indices) : indices(indices) {}
+      Sampling(t_uint size, std::vector<t_uint> const &indices) : indices(indices), size(size) {}
       //! Constructs from the size and the number of samples to pick
       Sampling(t_uint size, t_uint samples);
 
@@ -45,18 +43,22 @@ namespace sopt {
         Sampling const sampling(*this);
         return linear_transform<t_Vector>(
             [sampling](t_Vector &out, t_Vector const &x) { sampling(out, x); },
-            [sampling](t_Vector &out, t_Vector const &x) { sampling.adjoint(out, x); }
+            {{0, 1, static_cast<t_int>(indices.size())}},
+            [sampling](t_Vector &out, t_Vector const &x) { sampling.adjoint(out, x); },
+            {{0, 1, static_cast<t_int>(size)}}
         );
       }
 
     protected:
       //! Set of indices to pick
       std::vector<t_uint> indices;
+      //! Original vector size
+      t_uint size;
   };
 
   template<class T0, class T1>
     void Sampling::operator()(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
-      assert(out.size() == indices.size());
+      out.resize(indices.size());
       for(decltype(indices.size()) i(0); i < indices.size(); ++i) {
         assert(indices[i] < x.size());
         out[i] = x[indices[i]];
@@ -66,6 +68,8 @@ namespace sopt {
   template<class T0, class T1>
     void Sampling::adjoint(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
       assert(x.size() == indices.size());
+      out.resize(out.size());
+      out.fill(0);
       for(decltype(indices.size()) i(0); i < indices.size(); ++i) {
         assert(indices[i] < out.size());
         out[indices[i]] = x[i];

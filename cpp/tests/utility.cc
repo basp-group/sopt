@@ -87,7 +87,7 @@ TEST_CASE("Sampling", "[utility][sampling]") {
   typedef Eigen::Matrix<int, Eigen::Dynamic, 1> t_Vector;
   t_Vector const input = t_Vector::Random(12);
 
-  sopt::Sampling const sampling{1, 3, 6, 5};
+  sopt::Sampling const sampling(12, {1, 3, 6, 5});
 
   t_Vector down = t_Vector::Zero(4);
   sampling(down, input);
