@@ -41,7 +41,7 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
           direct, sizes,
           indirect, {{sizes[1], sizes[0], sizes[0] == 0? 0: -(sizes[2]*sizes[1])/sizes[0]}}
         ) {
-      assert(sizes[0] == 0);
+      assert(sizes[0] != 0);
     }
     //! Constructor
     //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
@@ -59,10 +59,7 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
     LinearTransform(
         details::WrapFunction<VECTOR> const &direct,
         details::WrapFunction<VECTOR> const &indirect
-    ) : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {
-      assert(adjoint().rows(rows(1)) != 1);
-      assert(adjoint().rows(rows(2)) != 2);
-    }
+    ) : details::WrapFunction<VECTOR>(direct), indirect_(indirect) {}
     LinearTransform(LinearTransform const &c)
       : details::WrapFunction<VECTOR>(c), indirect_(c.indirect_) {}
     LinearTransform(LinearTransform &&c)
@@ -81,9 +78,9 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
 
     using details::WrapFunction<VECTOR>::operator*;
     using details::WrapFunction<VECTOR>::sizes;
+    using details::WrapFunction<VECTOR>::rows;
 
   private:
-    using details::WrapFunction<VECTOR>::rows;
     //! Function applying conjugate transpose operator
     details::WrapFunction<VECTOR> indirect_;
 };
@@ -101,7 +98,7 @@ template<class VECTOR>
       std::function<void(VECTOR&, VECTOR const&)> const& direct,
       std::function<void(VECTOR&, VECTOR const&)> const& indirect,
       std::array<t_int, 3> const &sizes = {{1, 1, 0}}
-  ) { return LinearTransform<VECTOR>(direct, indirect, sizes); }
+  ) { return {direct, indirect, sizes}; }
 //! Helper function to creates a function operator
  //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
  //!    linear operator to a vector.
@@ -117,12 +114,18 @@ template<class VECTOR>
       std::array<t_int, 3> const &dsizes,
       std::function<void(VECTOR&, VECTOR const&)> const& indirect,
       std::array<t_int, 3> const &isizes
-  ) { return LinearTransform<VECTOR>(direct, dsizes, indirect, isizes); }
+  ) { return {direct, dsizes, indirect, isizes}; }
 
 //! Convenience no-op function
 template<class VECTOR>
   LinearTransform<VECTOR>& linear_transform(LinearTransform<VECTOR> &passthrough) {
     return passthrough;
+  }
+//! Creates a linear transform from a pair of wrappers
+template<class VECTOR>
+  LinearTransform<VECTOR> linear_transform(
+      details::WrapFunction<VECTOR> const &direct, details::WrapFunction<VECTOR> const &adjoint ) {
+    return {direct, adjoint};
   }
 
 
@@ -198,12 +201,12 @@ template<class DERIVED>
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
     details::MatrixToLinearTransform<t_Matrix> const matrix(A);
     if(A.rows() == A.cols())
-      return LinearTransform<t_Vector>(matrix, matrix.adjoint(), {{1, 1, 0}});
+      return {matrix, matrix.adjoint()};
     else {
       t_int const gcd = details::gcd(A.cols(), A.rows());
       t_int const a = A.cols() / gcd;
       t_int const b = A.rows() / gcd;
-      return LinearTransform<t_Vector>(matrix, matrix.adjoint(), {{b, a,  0}});
+      return {matrix, matrix.adjoint(), {{b, a, 0}}};
     }
   }
 }
