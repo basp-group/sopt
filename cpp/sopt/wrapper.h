@@ -97,7 +97,9 @@ template<class VECTOR> class WrapFunction {
   protected:
     template<class T>
       t_uint rows(Eigen::DenseBase<T> const &x) const {
-        return (x.rows() * sizes_[0]) / sizes_[1] + sizes_[2];
+        auto const result = (static_cast<t_int>(x.rows()) * sizes_[0]) / sizes_[1] + sizes_[2];
+        assert(result > 0);
+        return static_cast<t_uint>(result);
       }
 
   private:
