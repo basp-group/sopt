@@ -49,8 +49,8 @@ template<class SCALAR> class SDMM {
     // Macro helps define properties that can be initialized as in
     // auto sdmm  = SDMM<float>().prop0(value).prop1(value);
 #   define SOPT_MACRO(NAME, TYPE)                                                   \
-        TYPE NAME() const { return NAME ## _; }                                     \
-        SDMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; } \
+        TYPE const& NAME() const { return NAME ## _; }                              \
+        SDMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }   \
       protected:                                                                    \
         TYPE NAME ## _;                                                             \
       public:
@@ -65,8 +65,8 @@ template<class SCALAR> class SDMM {
 #   undef SOPT_MACRO
     //! Helps setup conjugate gradient
     SDMM<SCALAR> & conjugate_gradient(t_uint itermax, t_real tolerance) {
-      conjugate_gradient().itermax(itermax);
-      conjugate_gradient().tolerance(tolerance);
+      conjugate_gradient_.itermax(itermax);
+      conjugate_gradient_.tolerance(tolerance);
       return *this;
     }
     //! \brief Appends a proximal and linear transform
@@ -88,14 +88,27 @@ template<class SCALAR> class SDMM {
     }
     //! \brief Appends a proximal with the linear transform as pair of functions
     template<class PROXIMAL, class L, class LADJOINT>
-      SDMM<SCALAR>& append(PROXIMAL proximal, L l, LADJOINT ladjoint) {
+      SDMM<SCALAR>& append(
+          PROXIMAL proximal, L l, LADJOINT ladjoint, std::array<t_int, 3> sizes = {{1, 1, 0}}) {
       return append(
           proximal,
-          linear_transform<t_Vector>(l, ladjoint)
+          linear_transform<t_Vector>(l, ladjoint, sizes)
       );
     }
+    //! \brief Appends a proximal with the linear transform as pair of functions
+    template<class PROXIMAL, class L, class LADJOINT>
+      SDMM<SCALAR>& append(
+          PROXIMAL proximal,
+          L l, std::array<t_int, 3> dsizes,
+          LADJOINT ladjoint, std::array<t_int, 3> isizes
+      ) {
+        return append(
+            proximal,
+            linear_transform<t_Vector>(l, dsizes, ladjoint, isizes)
+        );
+      }
 
-    //! Sets convergence functions that ignore this object
+    //! Sets convergence fnctions that ignore this object
     SDMM<SCALAR>& is_converged(std::function<bool(t_Vector const&x)> const& conv) {
       is_converged_ = [conv](SDMM<Scalar> const &, t_Vector const &x) { return conv(x); };
       return *this;
@@ -106,8 +119,6 @@ template<class SCALAR> class SDMM {
     //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
     //! See therein for notation
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
-    //! \brief SDMM with input vector == 0
-    Diagnostic operator()(t_Vector& out) const { return operator()(out, out.Zero(out.size())); }
 
     //! Linear transforms associated with each objective function
     std::vector<t_LinearTransform> const & transforms() const { return transforms_; }
@@ -136,7 +147,7 @@ template<class SCALAR> class SDMM {
     //! \details Removes the need for ugly extra brackets.
     template<class ... T>
       auto conjugate_gradient(T& ... args) const -> decltype(this->conjugate_gradient()(args...)) {
-        return conjugate_gradient()(args...);
+        return conjugate_gradient_(args...);
       }
 
     //! Forwards to convergence function parameter
@@ -178,6 +189,7 @@ template<class SCALAR>
     t_Vectors z(transforms().size(), t_Vector::Zero(out.size()));
 
     // Initial step replaces iteration update with initialization
+    SOPT_INFO("Input {} ", input.transpose());
     initialization(y, input);
     cg_diagnostic = solve_for_xn(out, y, z);
 
@@ -217,11 +229,15 @@ template<class SCALAR>
     for(t_uint i(0); i < transforms().size(); ++i)
       b += transforms(i).adjoint() * (y[i] - z[i]);
 
+    SOPT_TRACE("B: {}", b.transpose());
     // Then create operator A
     auto A = [this](t_Vector &out, t_Vector const &input) {
+      SOPT_TRACE("x = {}", input.transpose());
       out = out.Zero(input.size());
-      for(auto const &transform: this->transforms())
+      for(auto const &transform: this->transforms()) {
+        SOPT_TRACE("A^TAx = {}", (transform.adjoint() * (transform * input).eval()).transpose());
         out += transform.adjoint() * (transform * input).eval();
+      }
     };
 
     // Call conjugate gradient
@@ -252,8 +268,8 @@ template<class SCALAR>
   void SDMM<SCALAR>::initialization(t_Vectors& y, t_Vector const& x) const {
     SOPT_DEBUG("Initializing SDMM");
     for(t_uint i(0); i < transforms().size(); i++) {
-      SOPT_DEBUG("    - transform {}", i);
       y[i] = transforms(i) * x;
+      SOPT_TRACE("    - transform {}: {}", i, y[i].transpose());
     }
   }
 }} /* sopt::algorithm */
