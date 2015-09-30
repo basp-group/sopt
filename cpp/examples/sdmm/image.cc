@@ -66,16 +66,18 @@ int main(int argc, char const **argv) {
   sopt::write_tiff(t_Matrix::Map(dirty.data(), image.rows(), image.cols()), "dirty_" + std::string(argv[2]));
 
   SOPT_TRACE("Initializing Wavelet");
-  auto const wavelet = sopt::wavelets::factory("DB4", 1);
+  auto const wavelet = sopt::wavelets::factory("DB8", 4);
   auto const psi = sopt::linear_transform<Scalar>(wavelet, image.rows(), image.cols());
   SOPT_DEBUG("Size of psi: {}, {}", (psi * t_Vector::Zero(image.size())).rows(), image.size());
 
   SOPT_TRACE("Initializing Proximals");
   // Proximal functions
-  auto prox_l2ball = sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(1e-4), -y);
+
+  auto epsilon = std::sqrt(nmeasure + 2*std::sqrt(nmeasure))*sigma;
+  auto prox_l2ball = sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(epsilon), -y);
 
   SOPT_TRACE("Initializing convergence function");
-  auto relvar = sopt::RelativeVariation<Scalar>(1e-6);
+  auto relvar = sopt::RelativeVariation<Scalar>(1e-2);
   auto convergence = [&y, &sampling, &psi, &relvar](
       sopt::algorithm::SDMM<Scalar> const&, t_Vector const &x) {
     SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
@@ -88,8 +90,8 @@ int main(int argc, char const **argv) {
   // Now we can create the sdmm convex minimizer
   // Its parameters are set by calling member functions with appropriate names.
   auto sdmm = sopt::algorithm::SDMM<Scalar>()
-    .itermax(5000) // maximum number of iterations
-    .gamma(1)
+    .itermax(500) // maximum number of iterations
+    .gamma(0.1)
     .conjugate_gradient(300, 1e-8)
     .is_converged(convergence)
     // Any number of (proximal g_i, L_i) pairs can be added
