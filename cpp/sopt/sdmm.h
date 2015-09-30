@@ -143,6 +143,9 @@ template<class SCALAR> class SDMM {
         return t_LazyProximal(proximals()[i], gamma(), x);
       }
 
+    //! Number of terms
+    t_uint size() const { return proximals().size(); }
+
     //! \brief Forwards to internal conjugage gradient object
     //! \details Removes the need for ugly extra brackets.
     template<class ... T>
@@ -168,12 +171,17 @@ template<class SCALAR> class SDMM {
     virtual void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const;
 
     //! Initializes intermediate values
-    virtual void initialization(t_Vectors &y, t_Vector const &x) const;
+    virtual void initialization(t_Vectors &y, t_Vectors& z, t_Vector const &x) const;
+
+    //! Checks that the input make sense
+    virtual void sanity_check(t_Vector const&input) const;
 };
 
 template<class SCALAR>
   typename SDMM<SCALAR>::Diagnostic
   SDMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
+
+    sanity_check(input);
     ConjugateGradient::Diagnostic cg_diagnostic;
     bool  convergence = false;
     t_uint niters (0);
@@ -271,6 +279,29 @@ template<class SCALAR>
       y[i] = transforms(i) * x;
       SOPT_TRACE("    - transform {}: {}", i, y[i].transpose());
     }
+  }
+
+template<class SCALAR>
+  void SDMM<SCALAR>::sanity_check(t_Vector const&x) const {
+    bool doexit = false;
+    if(proximals().size() != transforms().size()) {
+      SOPT_ERROR("Internal error: number of proximals and transforms do not match");
+      doexit = true;
+    }
+    if(x.size() == 0)
+      SOPT_WARN("Input vector has zero size");
+    if(size() == 0)
+      SOPT_WARN("No operators - SDMM is empty");
+    for(t_uint i(0); i < size(); ++i) {
+      auto const xdual = t_Vector::Zero((transforms(i) * x).size());
+      auto const r = (transforms(i).adjoint() * xdual).size();
+      if(r != x.size()) {
+        SOPT_ERROR("Output size of transform {} and input do not match: {} vs {}", i, r, x.size());
+        doexit = true;
+      }
+    }
+    if(doexit)
+      SOPT_THROW("Internal error: number of proximals and transforms do not match");
   }
 }} /* sopt::algorithm */
 #endif
