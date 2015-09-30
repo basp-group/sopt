@@ -12,7 +12,9 @@
 #include <sopt/wavelets.h>
 #include <sopt/sdmm.h>
 #include <sopt/datadir.h>
-#include "tiffwrappers.h"
+// This header is not part of the installed sopt interface
+// It is only present in tests
+#include <tools_for_tests/tiffwrappers.h>
 
 // \min_{x} ||\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
 int main(int argc, char const **argv) {
@@ -35,7 +37,7 @@ int main(int argc, char const **argv) {
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Read input file - standard data file or full path to a tiff file
-  sopt::t_rMatrix const image = sopt::read_standard_tiff(argv[1]);
+  sopt::t_rMatrix const image = sopt::notinstalled::read_standard_tiff(argv[1]);
   sopt::t_uint nmeasure = 0.5 * image.size();
   SOPT_TRACE("Initializing sensing operator");
   auto const sampling = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure));
@@ -63,7 +65,9 @@ int main(int argc, char const **argv) {
 
   t_Vector dirty = sampling.adjoint() * y;
   assert(dirty.size() == image.size());
-  sopt::write_tiff(t_Matrix::Map(dirty.data(), image.rows(), image.cols()), "dirty_" + std::string(argv[2]));
+  sopt::notinstalled::write_tiff(
+      t_Matrix::Map(dirty.data(), image.rows(), image.cols()), "dirty_" + std::string(argv[2])
+  );
 
   SOPT_TRACE("Initializing Wavelet");
   auto const wavelet = sopt::wavelets::factory("DB8", 4);
@@ -116,7 +120,8 @@ int main(int argc, char const **argv) {
 
   SOPT_INFO("SOPT-SDMM converged in {} iterations", diagnostic.niters);
   if(argc == 3)
-    sopt::write_tiff(t_Matrix::Map(result.data(), image.rows(), image.cols()), argv[2]);
+    sopt::notinstalled::write_tiff(
+        t_Matrix::Map(result.data(), image.rows(), image.cols()), argv[2]);
 
   return 0;
 }

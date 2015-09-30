@@ -49,7 +49,11 @@ endfunction()
 # Then adds a function to create a test
 function(add_catch_test testname)
   cmake_parse_arguments(catch
-    "NOMAIN" "WORKING_DIRECTORY;SEED" "LIBRARIES;LABELS;DEPENDS;ARGUMENTS" ${ARGN})
+    "NOMAIN;NOTEST;NOCATCHLABEL"
+    "WORKING_DIRECTORY;SEED"
+    "LIBRARIES;LABELS;DEPENDS;ARGUMENTS;INCLUDES"
+    ${ARGN}
+  )
 
   # Source deduce from testname if possible
   unset(source)
@@ -91,17 +95,21 @@ function(add_catch_test testname)
   else()
     list(APPEND arguments --rng-seed time)
   endif()
-  if(CATCH_JUNIT)
-    add_test(NAME ${testname}
-      COMMAND test_${testname}
-          ${arguments}
-          -r junit
-          -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
-    )
-  else()
-    add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
-  endif()
+  if(NOT catch_NOTEST)
+    if(CATCH_JUNIT)
+      add_test(NAME ${testname}
+        COMMAND test_${testname}
+            ${arguments}
+            -r junit
+            -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
+      )
+    else()
+      add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
+    endif()
 
-  list(APPEND catch_LABELS catch)
-  set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+    if(NOT catch_NOCATCHLABEL)
+      list(APPEND catch_LABELS catch)
+    endif()
+    set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+  endif()
 endfunction()
