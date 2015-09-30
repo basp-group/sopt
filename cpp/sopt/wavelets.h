@@ -33,7 +33,7 @@ namespace sopt {
          typedef Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic> t_Array;
          auto const x_mat = t_Array::Map(x.data(), rows, cols);
          auto out_mat = t_Array::Map(out.data(), rows, cols);
-         wavelet.direct(out_mat, x_mat);
+         wavelet.indirect(x_mat, out_mat);
        },
        [&wavelet, rows, cols](t_Vector &out, t_Vector const &x) {
          assert(x.size() == rows * cols);
@@ -41,7 +41,7 @@ namespace sopt {
          typedef Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic> t_Array;
          auto const x_mat = t_Array::Map(x.data(), rows, cols);
          auto out_mat = t_Array::Map(out.data(), rows, cols);
-         wavelet.indirect(x_mat, out_mat);
+         wavelet.direct(out_mat, x_mat);
        }
     );
   }

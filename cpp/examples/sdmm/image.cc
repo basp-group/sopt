@@ -100,7 +100,7 @@ int main(int argc, char const **argv) {
     .is_converged(convergence)
     // Any number of (proximal g_i, L_i) pairs can be added
     // ||Psi^dagger x||_1
-    .append(sopt::proximal::l1_norm<Scalar>, psi)
+    .append(sopt::proximal::l1_norm<Scalar>, psi.adjoint(), psi)
     // ||y - A x|| < epsilon
     .append(prox_l2ball, sampling)
     // x in positive quadrant
