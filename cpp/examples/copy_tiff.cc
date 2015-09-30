@@ -16,12 +16,6 @@
 
 // \min_{x} ||\Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - x||_2 < \epsilon and x \geq 0
 int main(int argc, char const **argv) {
-  // Some typedefs for simplicity
-  typedef double Scalar;
-  typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
-  typedef Eigen::Array<t_Matrix::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Array;
-
   if(argc != 3) {
     std::cout << "Expects two arguments:\n"
                  "- path to the image to clean (or name of standard SOPT image)\n"
