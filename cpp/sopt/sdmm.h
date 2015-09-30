@@ -88,12 +88,14 @@ template<class SCALAR> class SDMM {
     }
     //! \brief Appends a proximal with the linear transform as pair of functions
     template<class PROXIMAL, class L, class LADJOINT>
+      SDMM<SCALAR>& append(PROXIMAL proximal, L l, LADJOINT ladjoint) {
+      return append(proximal, linear_transform<t_Vector>(l, ladjoint));
+    }
+    //! \brief Appends a proximal with the linear transform as pair of functions
+    template<class PROXIMAL, class L, class LADJOINT>
       SDMM<SCALAR>& append(
-          PROXIMAL proximal, L l, LADJOINT ladjoint, std::array<t_int, 3> sizes = {{1, 1, 0}}) {
-      return append(
-          proximal,
-          linear_transform<t_Vector>(l, ladjoint, sizes)
-      );
+          PROXIMAL proximal, L l, LADJOINT ladjoint, std::array<t_int, 3> sizes) {
+      return append(proximal, linear_transform<t_Vector>(l, ladjoint, sizes));
     }
     //! \brief Appends a proximal with the linear transform as pair of functions
     template<class PROXIMAL, class L, class LADJOINT>
@@ -102,10 +104,7 @@ template<class SCALAR> class SDMM {
           L l, std::array<t_int, 3> dsizes,
           LADJOINT ladjoint, std::array<t_int, 3> isizes
       ) {
-        return append(
-            proximal,
-            linear_transform<t_Vector>(l, dsizes, ladjoint, isizes)
-        );
+        return append(proximal, linear_transform<t_Vector>(l, dsizes, ladjoint, isizes));
       }
 
     //! Sets convergence fnctions that ignore this object
