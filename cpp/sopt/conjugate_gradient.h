@@ -119,7 +119,6 @@ template<class VECTOR, class T1, class MATRIXLIKE>
     }
 
     t_Vector Ap(b.size());
-    Scalar alpha;
 
     x = b;
     t_Vector residuals = b - A * x;
@@ -129,7 +128,7 @@ template<class VECTOR, class T1, class MATRIXLIKE>
     t_uint i(0);
     for(; i < itermax(); ++i) {
       Ap.noalias() = A * p;
-      Scalar alpha = residual / (p.transpose().conjugate() * Ap)(0);
+      Scalar const alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
       residuals -= alpha * Ap;
 

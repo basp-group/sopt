@@ -197,7 +197,6 @@ namespace details {
 template<class DERIVED>
   LinearTransform<Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1>>
   linear_transform(Eigen::MatrixBase<DERIVED> const &A) {
-    typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1> t_Vector;
     typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
     details::MatrixToLinearTransform<t_Matrix> const matrix(A);
     if(A.rows() == A.cols())

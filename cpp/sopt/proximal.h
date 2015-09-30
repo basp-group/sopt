@@ -143,7 +143,6 @@ template<class FUNCTION, class VECTOR> class Translation {
           typename real_type<typename T0::Scalar>::type const &t,
           Eigen::MatrixBase<T0> const &x
       ) const {
-        typedef typename T0::Scalar Scalar;
         func(out, t, x + trans);
         out -= trans;
       }

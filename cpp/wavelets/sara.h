@@ -92,7 +92,6 @@ class SARA : public std::vector<Wavelet>
 };
 
 #define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                        \
-    typedef typename T0::Index t_Index;                                                        \
     if(INPUT.rows() % (1u << max_levels()) != 0)                                               \
       throw std::length_error("Inconsistent number of columns and wavelet levels");            \
     else if(INPUT.cols() != 1 and INPUT.cols() % (1u << max_levels()))                         \
@@ -106,7 +105,7 @@ template<class T0, class T1>
     if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
       throw std::length_error("Incorrect size for output matrix(or could not resize)");
     auto const Ncols = signal.cols();
-    t_Index colindex = Ncols;
+    auto colindex = Ncols;
     for(auto const &wavelet: *this) {
       wavelet.direct(coeffs.leftCols(colindex).rightCols(Ncols), signal);
       colindex += Ncols;
