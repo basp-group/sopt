@@ -19,9 +19,14 @@ uint32_t convert_from_greyscale(double pixel) {
   uint8_t const value = static_cast<uint8_t>(std::round(pixel * 255e0));
   uint32_t result = 0;
   uint8_t *ptr = (uint8_t*)&result;
-  ptr[0] = std::min(std::max(uint8_t(0), value), uint8_t(1));
-  ptr[1] = std::min(std::max(uint8_t(0), value), uint8_t(1));
-  ptr[2] = std::min(std::max(uint8_t(0), value), uint8_t(1));
+  auto const g = [](double p) -> uint8_t {
+    auto const scaled = 255e0 * p;
+    if(scaled < 0) return 0;
+    return scaled > 255 ? 255: uint8_t(scaled);
+  };
+  ptr[0] = g(pixel);
+  ptr[1] = g(pixel);
+  ptr[2] = g(pixel);
   ptr[3] = 255;
   return result;
 }
