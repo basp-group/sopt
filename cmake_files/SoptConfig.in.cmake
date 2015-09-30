@@ -1,9 +1,7 @@
 get_filename_component(Sopt_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-if(NOT Sopt_BINARY_DIR)
-    message(STATUS "Linking to sopt package in ${Sopt_CMAKE_DIR}")
-endif()
+message(STATUS "Linking to sopt package in ${Sopt_CMAKE_DIR}")
 set(Sopt_INCLUDE_DIRS "@ALL_INCLUDE_DIRS@")
-if(NOT TARGET libsopt AND NOT Sopt_BINARY_DIR)
+if(NOT TARGET libsopt)
     include("${Sopt_CMAKE_DIR}/SoptTargets.cmake")
 endif()
 
