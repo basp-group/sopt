@@ -4,11 +4,10 @@
 def test_1D():
     import sopt.wavelets as wv
     import numpy as np
-    signal = np.ones((64, 1), dtype="float64")
+    signal = np.random.rand(64) + 1e0
     coefficient = wv.dwt(signal, "DB4", 1)
     inv_signal = wv.dwt(coefficient, "DB4", 1, inverse=True)
-    np.testing.assert_allclose(signal, inv_signal)
-
+    np.testing.assert_allclose(signal, inv_signal, rtol=1e-8)
 
 def test_2D():
     import sopt.wavelets as wv
@@ -25,8 +24,8 @@ def test_2D():
 def test_complex():
     import sopt.wavelets as wv
     import numpy as np
-    s_real = np.random.random((64, 64))
-    s_img = np.random.random((64, 64))
+    s_real = np.random.random((64, 64)) + 1e0
+    s_img = np.random.random((64, 64)) + 1e0
     signal = s_real + s_img*1j
     coefficient = wv.dwt(signal, "DB4", 1)
     inv_signal = wv.dwt(coefficient, "DB4", 1, inverse=True)
@@ -39,7 +38,7 @@ def test_1D_pywt():
     import numpy as np
     import sopt.wavelets as wv
     import pywt
-    input = np.random.random(128)
+    input = np.random.random(128) +  1e0
     coefficient_sopt = wv.dwt(input, "DB1", 1)
     cA_pywt, cD_pywt = pywt.dwt(input, "DB1")
     coefficient_pywt = np.concatenate(
@@ -62,13 +61,13 @@ def test_wrong_type():
     import numpy as np
     signal = np.random.random((32, 32))
     with raises(ValueError):
-        wv.dwt(signal.astype("int32"), "DB1", 1)
+        wv.dwt(signal.astype("S1"), "DB1", 1)
 
 
 def test_noncontiguous():
     import sopt.wavelets as wv
     import numpy as np
-    signal = np.random.random((32, ))
+    signal = np.random.random((32, )) + 1e0
     coeff_nc = wv.dwt(signal[::4], "DB1", 1)
     coeff_cont = wv.dwt(signal[::4].copy(), "DB1", 1)
     np.testing.assert_allclose(coeff_nc, coeff_cont)

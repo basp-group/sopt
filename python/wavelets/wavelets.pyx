@@ -3,29 +3,18 @@ from cython cimport view
 from libcpp.string cimport string
 
 cdef extern from "python.wavelets.h" namespace "sopt::pyWavelets":
-    void direct[T](T* signal, T* out, string name,
-                   unsigned long level, int nrow, int ncol) except +
-    void indirect[T](T* signal, T* out, string name,
-                     unsigned long level, int nrow, int ncol) except +
+    ctypedef unsigned t_uint
+    void direct[T](T * signal, T* out, const string & name,
+                   t_uint level, t_uint nrow, t_uint ncol) except +
+    void indirect[T](T * signal, T* out, const string & name,
+                     t_uint level, t_uint nrow, t_uint ncol) except +
 
 
-def _getInDim(input):
-    """ convert input to 1D vector and return dimention information"""
-    if input.ndim == 1:
-        nrow = input.size
-        ncol = 1
-    elif input.ndim == 2:
-        nrow, ncol = input.shape
-        input = input.reshape(nrow * ncol)
-    else:
-        raise ValueError('input dimension should be either 1D or 2D')
-    return input, nrow, ncol
-
-
-def _dwt(input, name, level, inverse=False):
-    in_ndim = input.ndim
-    input, nrow, ncol = _getInDim(input)
-    output = np.zeros((nrow, ncol), dtype=input.dtype)
+cdef _dwt(input, name, level, inverse=False):
+    if input.ndim > 2:
+        raise ValueError("Expect 1D or 2D arrays")
+    nrow, ncol = input.shape if input.ndim == 2 else (input.size, 1)
+    output = np.zeros(input.shape, dtype=input.dtype)
     cdef:
         long input_data = input.ctypes.data
         long output_data = output.ctypes.data
@@ -34,23 +23,23 @@ def _dwt(input, name, level, inverse=False):
         if input.dtype == "float64":
             indirect[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             indirect[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     else:
         if input.dtype == "float64":
             direct[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             direct[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned long>level, <int>nrow, <int>ncol
+                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     return output
 
@@ -60,25 +49,26 @@ def dwt(input, name, level, inverse=False):
 
     Parameters:
     ------------
-    inputs: array_like
-        1D/2D input signal which can be either float64, int64, or complex128
+    inputs: numpy array
+        1D/2D numerical input signal
     name: string
-        Daubechies wavelets coefficients, e.g. "DB3"
+        Daubechies wavelets coefficients, e.g. "DB1" through "DB38"
     level: int
-        Wavlets transform level
+        Wavelets transform level
     inverse: bool
         True - indirect transform
         False - direct transform
 
     Returns
     ------------
-    array_like
-        Approximation matrix in the same size as input.
+    numpy array
+        Approximation matrix in the same size as input
 
     Notes
     ------------
-    * Input that is 'int64' will be converted to 'float64' automatically.
-    * Size of signal must be number a multiple of 2^levels.
+    * Input will be converted to "float64" or "complex128" automatically
+    * To avoid extra copies, please use those types exclusively
+    * Size of signal must be a multiple of 2^levels
 
     Examples
     -----------
@@ -87,12 +77,10 @@ def dwt(input, name, level, inverse=False):
     recover = wv.dwt(coefficient, "DB4", 2, inverse = True) # inverse transform
 
     """
-    if input.dtype == "float64" or input.dtype == "complex128":
-        return _dwt(np.require(input, requirements=['C']),\
-                    name, level, inverse=inverse)
-    elif input.dtype == "int64":  # convert int to float64
-        return _dwt(np.require(input, dtype="float64", requirements=['C']),\
-                    name, level, inverse=inverse)
-    else:
-        raise ValueError("input data type should be either \
-                         'float64' or 'int64' or 'complex128'.")
+    from numpy import iscomplex, isreal, require, all
+    is_complex = all(iscomplex(input))
+    if (not is_complex) and not all(isreal(input)):
+        raise ValueError("Incorrect array type")
+    dtype = "complex128" if is_complex else "float64"
+    normalized_input = require(input, requirements=['C'], dtype=dtype)
+    return _dwt(normalized_input, name, level, inverse=inverse).astype(input.dtype)
