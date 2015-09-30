@@ -36,18 +36,34 @@ int main(int argc, char const **argv) {
 
   // Read input file - standard data file or full path to a tiff file
   sopt::t_rMatrix const image = sopt::read_standard_tiff(argv[1]);
-
+  sopt::t_uint nmeasure = 0.5 * image.size();
   SOPT_TRACE("Initializing sensing operator");
-  auto const sampling = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), image.size()));
+  auto const sampling = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure));
   SOPT_DEBUG("rows: {}", sampling.rows(1));
   SOPT_DEBUG("rows: {}", sampling.rows(10));
 
+  //Noise realization
+  //Input snr
+  auto snr = 30.0;
+  t_Vector const y0 = sampling * t_Vector::Map(image.data(), image.size());
+  auto a = y0.stableNorm()/std::sqrt(y0.size());
+  auto sigma = a*std::pow(10.0,-(snr/20.0));
+
+
   SOPT_TRACE("Create dirty sampled target");
-  t_Vector const target = sampling * (
-      t_Vector::Map(image.data(), image.size())
-    + t_Vector::Random(image.size()) * 0.1
-    - t_Vector::Ones(image.size()) * 0.05
-  );
+  std::random_device rd;
+  std::mt19937 gen(rd());
+ 
+  // values near the mean are the most likely
+  // standard deviation affects the dispersion of generated values from the mean
+  std::normal_distribution<> gaussian_dist(0,sigma);
+  t_Vector y(y0.size());
+  for (sopt::t_uint i = 0; i < y0.size(); i++){
+    y(i) = y0(i) + gaussian_dist(gen);
+  }
+  t_Vector dirty = sampling.adjoint() * y;
+  assert(dirty.size() == image.size());
+  sopt::write_tiff(t_Matrix::Map(dirty.data(), image.rows(), image.cols()), "dirty_" + std::string(argv[2]));
 
   SOPT_TRACE("Initializing Wavelet");
   auto const wavelet = sopt::wavelets::factory("DB4", 1);
@@ -56,13 +72,13 @@ int main(int argc, char const **argv) {
 
   SOPT_TRACE("Initializing Proximals");
   // Proximal functions
-  auto prox_l2ball = sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(1e-4), -target);
+  auto prox_l2ball = sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(1e-4), -y);
 
   SOPT_TRACE("Initializing convergence function");
   auto relvar = sopt::RelativeVariation<Scalar>(1e-6);
-  auto convergence = [&target, &sampling, &psi, &relvar](
+  auto convergence = [&y, &sampling, &psi, &relvar](
       sopt::algorithm::SDMM<Scalar> const&, t_Vector const &x) {
-    SOPT_INFO("||x - target||_2: {}", (target - sampling * x).stableNorm());
+    SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
     SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
     SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
@@ -78,7 +94,7 @@ int main(int argc, char const **argv) {
     .is_converged(convergence)
     // Any number of (proximal g_i, L_i) pairs can be added
     // ||Psi^dagger x||_1
-    .append(sopt::proximal::l1_norm<Scalar>, psi.adjoint(), psi)
+    .append(sopt::proximal::l1_norm<Scalar>, psi)
     // ||y - A x|| < epsilon
     .append(prox_l2ball, sampling)
     // x in positive quadrant
@@ -87,7 +103,7 @@ int main(int argc, char const **argv) {
   SOPT_TRACE("Allocating result vector");
   t_Vector result(image.size());
   SOPT_TRACE("Starting SDMM");
-  auto const diagnostic = sdmm(result, t_Vector::Zero(image.size()));
+  auto const diagnostic = sdmm(result, sampling.adjoint() *  y);
   SOPT_TRACE("SDMM returned {}", diagnostic.good);
 
   // diagnostic should tell us the function converged
