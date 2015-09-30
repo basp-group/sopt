@@ -2,9 +2,12 @@
 #define SOPT_CONJUGATE_GRADIENT
 
 #include <type_traits>
+#include <limits>
+
 #include "types.h"
 #include "utility.h"
-#include <iostream>
+#include "wrapper.h"
+#include "sopt/logging.h"
 
 namespace sopt {
 //! Solves $Ax = b$ for $x$, given $A$ and $b$.
@@ -30,7 +33,7 @@ class ConjugateGradient {
     //! \param[in] itermax: Maximum number of iterations. 0 means algorithm breaks only if
     //! convergence is reached.
     //! \param[in] tolerance: Convergence criteria
-    ConjugateGradient(t_uint itermax=0, t_real tolerance=1e-8)
+    ConjugateGradient(t_uint itermax=std::numeric_limits<t_uint>::max(), t_real tolerance=1e-8)
       : tolerance_(tolerance), itermax_(itermax) {}
     virtual ~ConjugateGradient() {}
 
@@ -39,41 +42,20 @@ class ConjugateGradient {
     //! This convertion is only so we write the conjugate-gradient algorithm only once for
     //! A as a matrix and A as a functor. A as a functor means A can be a complex operation, e.g. an
     //! FFT or two.
-    template<class T0, class T1, class T2>
+    template<class VECTOR, class T1, class T2>
       Diagnostic operator()(
-          Eigen::MatrixBase<T0> &x,
-          Eigen::MatrixBase<T1> const &A,
-          Eigen::MatrixBase<T2> const &b) const {
-        return operator()(x, ApplyMatrix<decltype(A)>(A), b);
-      }
-    template<class T0, class T1, class T2>
-      Diagnostic operator()(
-          Eigen::MatrixBase<T0> &&x,
-          Eigen::MatrixBase<T1> const &A,
-          Eigen::MatrixBase<T2> const &b) const {
-        return operator()(x, ApplyMatrix<decltype(A)>(A), b);
-      }
-    //! \brief Computes $x$ for $Ax=b$
-    //! \details Specialisation where A is a functor and b and x are matrix-like objects. This is
-    //! the innermost specialization.
-    template<class T0, class T1, class T2>
-      typename std::enable_if<
-        not std::is_base_of<Eigen::EigenBase<T1>, T1>::value,
-        Diagnostic
-      >::type operator()(
-          Eigen::MatrixBase<T0> &x, T1 const &A, Eigen::MatrixBase<T2> const &b) const {
+          VECTOR &x, Eigen::MatrixBase<T1> const &A, Eigen::MatrixBase<T2> const &b) const {
         return implementation(x, A, b);
       }
     //! \brief Computes $x$ for $Ax=b$
     //! \details Specialisation where A is a functor and b and x are matrix-like objects. This is
     //! the innermost specialization.
-    template<class T0, class T1, class T2>
+    template<class VECTOR, class T1, class T2>
       typename std::enable_if<
         not std::is_base_of<Eigen::EigenBase<T1>, T1>::value,
         Diagnostic
-      >::type operator()(
-          Eigen::MatrixBase<T0> &&x, T1 const &A, Eigen::MatrixBase<T2> const &b) const {
-        return implementation(x, A, b);
+      >::type operator()(VECTOR &x, T1 const &A, Eigen::MatrixBase<T2> const &b) const {
+        return implementation(x, details::wrap<typename VECTOR::PlainObject>(A), b);
       }
     //! \brief Computes $x$ for $Ax=b$
     //! \details Specialisation where x is constructed during call and returned. And x is a matrix
@@ -117,29 +99,18 @@ class ConjugateGradient {
     //! \brief Just one implementation for all types
     //! \note This is a template function, to avoid repetition, but it is not declared in the
     //! header.
-    template<class T0, class T1, class T2>
+    template<class VECTOR, class T1, class MATRIXLIKE>
       Diagnostic implementation(
-        Eigen::MatrixBase<T0> &x, T2 const &A, Eigen::MatrixBase<T1> const & b) const;
+          VECTOR &x, MATRIXLIKE const &A, Eigen::MatrixBase<T1> const & b) const;
 };
 
-template<class T> class ConjugateGradient :: ApplyMatrix {
-  public:
-    ApplyMatrix(T const & A) : A(A) {};
-    template<class T0, class T1> void operator()(
-        Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &input) const {
-      out = A * input;
-    }
-  private:
-    T const &A;
-};
 
-template<class T0, class T1, class T2>
+template<class VECTOR, class T1, class MATRIXLIKE>
   ConjugateGradient::Diagnostic ConjugateGradient::implementation(
-      Eigen::MatrixBase<T0> &x, T2 const &applyA, Eigen::MatrixBase<T1> const & b) const {
-    typedef typename T0::Scalar Scalar;
+      VECTOR &x, MATRIXLIKE const &A, Eigen::MatrixBase<T1> const & b) const {
+    typedef typename T1::Scalar Scalar;
     typedef typename underlying_value_type<Scalar>::type Real;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
-
 
     x.resize(b.size());
     if(std::abs((b.transpose().conjugate() * b)(0)) < tolerance()) {
@@ -151,20 +122,19 @@ template<class T0, class T1, class T2>
     Scalar alpha;
 
     x = b;
-    t_Vector residuals(b.size());
-    applyA(residuals, x);
-    residuals = b - residuals;
+    t_Vector residuals = b - A * x;
     t_Vector p = residuals;
     Real residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
 
     t_uint i(0);
-    for(; i < itermax() || itermax() == 0 ; ++i) {
-      applyA(Ap, p);
+    for(; i < itermax(); ++i) {
+      Ap.noalias() = A * p;
       Scalar alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
       residuals -= alpha * Ap;
 
       Real new_residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
+      SOPT_DEBUG("CG iteration {} - residuals: {}", i, new_residual);
       if(std::abs(new_residual) < tolerance()) {
         residual = new_residual;
         break;
@@ -175,5 +145,5 @@ template<class T0, class T1, class T2>
     }
     return {i, residual, residual < tolerance()};
   }
-} /* sopt */ 
+} /* sopt */
 #endif

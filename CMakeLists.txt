@@ -15,6 +15,7 @@ get_gitref()
 option(tests          "Enable testing"                         on)
 option(python         "Enable python"                          on)
 option(benchmarks     "Enable benchmarking"                    on)
+option(logging        "Enable logging"                         on)
 
 if(tests)
   enable_testing()

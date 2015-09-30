@@ -24,7 +24,7 @@ int main(int, char const **) {
   };
 
   // Conjugate gradient with unlimited iterations and a convergence criteria of 1e-12
-  sopt::ConjugateGradient cg(0, 1e-12);
+  sopt::ConjugateGradient cg(std::numeric_limits<sopt::t_uint>::max(), 1e-12);
 
   // Call conjugate gradient using both approaches
   auto as_matrix = cg(AhA, Ahb);

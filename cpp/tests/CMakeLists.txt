@@ -1,4 +1,11 @@
+if(logging)
+  add_library(common_catch_main_object OBJECT "common_catch_main.cc")
+endif()
+
 add_catch_test(wavelets LIBRARIES wavelets)
 add_catch_test(sara LIBRARIES wavelets)
 add_catch_test(utility LIBRARIES wavelets)
+add_catch_test(wrapper)
 add_catch_test(conjugate_gradient)
+add_catch_test(linear_transform)
+add_catch_test(sdmm)

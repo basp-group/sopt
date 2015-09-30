@@ -84,7 +84,6 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
 static_assert(not sopt::details::HasValueType<double>::value, "");
 static_assert(not sopt::details::HasValueType<std::pair<double, int>>::value, "");
 static_assert(sopt::details::HasValueType<std::complex<double>>::value, "");
-static_assert(not sopt::details::HasValueType<sopt::t_cMatrix>::value, "");
 static_assert(sopt::details::HasValueType<sopt::t_cMatrix::Scalar>::value, "");
 
 static_assert(

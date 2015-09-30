@@ -73,24 +73,26 @@ template<class T> class underlying_value_type<T, true> {
   public:
     typedef typename underlying_value_type<typename T::value_type>::type type;
 };
+//! Gets to the underlying real type
+template<class T> using real_type = underlying_value_type<T>;
 
 //! Expression to create projection onto positive quadrant
 template<class T>
-Eigen::CwiseUnaryOp<const details::ProjectPositiveQuadrant<typename T::Scalar>, const T>
-positive_quadrant(Eigen::DenseBase<T> const &input) {
-  typedef details::ProjectPositiveQuadrant<typename T::Scalar> Projector;
-  typedef Eigen::CwiseUnaryOp<const Projector, const T> UnaryOp;
-  return UnaryOp(input.derived(), Projector());
-}
+  Eigen::CwiseUnaryOp<const details::ProjectPositiveQuadrant<typename T::Scalar>, const T>
+  positive_quadrant(Eigen::DenseBase<T> const &input) {
+    typedef details::ProjectPositiveQuadrant<typename T::Scalar> Projector;
+    typedef Eigen::CwiseUnaryOp<const Projector, const T> UnaryOp;
+    return UnaryOp(input.derived(), Projector());
+  }
 
 //! Expression to create soft-threshhold
 template<class T>
-Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
-soft_threshhold(Eigen::DenseBase<T> const &input, typename T::Scalar const &threshhold) {
-  typedef details::SoftThreshhold<typename T::Scalar> Threshhold;
-  typedef Eigen::CwiseUnaryOp<const Threshhold, const T> UnaryOp;
-  return UnaryOp(input.derived(), Threshhold(threshhold));
-}
+  Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
+  soft_threshhold(Eigen::DenseBase<T> const &input, typename T::Scalar const &threshhold) {
+    typedef details::SoftThreshhold<typename T::Scalar> Threshhold;
+    typedef Eigen::CwiseUnaryOp<const Threshhold, const T> UnaryOp;
+    return UnaryOp(input.derived(), Threshhold(threshhold));
+  }
 
 
 //! Computes weighted L1 norm

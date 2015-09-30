@@ -155,4 +155,20 @@ void sopt_l1_rwsdmm(void *xsol,
                     sopt_l1_sdmmparam paraml1,
                     sopt_l1_rwparam paramrwl1);
 
+void sopt_l1_sdmm2(void *xsol,
+                    int nx,
+                    void (*A)(void *out, void *in, void **data), 
+                    void **A_data,
+                    void (*At)(void *out, void *in, void **data), 
+                    void **At_data,
+                    void (*Psi)(void *out, void *in, void **data), 
+                    void **Psi_data,
+                    void (*Psit)(void *out, void *in, void **data), 
+                    void **Psit_data,
+                    int nr,
+                    void *y,
+                    int ny,
+                    double *weights_l1,
+                    double *weights_l2,
+                    sopt_l1_sdmmparam param);
 #endif
