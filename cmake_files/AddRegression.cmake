@@ -3,12 +3,12 @@ if(NOT TARGET regressions)
 endif()
 
 include(catch)
-macro(add_regressions targetname)
+function(add_regression targetname)
   cmake_parse_arguments(regr "" "" "LIBRARIES;LABELS;DEPENDS;INCLUDES" ${ARGN})
-  add_catch_test(${regr_UNPARSED_ARGUMENTS}
+  add_catch_test(${targetname} ${regr_UNPARSED_ARGUMENTS}
     LIBRARIES ${regr_LIBRARIES} ${Sopt_LIBRARIES}
     LABELS ${regr_LABELS} "regression"
     DEPENDS ${regr_DEPENDS} lookup_dependencies
     INCLUDES ${regr_INCLUDE} ${TIFF_INCLUDE_DIR} ${Sopt_INCLUDE_DIRS}
   )
-endmacro()
+endfunction()
