@@ -196,8 +196,8 @@ template<class SCALAR>
     t_Vectors z(transforms().size(), t_Vector::Zero(out.size()));
 
     // Initial step replaces iteration update with initialization
-    SOPT_INFO("Input {} ", input.transpose());
-    initialization(y, input);
+    SOPT_TRACE("Input {} ", input.transpose());
+    initialization(y, z, input);
     cg_diagnostic = solve_for_xn(out, y, z);
 
     while(not has_finished(out)) {
@@ -229,7 +229,7 @@ template<class SCALAR>
 
     assert(z.size() == transforms().size());
     assert(y.size() == transforms().size());
-    SOPT_DEBUG("Solving for x_n");
+    SOPT_TRACE("Solving for x_n");
 
     // Initialize b of A x = b = sum_i L_i^T(z_i - y_i)
     t_Vector b = out.Zero(out.size());
@@ -272,10 +272,13 @@ template<class SCALAR>
   }
 
 template<class SCALAR>
-  void SDMM<SCALAR>::initialization(t_Vectors& y, t_Vector const& x) const {
-    SOPT_DEBUG("Initializing SDMM");
+  void SDMM<SCALAR>::initialization(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
+    SOPT_TRACE("Initializing SDMM");
     for(t_uint i(0); i < transforms().size(); i++) {
       y[i] = transforms(i) * x;
+      z[i].resize(y[i].size());
+      z[i].fill(0);
+      assert(z[i].size() == y[i].size());
       SOPT_TRACE("    - transform {}: {}", i, y[i].transpose());
     }
   }

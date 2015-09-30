@@ -21,8 +21,8 @@ auto const N = 3;
 // Makes members public so we can test one at a time
 class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
   public:
-    void initialization(t_Vectors &y, t_Vector const &x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, x);
+    void initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const override {
+      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, z, x);
     }
     sopt::ConjugateGradient::Diagnostic solve_for_xn(
         t_Vector &out, t_Vectors const &y, t_Vectors const &z) const override {
@@ -78,7 +78,7 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
     t_Vector out = input;
     IntrospectSDMM::t_Vectors y(sdmm.transforms().size(), t_Vector::Zero(out.size()));
     IntrospectSDMM::t_Vectors z(sdmm.transforms().size(), t_Vector::Zero(out.size()));
-    sdmm.initialization(y, out);
+    sdmm.initialization(y, z, out);
     CHECK(y[0].isApprox(input));
     CHECK(y[1].isApprox(input));
 
