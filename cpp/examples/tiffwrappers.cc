@@ -16,13 +16,12 @@ double convert_to_greyscale(uint32_t &pixel) {
 }
 //! Converts greyscale double value to RGBA
 uint32_t convert_from_greyscale(double pixel) {
-  assert(pixel >= 0e0 and pixel <= 10e0);
   uint8_t const value = static_cast<uint8_t>(std::round(pixel * 255e0));
   uint32_t result = 0;
   uint8_t *ptr = (uint8_t*)&result;
-  ptr[0] = value;
-  ptr[1] = value;
-  ptr[2] = value;
+  ptr[0] = std::min(std::max(uint8_t(0), value), uint8_t(1));
+  ptr[1] = std::min(std::max(uint8_t(0), value), uint8_t(1));
+  ptr[2] = std::min(std::max(uint8_t(0), value), uint8_t(1));
   ptr[3] = 255;
   return result;
 }
