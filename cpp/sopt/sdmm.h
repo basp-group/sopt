@@ -191,8 +191,7 @@ template<class SCALAR>
 
     SOPT_INFO("Performing SDMM ");
     out = input;
-    t_Vectors y(transforms().size(), t_Vector::Zero(out.size()));
-    t_Vectors z(transforms().size(), t_Vector::Zero(out.size()));
+    t_Vectors y(transforms().size()), z(transforms().size());
 
     // Initial step replaces iteration update with initialization
     SOPT_TRACE("Input {} ", input.transpose());
