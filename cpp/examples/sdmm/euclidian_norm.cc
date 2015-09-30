@@ -20,9 +20,7 @@ int main(int, char const **) {
   // L1_direct and L1_adjoint are used to demonstrate that we can define L_i in SDMM both directly
   // as matrices, or as a pair of functions that apply a linear operator and its transpose.
   auto L1_direct = [&L1](t_Vector &out, t_Vector const &input) { out = L1 * input; };
-  auto L1_adjoint = [&L1](t_Vector &out, t_Vector const &input) {
-    out = L1.transpose().conjugate() * input;
-  };
+  auto L1_adjoint = [&L1](t_Vector &out, t_Vector const &input) { out = L1.adjoint() * input; };
   // Creates the target vectors
   t_Vector const target0 = t_Vector::Random(N);
   t_Vector const target1 = t_Vector::Random(N);
