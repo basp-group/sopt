@@ -8,7 +8,7 @@
 #include "sopt/linear_transform.h"
 
 namespace sopt {
-  //! Creates linear transform from wavelet functor
+  //! Thin linear-transform wrapper around 1d wavelets
   template<class T>
   LinearTransform<Eigen::Matrix<T, Eigen::Dynamic, 1>>
   linear_transform(wavelets::Wavelet const &wavelet) {
@@ -19,7 +19,7 @@ namespace sopt {
     );
   }
 
-  //! Creates linear transform from 2d wavelet functor
+  //! Thin linear-transform wrapper around 2d wavelets
   template<class T>
   LinearTransform<Eigen::Matrix<T, Eigen::Dynamic, 1>>
   linear_transform(wavelets::Wavelet const &wavelet, t_uint rows, t_uint cols = 1) {
@@ -46,7 +46,7 @@ namespace sopt {
     );
   }
 
-  //! Creates linear transform from sara functor
+  //! Thin linear-transform wrapper around 1d sara operator
   template<class T>
   LinearTransform<Eigen::Matrix<T, Eigen::Dynamic, 1>>
   linear_transform(wavelets::SARA const &wavelet) {
