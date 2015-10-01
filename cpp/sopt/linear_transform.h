@@ -142,8 +142,7 @@ namespace details {
       //! The output type
       typedef typename std::conditional<
         std::is_base_of<Eigen::MatrixBase<PlainMatrix>, PlainMatrix>::value,
-        Eigen::Matrix<typename PlainMatrix::Scalar, Eigen::Dynamic, 1>,
-        Eigen::Array<typename PlainMatrix::Scalar, Eigen::Dynamic, 1>
+        Vector<typename PlainMatrix::Scalar>, Array<typename PlainMatrix::Scalar>
       >::type PlainObject;
       //! \brief Creates from an expression
       //! \details Expression is evaluated and the result stored internally. This object owns a
@@ -197,10 +196,9 @@ namespace details {
 
 //! Helper function to creates a function operator
 template<class DERIVED>
-  LinearTransform<Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, 1>>
+  LinearTransform<Vector<typename DERIVED::Scalar>>
   linear_transform(Eigen::MatrixBase<DERIVED> const &A) {
-    typedef Eigen::Matrix<typename DERIVED::Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
-    details::MatrixToLinearTransform<t_Matrix> const matrix(A);
+    details::MatrixToLinearTransform<Matrix<typename DERIVED::Scalar>> const matrix(A);
     if(A.rows() == A.cols())
       return {matrix, matrix.adjoint()};
     else {

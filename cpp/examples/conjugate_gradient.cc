@@ -8,8 +8,8 @@ int main(int, char const **) {
   // Lets try both approaches.
 
   // Creates the input.
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1> t_cVector;
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> t_cMatrix;
+  typedef sopt::Vector<sopt::t_complex> t_cVector;
+  typedef sopt::Matrix<sopt::t_complex> t_cMatrix;
   t_cVector const b = t_cVector::Random(8);
   t_cMatrix const A = t_cMatrix::Random(b.size(), b.size());
 

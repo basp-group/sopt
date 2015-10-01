@@ -33,7 +33,7 @@ template<class SCALAR> class SDMM {
     //! Real type
     typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
-    typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> t_Vector;
+    typedef Vector<SCALAR> t_Vector;
     //! Type of the A and A^t operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions

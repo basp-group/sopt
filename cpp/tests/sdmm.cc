@@ -13,8 +13,8 @@ sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
 };
 
 typedef double Scalar;
-typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
-typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+typedef sopt::Vector<Scalar> t_Vector;
+typedef sopt::Matrix<Scalar> t_Matrix;
 
 auto const N = 3;
 

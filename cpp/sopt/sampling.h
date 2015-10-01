@@ -71,12 +71,11 @@ template<class T0, class T1>
 
 //! Returns linear transform version of this object.
 template<class T>
-  LinearTransform<Eigen::Matrix<T, Eigen::Dynamic, 1>> linear_transform(Sampling const &sampling) {
-    typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-    return linear_transform<t_Vector>(
-        [sampling](t_Vector &out, t_Vector const &x) { sampling(out, x); },
+  LinearTransform<Vector<T>> linear_transform(Sampling const &sampling) {
+    return linear_transform<Vector<T>>(
+        [sampling](Vector<T> &out, Vector<T> const &x) { sampling(out, x); },
         {{0, 1, static_cast<t_int>(sampling.rows())}},
-        [sampling](t_Vector &out, t_Vector const &x) { sampling.adjoint(out, x); },
+        [sampling](Vector<T> &out, Vector<T> const &x) { sampling.adjoint(out, x); },
         {{0, 1, static_cast<t_int>(sampling.cols())}}
     );
   }

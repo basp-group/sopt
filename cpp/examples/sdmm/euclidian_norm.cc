@@ -10,8 +10,8 @@ int main(int, char const **) {
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Some typedefs for simplicity
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef sopt::Vector<sopt::t_complex> t_Vector;
+  typedef sopt::Matrix<sopt::t_complex> t_Matrix;
 
   // Creates the transformation matrices
   auto const N = 10;

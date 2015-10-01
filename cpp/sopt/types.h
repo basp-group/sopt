@@ -16,14 +16,14 @@ namespace sopt {
   typedef std::complex<t_real> t_complex;
 
 
-  //! Real vectors
-  typedef Eigen::Array<t_real, Eigen::Dynamic, 1> t_rVector;
-  //! Complex vectors
-  typedef Eigen::Array<t_complex, Eigen::Dynamic, 1> t_cVector;
-  //! Real matrices
-  typedef Eigen::Array<t_real, Eigen::Dynamic, Eigen::Dynamic> t_rMatrix;
-  //! Complex matrices
-  typedef Eigen::Array<t_complex, Eigen::Dynamic, Eigen::Dynamic> t_cMatrix;
+  template<class T = t_real>
+    using Vector = Eigen::Matrix<T, Eigen::Dynamic, 1>;
+  template<class T = t_real>
+    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+  template<class T = t_real>
+    using Array = Eigen::Array<T, Eigen::Dynamic, 1>;
+  template<class T = t_real>
+    using Image = Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>;
 }
 #endif
 

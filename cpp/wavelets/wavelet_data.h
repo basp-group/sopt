@@ -11,7 +11,7 @@ struct WaveletData {
   //! Type of the underlying scalar
   typedef t_real t_scalar;
   //! Type of the underlying vector
-  typedef Eigen::Array<t_scalar, Eigen::Dynamic, 1> t_vector;
+  typedef Array<t_real> t_vector;
   //! Wavelet coefficient per-se
   t_vector const coefficients;
 

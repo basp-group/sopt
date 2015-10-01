@@ -20,8 +20,8 @@
 int main(int argc, char const **argv) {
   // Some typedefs for simplicity
   typedef double Scalar;
-  typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef sopt::Vector<Scalar> t_Vector;
+  typedef sopt::Matrix<Scalar> t_Matrix;
 
   if(argc != 2 and argc != 3) {
     std::cout << "Expects one or two arguments:\n"
@@ -37,7 +37,7 @@ int main(int argc, char const **argv) {
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Read input file - standard data file or full path to a tiff file
-  sopt::t_rMatrix const image = sopt::notinstalled::read_standard_tiff(argv[1]);
+  sopt::Image<> const image = sopt::notinstalled::read_standard_tiff(argv[1]);
   sopt::t_uint nmeasure = 0.5 * image.size();
   SOPT_TRACE("Initializing sensing operator");
   auto const sampling = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure));
