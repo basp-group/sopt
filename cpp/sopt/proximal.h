@@ -46,9 +46,9 @@ namespace details {
 
 //! Proximal of euclidian norm
 struct EuclidianNorm {
-  template<class VECTOR, class T0>
+  template<class T0>
     void operator()(
-        VECTOR &out,
+        RefVector<typename T0::Scalar> out,
         typename real_type<typename T0::Scalar>::type const &t,
         Eigen::MatrixBase<T0> const &x
     ) const {
@@ -57,7 +57,7 @@ struct EuclidianNorm {
       if(norm > t)
         out = (Scalar(1) - t/norm) * x;
       else
-        out = x.Zero(x.size());
+        out.fill(0);
     }
   //! Lazy version
   template<class T0>
@@ -113,6 +113,13 @@ template<class T> class L2Ball {
       else
         out = x * (epsilon() / norm);
     }
+    //! Lazy version
+    template<class T0>
+      details::AppliedProximalFunction<L2Ball, Eigen::MatrixBase<T0>>
+      operator()(typename T0::Scalar const &t, Eigen::MatrixBase<T0> const &x) const {
+        typedef details::AppliedProximalFunction<L2Ball, Eigen::MatrixBase<T0>> t_Lazy;
+        return t_Lazy(*this, t, x);
+      }
 
     //! Size of the ball
     Real epsilon() const { return epsilon_; }

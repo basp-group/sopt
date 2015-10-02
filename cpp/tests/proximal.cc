@@ -8,14 +8,27 @@
 TEST_CASE("L2Ball", "[proximal]") {
   using namespace sopt;
   proximal::L2Ball<t_real> ball(0.5);
-  Vector<t_real> out(5);
+  Vector<t_real> out;
   Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
 
-  ball(out, x);
+  out = ball(0, x);
   CHECK(x.isApprox(out / 0.5 * x.stableNorm()));
   ball.epsilon(x.stableNorm() * 1.001);
-  ball(out, 0, x); // using proximal signature call this time around
+  out = ball(0, x);
   CHECK(x.isApprox(out));
+}
+
+TEST_CASE("Euclidian norm", "[proximal]") {
+  using namespace sopt;
+  proximal::EuclidianNorm eucl;
+
+  Vector<t_real> out(5);
+  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  eucl(out, x.stableNorm() * 1.001, x);
+  CHECK(out.isApprox(Vector<t_real>::Zero(x.size())));
+
+  out = eucl(0.1, x);
+  CHECK(out.isApprox(x * (1e0 - 0.1/x.stableNorm())));
 }
 
 TEST_CASE("Translation", "[proximal]") {
@@ -29,8 +42,7 @@ TEST_CASE("Translation", "[proximal]") {
   CHECK(out.isApprox(x));
 
   ball.epsilon(0.125);
-  translated(out, 0, x);
-  Vector<t_real> expected(5);
-  ball(expected, 1, x * 0.5); expected += x * 0.5;
+  out = translated(0, x);
+  Vector<t_real> expected = ball(1, x * 0.5) + x * 0.5;
   CHECK(out.isApprox(expected));
 }
