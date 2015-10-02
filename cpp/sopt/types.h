@@ -5,6 +5,8 @@
 #include <functional>
 #include <Eigen/Core>
 
+#include "sopt/real_type.h"
+
 namespace sopt {
 
   //! Root of the type hierarchy for signed integers
@@ -47,6 +49,15 @@ namespace sopt {
   template<class VECTOR = Vector<>>
     using OperatorFunction = std::function<
         void(Eigen::Ref<VECTOR, Eigen::Aligned>, Eigen::Ref<const VECTOR, Eigen::Aligned> const&)
+    >;
+  //! Typical function signature for calls to proximal
+  template<class VECTOR = Vector<>>
+    using ProximalFunction = std::function<
+      void(
+         Eigen::Ref<VECTOR, Eigen::Aligned>,
+         typename real_type<typename VECTOR::Scalar>::type,
+         Eigen::Ref<const VECTOR, Eigen::Aligned> const&
+      )
     >;
 }
 #endif

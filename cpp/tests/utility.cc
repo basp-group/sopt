@@ -120,6 +120,6 @@ static_assert(sopt::details::HasValueType<std::complex<double>>::value, "");
 static_assert(sopt::details::HasValueType<sopt::Image<sopt::t_complex>::Scalar>::value, "");
 
 static_assert(
-    std::is_same<sopt::underlying_value_type<sopt::t_real>::type, sopt::t_real>::value, "");
+    std::is_same<sopt::real_type<sopt::t_real>::type, sopt::t_real>::value, "");
 static_assert(
-    std::is_same<sopt::underlying_value_type<sopt::t_complex>::type, sopt::t_real>::value, "");
+    std::is_same<sopt::real_type<sopt::t_complex>::type, sopt::t_real>::value, "");
