@@ -32,7 +32,6 @@ class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
       return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
     }
     using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
-    using sopt::algorithm::SDMM<sopt::t_real>::t_RefVector;
     using sopt::algorithm::SDMM<sopt::t_real>::t_Vector;
 };
 

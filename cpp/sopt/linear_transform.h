@@ -155,10 +155,6 @@ namespace details {
       void operator()(PlainObject &out, PlainObject const& x) const {
         out = (*matrix) * x;
       }
-      void operator()(
-          RefVector<typename PlainObject::Scalar> out,
-          ConstRefVector<typename PlainObject::Scalar> const &x
-      ) const { out = (*matrix) * x; }
       //! \brief Returns conjugate transpose operator
       //! \details The matrix is shared.
       MatrixAdjointToLinearTransform<EIGEN> adjoint() const {
@@ -185,10 +181,6 @@ namespace details {
       void operator()(PlainObject &out, PlainObject const& x) const {
         out = matrix->adjoint() * x;
       }
-      void operator()(
-          RefVector<typename PlainObject::Scalar> out,
-          ConstRefVector<typename PlainObject::Scalar> const &x
-      ) const { out = matrix->adjoint() * x; }
       //! \brief Returns adjoint operator
       //! \details The matrix is shared.
       MatrixToLinearTransform<EIGEN> adjoint() const {

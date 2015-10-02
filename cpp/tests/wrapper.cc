@@ -6,8 +6,8 @@
 TEST_CASE("Function wrappers", "[utility]") {
   using namespace sopt;
   typedef Array<int> t_Array;
-  typedef Eigen::Ref<t_Array> t_RefArray;
-  typedef Eigen::Ref<t_Array const> t_ConstRefArray;
+  typedef t_Array& t_RefArray;
+  typedef t_Array const t_ConstRefArray;
 
   SECTION("Square function") {
     auto func = [](t_RefArray output, t_ConstRefArray const &input) { output = input * 2 + 1; };

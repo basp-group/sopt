@@ -48,7 +48,7 @@ namespace details {
 struct EuclidianNorm {
   template<class T0>
     void operator()(
-        RefVector<typename T0::Scalar> out,
+        Vector<typename T0::Scalar>& out,
         typename real_type<typename T0::Scalar>::type const &t,
         Eigen::MatrixBase<T0> const &x
     ) const {
@@ -77,21 +77,19 @@ template<class T0>
       typename real_type<typename T0::Scalar>::type const & t,
       Eigen::MatrixBase<T0> const &x
   ) {
-    typedef details::AppliedProximalFunction<EuclidianNorm, Eigen::MatrixBase<T0>>
-      t_Lazy;
+    typedef details::AppliedProximalFunction<EuclidianNorm, Eigen::MatrixBase<T0>> t_Lazy;
     return t_Lazy(EuclidianNorm(), t, x);
   }
 
 //! Proximal of the l1 norm
 template<class T>
-  void l1_norm(RefVector<T> out, typename real_type<T>::type gamma, ConstRefVector<T> const &x) {
+  void l1_norm(Vector<T>& out, typename real_type<T>::type gamma, Vector<T> const &x) {
     out = soft_threshhold(x, gamma);
   }
 
 //! Proximal for projection on the positive quadrant
 template<class T>
-  void positive_quadrant(
-      RefVector<T> out, typename real_type<T>::type, ConstRefVector<T> const &x) {
+  void positive_quadrant(Vector<T>& out, typename real_type<T>::type, Vector<T> const &x) {
     out = sopt::positive_quadrant(x);
   };
 
@@ -102,11 +100,11 @@ template<class T> class L2Ball {
     //! Constructs an L2 ball proximal of size epsilon
     L2Ball(Real epsilon) : epsilon_(epsilon) {}
     //! Calls proximal function
-    void operator()(RefVector<T> out, typename real_type<T>::type, ConstRefVector<T> const &x) const {
+    void operator()(Vector<T>& out, typename real_type<T>::type, Vector<T> const &x) const {
       return operator()(out, x);
     }
     //! Calls proximal function
-    void operator()(RefVector<T> out, ConstRefVector<T> const &x) const {
+    void operator()(Vector<T>& out, Vector<T> const &x) const {
       auto const norm = x.stableNorm();
       if(norm < epsilon())
         out = x;
@@ -149,7 +147,7 @@ template<class FUNCTION, class VECTOR> class Translation {
     //! Computes proximal of translated function
     template<class T0>
       void operator()(
-          RefVector<typename T0::Scalar> out,
+          Vector<typename T0::Scalar>& out,
           typename real_type<typename T0::Scalar>::type const &t,
           Eigen::MatrixBase<T0> const &x
       ) const {

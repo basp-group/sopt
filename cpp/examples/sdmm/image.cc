@@ -82,7 +82,7 @@ int main(int argc, char const **argv) {
 
   SOPT_TRACE("Initializing convergence function");
   auto relvar = sopt::RelativeVariation<Scalar>(1e-2);
-  auto convergence = [&y, &sampling, &psi, &relvar](sopt::ConstRefVector<Scalar> const &x) -> bool {
+  auto convergence = [&y, &sampling, &psi, &relvar](sopt::Vector<Scalar> const &x) -> bool {
     SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
     SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
     SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());

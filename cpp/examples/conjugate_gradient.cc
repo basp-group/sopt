@@ -8,20 +8,18 @@ int main(int, char const **) {
   // Lets try both approaches.
 
   // Creates the input.
-  typedef sopt::Vector<sopt::t_complex> t_cVector;
-  typedef sopt::Matrix<sopt::t_complex> t_cMatrix;
-  typedef sopt::RefVector<sopt::t_complex> t_RefVector;
-  typedef sopt::ConstRefVector<sopt::t_complex> t_ConstRefVector;
-  t_cVector const b = t_cVector::Random(8);
-  t_cMatrix const A = t_cMatrix::Random(b.size(), b.size());
+  typedef sopt::Vector<sopt::t_complex> t_Vector;
+  typedef sopt::Matrix<sopt::t_complex> t_Matrix;
+  t_Vector const b = t_Vector::Random(8);
+  t_Matrix const A = t_Matrix::Random(b.size(), b.size());
 
   // Transform to solvable problem A^hA x = A^hb, where A^h is the conjugate transpose
-  t_cMatrix const AhA = A.conjugate().transpose() * A;
-  t_cVector const Ahb = A.conjugate().transpose() * b;
+  t_Matrix const AhA = A.conjugate().transpose() * A;
+  t_Vector const Ahb = A.conjugate().transpose() * b;
   // The same transform can be realised using a function, where out = A^h * A * input.
   // This will recompute AhA every time the function is applied by the conjugate gradient. It is not
   // optmial for this case. But the function interface means A could be an FFT.
-  auto aha_function = [&A](t_RefVector out, t_ConstRefVector const &input) {
+  auto aha_function = [&A](t_Vector& out, t_Vector const &input) {
     out = A.conjugate().transpose() * A * input;
   };
 

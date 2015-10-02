@@ -34,10 +34,6 @@ template<class SCALAR> class SDMM {
     typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
     typedef Vector<SCALAR> t_Vector;
-    //! Type of then underlying vectors
-    typedef RefVector<SCALAR> t_RefVector;
-    //! Type of then underlying vectors
-    typedef ConstRefVector<SCALAR> t_ConstRefVector;
     //! Type of the A and A^t operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions
@@ -47,7 +43,7 @@ template<class SCALAR> class SDMM {
 
     SDMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8),
       conjugate_gradient_(std::numeric_limits<t_uint>::max(), 1e-6),
-      is_converged_([](t_ConstRefVector const&) { return false; }) {}
+      is_converged_([](t_Vector const&) { return false; }) {}
     virtual ~SDMM() {}
 
     // Macro helps define properties that can be initialized as in
@@ -84,8 +80,8 @@ template<class SCALAR> class SDMM {
       return append(
           proximal,
           linear_transform<t_Vector>(
-            [](t_RefVector out, t_ConstRefVector const &in) { out = in; },
-            [](t_RefVector out, t_ConstRefVector const &in) { out = in; }
+            [](t_Vector& out, t_Vector const &in) { out = in; },
+            [](t_Vector& out, t_Vector const &in) { out = in; }
           )
       );
     }
@@ -234,7 +230,7 @@ template<class SCALAR>
 
     SOPT_TRACE("B: {}", b.transpose());
     // Then create operator A
-    auto A = [this](t_RefVector out, t_ConstRefVector const &input) {
+    auto A = [this](t_Vector& out, t_Vector const &input) {
       SOPT_TRACE("x = {}", input.transpose());
       out = out.Zero(input.size());
       for(auto const &transform: this->transforms()) {

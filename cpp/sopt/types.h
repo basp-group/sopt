@@ -36,28 +36,17 @@ namespace sopt {
   template<class T = t_real>
     using Image = Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-  //! \brief A type that accepts mathematical vectors and expressions
-  //! \details Eigen's way of limiting template types and copies simultaneously.
-  template<class T = t_real>
-    using RefVector = Eigen::Ref<Vector<T>, Eigen::Aligned>;
-  //! \brief A type that accepts mathematical vectors and expressions
-  //! \details Eigen's way of limiting template types and copies simultaneously.
-  template<class T = t_real>
-    using ConstRefVector = Eigen::Ref<Vector<T> const, Eigen::Aligned>;
-
   //! Typical function out = A*x
   template<class VECTOR = Vector<>>
-    using OperatorFunction = std::function<
-        void(Eigen::Ref<VECTOR, Eigen::Aligned>, Eigen::Ref<const VECTOR, Eigen::Aligned> const&)
-    >;
+    using OperatorFunction = std::function<void(VECTOR&, VECTOR const&)>;
   //! Typical function signature for calls to proximal
   template<class SCALAR = t_real>
     using ProximalFunction = std::function<
-      void(RefVector<SCALAR>, typename real_type<SCALAR>::type, ConstRefVector<SCALAR> const&)
+      void(Vector<SCALAR>&, typename real_type<SCALAR>::type, Vector<SCALAR> const&)
     >;
   //! Typical function signature for convergence
   template<class SCALAR = t_real>
-    using ConvergenceFunction = std::function<bool(ConstRefVector<SCALAR> const&)>;
+    using ConvergenceFunction = std::function<bool(Vector<SCALAR> const&)>;
 }
 #endif
 

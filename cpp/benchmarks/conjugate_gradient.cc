@@ -25,9 +25,8 @@ template<class TYPE> void function_cg(benchmark::State &state) {
 
   auto const AhA = A.matrix().transpose().conjugate() * A.matrix();
   auto const Ahb = A.matrix().transpose().conjugate() * b.matrix();
-  typedef sopt::RefVector<TYPE> t_RefVector;
-  typedef sopt::ConstRefVector<TYPE> t_ConstRefVector;
-  auto func = [&AhA](t_RefVector out, t_ConstRefVector const &input) { out = AhA * input; };
+  typedef sopt::Vector<TYPE> t_Vector;
+  auto func = [&AhA](t_Vector& out, t_Vector const &input) { out = AhA * input; };
   auto output = sopt::Vector<TYPE>::Zero(N).eval();
   sopt::ConjugateGradient cg(0, epsilon);
   while(state.KeepRunning())

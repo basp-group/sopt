@@ -12,10 +12,10 @@ namespace sopt {
   template<class T>
   LinearTransform<Vector<T>> linear_transform(wavelets::Wavelet const &wavelet) {
     return LinearTransform<Vector<T>>(
-       [&wavelet](RefVector<T> out, ConstRefVector<T> const &x) {
+       [&wavelet](Vector<T>& out, Vector<T> const &x) {
          wavelet.direct(out.array(), x.array());
        },
-       [&wavelet](RefVector<T> out, ConstRefVector<T> const &x) {
+       [&wavelet](Vector<T>& out, Vector<T> const &x) {
          wavelet.indirect(x.array(), out.array());
        }
     );
@@ -28,14 +28,14 @@ namespace sopt {
     if(rows == 1 or cols == 1)
       return linear_transform<T>(wavelet);
     return LinearTransform<Vector<T>>(
-       [&wavelet, rows, cols](RefVector<T> out, ConstRefVector<T> const &x) {
+       [&wavelet, rows, cols](Vector<T>& out, Vector<T> const &x) {
          assert(x.size() == rows * cols);
          out.resize(x.size());
          auto const x_mat = Image<T>::Map(x.data(), rows, cols);
          auto out_mat = Image<T>::Map(out.data(), rows, cols);
          wavelet.indirect(x_mat, out_mat);
        },
-       [&wavelet, rows, cols](RefVector<T> out, ConstRefVector<T> const &x) {
+       [&wavelet, rows, cols](Vector<T>& out, Vector<T> const &x) {
          assert(x.size() == rows * cols);
          out.resize(x.size());
          auto const x_mat = Image<T>::Map(x.data(), rows, cols);
@@ -49,9 +49,9 @@ namespace sopt {
   template<class T>
   LinearTransform<Vector<T>> linear_transform(wavelets::SARA const &wavelet) {
     return LinearTransform<Vector<T>>(
-       [wavelet](RefVector<T> out, ConstRefVector<T> const &x) { wavelet.direct(out, x); },
+       [wavelet](Vector<T>& out, Vector<T> const &x) { wavelet.direct(out, x); },
        {{wavelet.size(), 1, 0}},
-       [wavelet](RefVector<T> out, ConstRefVector<T> const &x) { wavelet.indirect(out, x); },
+       [wavelet](Vector<T>& out, Vector<T> const &x) { wavelet.indirect(out, x); },
        {{1, wavelet.size(), 0}}
     );
   }

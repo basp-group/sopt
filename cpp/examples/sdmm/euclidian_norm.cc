@@ -12,8 +12,6 @@ int main(int, char const **) {
   // Some typedefs for simplicity
   typedef sopt::t_complex t_Scalar;
   typedef sopt::Vector<t_Scalar> t_Vector;
-  typedef sopt::RefVector<t_Scalar> t_RefVector;
-  typedef sopt::ConstRefVector<t_Scalar> t_ConstRefVector;
   typedef sopt::Matrix<t_Scalar> t_Matrix;
 
   // Creates the transformation matrices
@@ -22,10 +20,8 @@ int main(int, char const **) {
   t_Matrix const L1 = t_Matrix::Random(N, N) * 4;
   // L1_direct and L1_adjoint are used to demonstrate that we can define L_i in SDMM both directly
   // as matrices, or as a pair of functions that apply a linear operator and its transpose.
-  auto L1_direct = [&L1](t_RefVector out, t_ConstRefVector const &input) { out = L1 * input; };
-  auto L1_adjoint = [&L1](t_RefVector out, t_ConstRefVector const &input) {
-    out = L1.adjoint() * input;
-  };
+  auto L1_direct = [&L1](t_Vector& out, t_Vector const &input) { out = L1 * input; };
+  auto L1_adjoint = [&L1](t_Vector& out, t_Vector const &input) { out = L1.adjoint() * input; };
   // Creates the target vectors
   t_Vector const target0 = t_Vector::Random(N);
   t_Vector const target1 = t_Vector::Random(N);
@@ -42,7 +38,7 @@ int main(int, char const **) {
   // It takes the convex minimizer and the current candidate output vector as arguments.
   // The example below assumes convergence when the candidate vector does not change anymore.
   std::shared_ptr<t_Vector> previous;
-  auto relative = [&previous](t_ConstRefVector const &candidate) {
+  auto relative = [&previous](t_Vector const &candidate) {
     if(not previous) {
       previous = std::make_shared<t_Vector>(candidate);
       return false;

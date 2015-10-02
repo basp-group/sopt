@@ -13,7 +13,9 @@
 #include "tools_for_tests/tiffwrappers.h"
 #include "tools_for_tests/directories.h"
 
+extern "C" {
 #include "sopt/sopt_l1.h"
+}
 
 typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
@@ -69,8 +71,7 @@ sopt::algorithm::SDMM<Scalar> create_sdmm(
   using namespace sopt;
   auto prox_l2ball = proximal::translate(proximal::L2Ball<Scalar>(params.epsilon), -y);
   auto relvar = RelativeVariation<Scalar>(params.rel_obj);
-  auto convergence = [&y, &sampling, &psi, &relvar](
-      algorithm::SDMM<Scalar> const&, t_Vector const &x) {
+  auto convergence = [&y, &sampling, &psi, &relvar](t_Vector const &x) {
     INFO("||x - y||_2: " << (y - sampling * x).stableNorm());
     INFO("||Psi^Tx||_1: " << l1_norm(psi.adjoint() * x));
     INFO("||abs(x) - x||_2: " << (x.array().abs().matrix() - x).stableNorm());
@@ -97,14 +98,14 @@ template<class T> struct CData {
 template<class T> void direct_transform(void *out, void *in, void **data) {
   CData<T> const &cdata = *(CData<T>*)data;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  t_Vector input = t_Vector::Map((T*)in, cdata.nin);
-  t_Vector::Map((T*)out, cdata.nout) = cdata.transform * input;
+  t_Vector const eval = cdata.transform * t_Vector::Map((T*)in, cdata.nin);
+  t_Vector::Map((T*)out, cdata.nout) = eval;
 }
 template<class T> void adjoint_transform(void *out, void *in, void **data) {
   CData<T> const &cdata = *(CData<T>*)data;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  t_Vector input = t_Vector::Map((T*)in, cdata.nin);
-  t_Vector::Map((T*)out, cdata.nout) = cdata.transform.adjoint() * input;
+  t_Vector const eval = cdata.transform.adjoint() * t_Vector::Map((T*)in, cdata.nin);
+  t_Vector::Map((T*)out, cdata.nout) = eval;
 }
 
 TEST_CASE("Compare SDMMS", "") {
