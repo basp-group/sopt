@@ -41,7 +41,7 @@ template<class SCALAR> class SDMM {
     //! Type of the A and A^t operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions
-    typedef std::function<void(t_Vector&, Real, t_Vector const &)> t_Proximal;
+    typedef ProximalFunction<SCALAR> t_Proximal;
     //! Type of the convergence function
     typedef std::function<bool(SDMM const&, t_Vector const&)> t_IsConverged;
 
