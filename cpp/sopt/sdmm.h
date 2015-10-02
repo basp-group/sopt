@@ -43,11 +43,11 @@ template<class SCALAR> class SDMM {
     //! Type of the proximal functions
     typedef ProximalFunction<SCALAR> t_Proximal;
     //! Type of the convergence function
-    typedef std::function<bool(SDMM const&, t_Vector const&)> t_IsConverged;
+    typedef ConvergenceFunction<SCALAR> t_IsConverged;
 
     SDMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8),
       conjugate_gradient_(std::numeric_limits<t_uint>::max(), 1e-6),
-      is_converged_([](SDMM const&, t_Vector const&) { return false; }) {}
+      is_converged_([](t_ConstRefVector const&) { return false; }) {}
     virtual ~SDMM() {}
 
     // Macro helps define properties that can be initialized as in
@@ -110,12 +110,6 @@ template<class SCALAR> class SDMM {
         return append(proximal, linear_transform<t_Vector>(l, dsizes, ladjoint, isizes));
       }
 
-    //! Sets convergence fnctions that ignore this object
-    SDMM<SCALAR>& is_converged(std::function<bool(t_Vector const&x)> const& conv) {
-      is_converged_ = [conv](SDMM<Scalar> const &, t_Vector const &x) { return conv(x); };
-      return *this;
-    }
-
     //! \brief Implements SDMM
     //! \details Follows Combettes and Pesquet "Proximal Splitting Methods in Signal Processing",
     //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
@@ -156,7 +150,7 @@ template<class SCALAR> class SDMM {
       }
 
     //! Forwards to convergence function parameter
-    bool is_converged(t_Vector const &x) const { return is_converged()(*this, x); }
+    bool is_converged(t_Vector const &x) const { return is_converged()(x); }
 
   protected:
     //! Linear transforms associated with each objective function

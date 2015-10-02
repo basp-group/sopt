@@ -62,7 +62,6 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   t_Vector const target0 = t_Vector::Zero(N);
   t_Vector const target1 = t_Vector::Random(N);
 
-  auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
   auto const g0 = proximal::translate(proximal::EuclidianNorm(), -target0);
   auto const g1 = proximal::translate(proximal::EuclidianNorm(), -target1);
   t_Vector const input = 10 * t_Vector::Random(N);
@@ -71,7 +70,6 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   sdmm.itermax(10)
     .gamma(0.01)
     .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-    .is_converged(always_false) // iterates until itermax is reached
     .append(g0, Id)
     .append(g1, Id);
 

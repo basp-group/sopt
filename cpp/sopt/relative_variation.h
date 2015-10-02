@@ -43,7 +43,7 @@ namespace sopt {
     protected:
       typename real_type<Scalar>::type epsilon_;
       bool is_first;
-      Eigen::Array<Scalar, Eigen::Dynamic, 1> previous;
+      Array<Scalar> previous;
   };
 } /* sopt  */
 

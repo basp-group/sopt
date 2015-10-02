@@ -10,10 +10,11 @@ int main(int, char const **) {
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Some typedefs for simplicity
-  typedef sopt::Vector<sopt::t_complex> t_Vector;
-  typedef sopt::RefVector<sopt::t_complex> t_RefVector;
-  typedef sopt::ConstRefVector<sopt::t_complex> t_ConstRefVector;
-  typedef sopt::Matrix<sopt::t_complex> t_Matrix;
+  typedef sopt::t_complex t_Scalar;
+  typedef sopt::Vector<t_Scalar> t_Vector;
+  typedef sopt::RefVector<t_Scalar> t_RefVector;
+  typedef sopt::ConstRefVector<t_Scalar> t_ConstRefVector;
+  typedef sopt::Matrix<t_Scalar> t_Matrix;
 
   // Creates the transformation matrices
   auto const N = 10;
@@ -40,9 +41,8 @@ int main(int, char const **) {
   // been achieved.
   // It takes the convex minimizer and the current candidate output vector as arguments.
   // The example below assumes convergence when the candidate vector does not change anymore.
-  typedef sopt::algorithm::SDMM<t_Vector::Scalar> SDMM;
   std::shared_ptr<t_Vector> previous;
-  auto relative = [&previous](SDMM const&, t_Vector const &candidate) {
+  auto relative = [&previous](t_ConstRefVector const &candidate) {
     if(not previous) {
       previous = std::make_shared<t_Vector>(candidate);
       return false;
@@ -56,7 +56,7 @@ int main(int, char const **) {
 
   // Now we can create the sdmm convex minimizer
   // Its parameters are set by calling member functions with appropriate names.
-  auto sdmm = SDMM()
+  auto sdmm = sopt::algorithm::SDMM<t_Scalar>()
     .itermax(500) // maximum number of iterations
     .gamma(1)
     .conjugate_gradient(std::numeric_limits<sopt::t_uint>::max(), 1e-12)

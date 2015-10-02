@@ -55,6 +55,9 @@ namespace sopt {
     using ProximalFunction = std::function<
       void(RefVector<SCALAR>, typename real_type<SCALAR>::type, ConstRefVector<SCALAR> const&)
     >;
+  //! Typical function signature for convergence
+  template<class SCALAR = t_real>
+    using ConvergenceFunction = std::function<bool(ConstRefVector<SCALAR> const&)>;
 }
 #endif
 
