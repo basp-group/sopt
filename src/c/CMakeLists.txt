@@ -15,6 +15,11 @@ set(TEST_SOURCE sopt_test.c)
 add_library(libsopt SHARED ${Sopt_SOURCES})
 set_target_properties(libsopt PROPERTIES OUTPUT_NAME "sopt")
 target_link_libraries(libsopt ${DEPENDENCY_LIBRARIES})
+set_target_properties(libsopt PROPERTIES
+  VERSION ${${PROJECT_NAME}_VERSION}
+  SOVERSION ${${PROJECT_NAME}_VERSION}
+  MACOSX_RPATH TRUE
+)
 
 # Add each demo
 foreach(DEMO_SOURCE ${DEMO_SOURCES})
