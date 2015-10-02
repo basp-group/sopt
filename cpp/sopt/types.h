@@ -51,13 +51,9 @@ namespace sopt {
         void(Eigen::Ref<VECTOR, Eigen::Aligned>, Eigen::Ref<const VECTOR, Eigen::Aligned> const&)
     >;
   //! Typical function signature for calls to proximal
-  template<class VECTOR = Vector<>>
+  template<class SCALAR = t_real>
     using ProximalFunction = std::function<
-      void(
-         Eigen::Ref<VECTOR, Eigen::Aligned>,
-         typename real_type<typename VECTOR::Scalar>::type,
-         Eigen::Ref<const VECTOR, Eigen::Aligned> const&
-      )
+      void(RefVector<SCALAR>, typename real_type<SCALAR>::type, ConstRefVector<SCALAR> const&)
     >;
 }
 #endif

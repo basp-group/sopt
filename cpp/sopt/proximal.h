@@ -2,7 +2,9 @@
 #define SOPT_PROXIMAL_H
 
 #include <iostream>
+#include <type_traits>
 #include <Eigen/Core>
+
 #include "sopt/utility.h"
 
 namespace sopt {
@@ -82,13 +84,14 @@ template<class T0>
 
 //! Proximal of the l1 norm
 template<class T>
-  void l1_norm(Vector<T> &out, typename real_type<T>::type gamma, Vector<T> const &x) {
+  void l1_norm(RefVector<T> out, typename real_type<T>::type gamma, ConstRefVector<T> const &x) {
     out = soft_threshhold(x, gamma);
   }
 
 //! Proximal for projection on the positive quadrant
 template<class T>
-  void positive_quadrant(Vector<T> &out, typename real_type<T>::type, Vector<T> const &x) {
+  void positive_quadrant(
+      RefVector<T> out, typename real_type<T>::type, ConstRefVector<T> const &x) {
     out = sopt::positive_quadrant(x);
   };
 
@@ -99,19 +102,22 @@ template<class T> class L2Ball {
     //! Constructs an L2 ball proximal of size epsilon
     L2Ball(Real epsilon) : epsilon_(epsilon) {}
     //! Calls proximal function
-    void operator()(Vector<T> &out, typename real_type<T>::type, Vector<T> const &x) const {
+    void operator()(RefVector<T> out, typename real_type<T>::type, ConstRefVector<T> const &x) const {
       return operator()(out, x);
     }
     //! Calls proximal function
-    void operator()(Vector<T> &out, Vector<T> const &x) const {
+    void operator()(RefVector<T> out, ConstRefVector<T> const &x) const {
       auto const norm = x.stableNorm();
-      out = x * (norm < epsilon_ ? 1e0: epsilon_ / norm);
+      if(norm < epsilon())
+        out = x;
+      else
+        out = x * (epsilon() / norm);
     }
 
     //! Size of the ball
     Real epsilon() const { return epsilon_; }
     //! Size of the ball
-    L2Ball epsilon(Real eps) const { epsilon_ = eps; return *this; }
+    L2Ball epsilon(Real eps) { epsilon_ = eps; return *this; }
   protected:
     //! Size of the ball
     Real epsilon_;
@@ -125,8 +131,8 @@ template<class FUNCTION, class VECTOR> class Translation {
       Translation(FUNCTION const &func, T_VECTOR const &trans) : func(func), trans(trans) {}
     //! Computes proximal of translated function
     template<class OUTPUT, class T0>
-      void operator()(
-          OUTPUT &out,
+      typename std::enable_if<std::is_reference<OUTPUT>::value, void>::type operator()(
+          OUTPUT out,
           typename real_type<typename T0::Scalar>::type const &t,
           Eigen::MatrixBase<T0> const &x
       ) const {
