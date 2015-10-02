@@ -10,6 +10,8 @@ int main(int, char const **) {
   // Creates the input.
   typedef sopt::Vector<sopt::t_complex> t_cVector;
   typedef sopt::Matrix<sopt::t_complex> t_cMatrix;
+  typedef sopt::RefVector<sopt::t_complex> t_RefVector;
+  typedef sopt::ConstRefVector<sopt::t_complex> t_ConstRefVector;
   t_cVector const b = t_cVector::Random(8);
   t_cMatrix const A = t_cMatrix::Random(b.size(), b.size());
 
@@ -19,7 +21,7 @@ int main(int, char const **) {
   // The same transform can be realised using a function, where out = A^h * A * input.
   // This will recompute AhA every time the function is applied by the conjugate gradient. It is not
   // optmial for this case. But the function interface means A could be an FFT.
-  auto aha_function = [&A](t_cVector &out, t_cVector const &input) {
+  auto aha_function = [&A](t_RefVector out, t_ConstRefVector const &input) {
     out = A.conjugate().transpose() * A * input;
   };
 

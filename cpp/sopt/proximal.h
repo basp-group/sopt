@@ -133,6 +133,16 @@ template<class FUNCTION, class VECTOR> class Translation {
         func(out, t, x + trans);
         out -= trans;
       }
+    //! Computes proximal of translated function
+    template<class T0>
+      void operator()(
+          RefVector<typename T0::Scalar> out,
+          typename real_type<typename T0::Scalar>::type const &t,
+          Eigen::MatrixBase<T0> const &x
+      ) const {
+        func(out, t, x + trans);
+        out -= trans;
+      }
     //! Lazy version
     template<class T0>
       details::AppliedProximalFunction<Translation<FUNCTION, VECTOR> const&, Eigen::MatrixBase<T0>>

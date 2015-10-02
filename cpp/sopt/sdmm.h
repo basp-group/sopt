@@ -34,10 +34,14 @@ template<class SCALAR> class SDMM {
     typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
     typedef Vector<SCALAR> t_Vector;
+    //! Type of then underlying vectors
+    typedef RefVector<SCALAR> t_RefVector;
+    //! Type of then underlying vectors
+    typedef ConstRefVector<SCALAR> t_ConstRefVector;
     //! Type of the A and A^t operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions
-    typedef std::function<void(t_Vector &, Real, t_Vector const &)> t_Proximal;
+    typedef std::function<void(t_Vector&, Real, t_Vector const &)> t_Proximal;
     //! Type of the convergence function
     typedef std::function<bool(SDMM const&, t_Vector const&)> t_IsConverged;
 
@@ -80,8 +84,8 @@ template<class SCALAR> class SDMM {
       return append(
           proximal,
           linear_transform<t_Vector>(
-            [](t_Vector &out, t_Vector const &in) { out = in; },
-            [](t_Vector &out, t_Vector const &in) { out = in; }
+            [](t_RefVector out, t_ConstRefVector const &in) { out = in; },
+            [](t_RefVector out, t_ConstRefVector const &in) { out = in; }
           )
       );
     }
@@ -236,7 +240,7 @@ template<class SCALAR>
 
     SOPT_TRACE("B: {}", b.transpose());
     // Then create operator A
-    auto A = [this](t_Vector &out, t_Vector const &input) {
+    auto A = [this](t_RefVector out, t_ConstRefVector const &input) {
       SOPT_TRACE("x = {}", input.transpose());
       out = out.Zero(input.size());
       for(auto const &transform: this->transforms()) {

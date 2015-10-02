@@ -73,9 +73,9 @@ template<class T0, class T1>
 template<class T>
   LinearTransform<Vector<T>> linear_transform(Sampling const &sampling) {
     return linear_transform<Vector<T>>(
-        [sampling](Vector<T> &out, Vector<T> const &x) { sampling(out, x); },
+        [sampling](RefVector<T> out, ConstRefVector<T> const &x) { sampling(out, x); },
         {{0, 1, static_cast<t_int>(sampling.rows())}},
-        [sampling](Vector<T> &out, Vector<T> const &x) { sampling.adjoint(out, x); },
+        [sampling](RefVector<T> out, ConstRefVector<T> const &x) { sampling.adjoint(out, x); },
         {{0, 1, static_cast<t_int>(sampling.cols())}}
     );
   }

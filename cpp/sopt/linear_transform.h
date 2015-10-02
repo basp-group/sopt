@@ -26,7 +26,7 @@ namespace details {
 template<class VECTOR> class LinearTransform : public details::WrapFunction<VECTOR> {
   public:
     //! Type of the wrapped functions
-    typedef std::function<void(VECTOR &, VECTOR const &)> t_Function;
+    typedef OperatorFunction<VECTOR> t_Function;
 
     //! Constructor
     //! \param[in] direct: function with signature void(VECTOR&, VECTOR const&) which applies a
@@ -97,8 +97,8 @@ template<class VECTOR> class LinearTransform : public details::WrapFunction<VECT
 //!     the indirect operator.
 template<class VECTOR>
   LinearTransform<VECTOR> linear_transform(
-      std::function<void(VECTOR&, VECTOR const&)> const& direct,
-      std::function<void(VECTOR&, VECTOR const&)> const& indirect,
+      OperatorFunction<VECTOR> const& direct,
+      OperatorFunction<VECTOR> const& indirect,
       std::array<t_int, 3> const &sizes = {{1, 1, 0}}
   ) { return {direct, indirect, sizes}; }
 //! Helper function to creates a function operator
@@ -112,10 +112,8 @@ template<class VECTOR>
  //!    linear operator is of size N, then the output is of size (a * N) / b + c.
 template<class VECTOR>
   LinearTransform<VECTOR> linear_transform(
-      std::function<void(VECTOR&, VECTOR const&)> const& direct,
-      std::array<t_int, 3> const &dsizes,
-      std::function<void(VECTOR&, VECTOR const&)> const& indirect,
-      std::array<t_int, 3> const &isizes
+      OperatorFunction<VECTOR> const& direct, std::array<t_int, 3> const &dsizes,
+      OperatorFunction<VECTOR> const& indirect, std::array<t_int, 3> const &isizes
   ) { return {direct, dsizes, indirect, isizes}; }
 
 //! Convenience no-op function
@@ -157,6 +155,10 @@ namespace details {
       void operator()(PlainObject &out, PlainObject const& x) const {
         out = (*matrix) * x;
       }
+      void operator()(
+          RefVector<typename PlainObject::Scalar> out,
+          ConstRefVector<typename PlainObject::Scalar> const &x
+      ) const { out = (*matrix) * x; }
       //! \brief Returns conjugate transpose operator
       //! \details The matrix is shared.
       MatrixAdjointToLinearTransform<EIGEN> adjoint() const {
@@ -181,8 +183,12 @@ namespace details {
 
       //! Performs operation
       void operator()(PlainObject &out, PlainObject const& x) const {
-        out = matrix->transpose().conjugate() * x;
+        out = matrix->adjoint() * x;
       }
+      void operator()(
+          RefVector<typename PlainObject::Scalar> out,
+          ConstRefVector<typename PlainObject::Scalar> const &x
+      ) const { out = matrix->adjoint() * x; }
       //! \brief Returns adjoint operator
       //! \details The matrix is shared.
       MatrixToLinearTransform<EIGEN> adjoint() const {

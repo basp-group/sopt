@@ -5,28 +5,31 @@
 
 TEST_CASE("Function wrappers", "[utility]") {
   using namespace sopt;
+  typedef Array<int> t_Array;
+  typedef Eigen::Ref<t_Array> t_RefArray;
+  typedef Eigen::Ref<t_Array const> t_ConstRefArray;
 
   SECTION("Square function") {
-    auto func = [](Array<int> &output, Array<int> const &input) { output = input * 2 + 1; };
+    auto func = [](t_RefArray output, t_ConstRefArray const &input) { output = input * 2 + 1; };
 
-    Array<int> const x = Array<int>::Random(5);
-    auto const A = details::wrap<Array<int>>(func);
+    t_Array const x = t_Array::Random(5);
+    auto const A = details::wrap<t_Array>(func);
     // Expected result
-    Array<int> const expected = (x * 2 + 1).eval();
+    t_Array const expected = (x * 2 + 1).eval();
 
     CHECK((A * x).matrix() == expected.matrix());
     CHECK(A(x).matrix() == expected.matrix());
   }
 
   SECTION("Rectangular function") {
-    auto func = [](Array<int> &output, Array<int> const &input) {
+    auto func = [](t_RefArray output, t_ConstRefArray const &input) {
       output = input.head(input.size()/2) * 2 + 1;
     };
 
-    Array<int> const x = Array<int>::Random(5);
-    auto const A = details::wrap<Array<int>>(func, {{1, 2, 0}});
+    t_Array const x = t_Array::Random(5);
+    auto const A = details::wrap<t_Array>(func, {{1, 2, 0}});
     // Expected result
-    Array<int> const expected = (x.head(x.size()/2) * 2 + 1).eval();
+    t_Array const expected = (x.head(x.size()/2) * 2 + 1).eval();
 
     CHECK((A * x).cols() == 1);
     CHECK((A * x).rows() == 2);
@@ -35,14 +38,14 @@ TEST_CASE("Function wrappers", "[utility]") {
   }
 
   SECTION("Fixed output-size functions") {
-    auto func = [](Array<int> &output, Array<int> const &input) {
+    auto func = [](t_RefArray output, t_ConstRefArray const &input) {
       output = input.head(3) * 2 + 1;
     };
 
-    Array<int> const x = Array<int>::Random(5);
-    auto const A = details::wrap<Array<int>>(func, {{0, 1, 3}});
+    t_Array const x = t_Array::Random(5);
+    auto const A = details::wrap<t_Array>(func, {{0, 1, 3}});
     // Expected result
-    Array<int> const expected = (x.head(3) * 2 + 1).eval();
+    t_Array const expected = (x.head(3) * 2 + 1).eval();
 
     CHECK((A * x).cols() == 1);
     CHECK((A * x).rows() == 3);
