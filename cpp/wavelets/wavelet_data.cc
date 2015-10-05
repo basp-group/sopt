@@ -40,8 +40,11 @@ WaveletData::WaveletData(std::initializer_list<t_scalar> const &coeffs)
   : WaveletData(init_db(coeffs)) {}
 
 WaveletData::WaveletData(t_vector const &coeffs)
-  : coefficients(coeffs), direct_filter({coeffs, negate_even(coeffs.reverse())}),
-  indirect_filter({even(coeffs.reverse()), odd(coeffs.reverse()), even(coeffs), -odd(coeffs)}) {}
+  : coefficients(coeffs), direct_filter{coeffs, negate_even(coeffs.reverse())},
+    indirect_filter{
+      even(coeffs.reverse()), odd(coeffs.reverse()),
+      even(coeffs), -odd(coeffs)
+    } {}
 
 WaveletData const Daubechies1({
    7.071067811865475244008443621048490392848359376884740365883398e-01,
