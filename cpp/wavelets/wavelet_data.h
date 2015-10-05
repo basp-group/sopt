@@ -13,24 +13,24 @@ struct WaveletData {
   //! Type of the underlying vector
   typedef Eigen::Array<t_scalar, Eigen::Dynamic, 1> t_vector;
   //! Wavelet coefficient per-se
-  const t_vector coefficients;
+  t_vector const coefficients;
 
   //! Holds filters for direct transform
-  struct {
+  struct DirectFilter {
     //! Low-pass filter for direct transform
-    const t_vector low;
+    t_vector low;
     //! High-pass filter for direct transform
-    const t_vector high;
-  } direct_filter;
+    t_vector high;
+  } const direct_filter;
 
   //! Holds filters for indirect transform
   struct {
     //! High-pass filter for direct transform
-    const t_vector low_even;
-    const t_vector low_odd;
-    const t_vector high_even;
-    const t_vector high_odd;
-  } indirect_filter;
+    t_vector low_even;
+    t_vector low_odd;
+    t_vector high_even;
+    t_vector high_odd;
+  } const indirect_filter;
 
   //! Constructs from initializers
   WaveletData(std::initializer_list<t_scalar> const &coefs);
