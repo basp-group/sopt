@@ -2,6 +2,7 @@
 #define SOPT_OPERATORS_H
 
 #include <type_traits>
+#include <memory>
 #include <Eigen/Core>
 #include "types.h"
 #include "wrapper.h"
