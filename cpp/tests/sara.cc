@@ -14,7 +14,8 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
   using namespace sopt::wavelets;
   using namespace sopt;
 
-  SARA const sara = {{"DB3", 1}, {"DB1", 2}, {"DB1", 3}};
+  typedef std::tuple<std::string, sopt::t_uint> t_i;
+  SARA const sara{t_i{"DB3", 1}, t_i{"DB1", 2}, t_i{"DB1", 3}};
   SECTION("Construction and vector functionality") {
     CHECK(sara.size() == 3);
     CHECK(sara[0].levels() == 1);
