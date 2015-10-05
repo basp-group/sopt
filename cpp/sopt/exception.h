@@ -25,13 +25,17 @@ namespace sopt {
      //! Header of the message
      static std::string header(
          std::string const &name, std::string const &filename, size_t lineno) {
-       return (std::ostringstream() << name << " at " << filename << ":" << lineno).str();
+       std::ostringstream header;
+       header << name << " at " << filename << ":" << lineno;
+       return header.str();
      }
 
      //! Adds to message
      template<class OBJECT>
        Exception& operator<<(OBJECT const &object) {
-         message = (std::ostringstream() << message << object).str();
+         std::ostringstream msg;
+         msg << message << object;
+         message = msg.str();
          return *this;
        }
 

@@ -71,9 +71,9 @@ template<class SCALAR> class SDMM {
     }
     //! \brief Appends a proximal and linear transform
     //! \details Makes for easier construction
-    template<class PROXIMAL, class ... T> SDMM<SCALAR>& append(PROXIMAL proximal, T ... args) {
+    template<class PROXIMAL, class T> SDMM<SCALAR>& append(PROXIMAL proximal, T args) {
       proximals().emplace_back(proximal);
-      transforms().emplace_back(linear_transform(args...));
+      transforms().emplace_back(linear_transform(args));
       return *this;
     }
 
@@ -108,9 +108,9 @@ template<class SCALAR> class SDMM {
 
     //! \brief Forwards to internal conjugage gradient object
     //! \details Removes the need for ugly extra brackets.
-    template<class ... T>
-      auto conjugate_gradient(T& ... args) const -> decltype(this->conjugate_gradient()(args...)) {
-        return conjugate_gradient()(args...);
+    template<class T0, class T1, class T2>
+      ConjugateGradient::Diagnostic conjugate_gradient(T0 &t0, T1 const &t1, T2 const &t2) const {
+        return conjugate_gradient()(t0, t1, t2);
       }
 
     //! Forwards to convergence function parameter
