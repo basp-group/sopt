@@ -41,6 +41,9 @@ function(common_catch_main)
     "#include \"catch.hpp\"\n"
   )
   add_library(common_catch_main_object OBJECT "${CMAKE_BINARY_DIR}/common_catch_main.cc")
+  if(CATCH_INCLUDE_DIR)
+    target_include_directories(common_catch_main_object PRIVATE ${CATCH_INCLUDE_DIR})
+  endif()
 endfunction()
 
 # Then adds a function to create a test
@@ -71,10 +74,12 @@ function(add_catch_test testname)
   if(catch_LIBRARIES)
     target_link_libraries(test_${testname} ${catch_LIBRARIES})
   endif()
+  if(CATCH_INCLUDE_DIR)
+    target_include_directories(test_${testname} PRIVATE ${CATCH_INCLUDE_DIR})
+  endif()
   if(catch_DEPENDS)
     add_dependencies(test_${testname} ${catch_DEPENDS})
   endif()
-  include_directories(${CATCH_INCLUDE_DIR})
 
   unset(EXTRA_ARGS)
   if(catch_WORKING_DIRECTORY)
