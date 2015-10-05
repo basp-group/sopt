@@ -18,28 +18,29 @@ cdef _dwt(input, name, level, inverse=False):
     cdef:
         long input_data = input.ctypes.data
         long output_data = output.ctypes.data
+        string cname = name.encode("UTF-8")
 
     if inverse:
         if input.dtype == "float64":
             indirect[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
+                cname, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             indirect[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
+                cname, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     else:
         if input.dtype == "float64":
             direct[double](
                 <double*>input_data, <double*>output_data,
-                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
+                cname, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
         elif input.dtype == "complex128":
             direct[complex](
                 <double complex*>input_data, <double complex*>output_data,
-                <string>name, <unsigned>level, <unsigned>nrow, <unsigned>ncol
+                cname, <unsigned>level, <unsigned>nrow, <unsigned>ncol
             )
     return output
 
