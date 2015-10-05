@@ -91,7 +91,16 @@ function(add_catch_test testname)
   else()
     list(APPEND arguments --rng-seed time)
   endif()
-  add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
+  if(CATCH_JUNIT)
+    add_test(NAME ${testname}
+      COMMAND test_${testname}
+          ${arguments}
+          -r junit
+          -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
+    )
+  else()
+    add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
+  endif()
 
   list(APPEND catch_LABELS catch)
   set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
