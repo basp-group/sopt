@@ -3,6 +3,8 @@
 
 #include <type_traits>
 #include <array>
+#include <memory>
+
 #include <Eigen/Core>
 #include "sopt/types.h"
 #include "sopt/wrapper.h"

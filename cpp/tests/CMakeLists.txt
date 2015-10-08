@@ -1,5 +1,11 @@
 if(logging)
   add_library(common_catch_main_object OBJECT "common_catch_main.cc")
+  if(CATCH_INCLUDE_DIR)
+    target_include_directories(common_catch_main_object PRIVATE ${CATCH_INCLUDE_DIR})
+  endif()
+  if(SPDLOG_INCLUDE_DIR)
+    target_include_directories(common_catch_main_object PRIVATE ${SPDLOG_INCLUDE_DIR})
+  endif()
 endif()
 
 add_catch_test(wavelets LIBRARIES wavelets)

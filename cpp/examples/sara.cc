@@ -3,7 +3,8 @@
 int main(int, char const **) {
 
   // Creates SARA with two wavelets
-  sopt::wavelets::SARA sara = {{"DB4", 5}, {"DB8", 2}};
+  typedef std::tuple<std::string, sopt::t_uint> t_i;
+  sopt::wavelets::SARA sara{t_i{"DB4", 5}, t_i{"DB8", 2}};
 
   // Then another one for good measure
   sara.emplace_back("DB3", 7);
