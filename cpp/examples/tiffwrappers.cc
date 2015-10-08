@@ -16,7 +16,6 @@ double convert_to_greyscale(uint32_t &pixel) {
 }
 //! Converts greyscale double value to RGBA
 uint32_t convert_from_greyscale(double pixel) {
-  uint8_t const value = static_cast<uint8_t>(std::round(pixel * 255e0));
   uint32_t result = 0;
   uint8_t *ptr = (uint8_t*)&result;
   auto const g = [](double p) -> uint8_t {
