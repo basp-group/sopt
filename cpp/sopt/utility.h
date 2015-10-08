@@ -99,28 +99,24 @@ template<class T>
 
 //! Computes weighted L1 norm
 template<class T0, class T1>
-  auto l1_norm(Eigen::ArrayBase<T0> const& input, Eigen::ArrayBase<T1> const &weight)
-  -> decltype((input.cwiseAbs() * weight)(0)) { return (input.cwiseAbs() * weight).sum(); }
+  typename real_type<typename T0::Scalar>::type l1_norm(
+    Eigen::ArrayBase<T0> const& input, Eigen::ArrayBase<T1> const &weight) {
+      return (input.cwiseAbs() * weight).real().sum();
+    }
+//! Computes weighted L1 norm
 template<class T0, class T1>
-  auto l1_norm(Eigen::MatrixBase<T0> const& input, Eigen::MatrixBase<T1> const &weight)
-  -> decltype(l1_norm(input.array(), weight.array())) {
-    return l1_norm(input.array(), weight.array());
-  }
-template<class T0, class T1>
-  auto l1_norm(Eigen::MatrixBase<T0> const& input, Eigen::ArrayBase<T1> const &weight)
-  -> decltype(l1_norm(input.array(), weight)) { return l1_norm(input.array(), weight); }
-template<class T0, class T1>
-  auto l1_norm(Eigen::ArrayBase<T0> const& input, Eigen::MatrixBase<T1> const &weight)
-  -> decltype(l1_norm(input, weight.array())) { return l1_norm(input, weight.array()); }
+  typename real_type<typename T0::Scalar>::type l1_norm(
+    Eigen::MatrixBase<T0> const& input, Eigen::MatrixBase<T1> const &weight) {
+      return l1_norm(input.array(), weight.array());
+    }
 //! Computes L1 norm
 template<class T0>
-  auto l1_norm(Eigen::ArrayBase<T0> const& input) -> decltype(input.abs()(0)) {
-    return input.cwiseAbs().sum();
-  }
+  typename real_type<typename T0::Scalar>::type l1_norm(
+    Eigen::ArrayBase<T0> const& input) { return input.cwiseAbs().sum(); }
+//! Computes L1 norm
 template<class T0>
-  auto l1_norm(Eigen::MatrixBase<T0> const& input) -> decltype(l1_norm(input.array())) {
-    return l1_norm(input.array());
-  }
+  typename real_type<typename T0::Scalar>::type l1_norm(
+    Eigen::MatrixBase<T0> const& input) { return l1_norm(input.array()); }
 
 namespace details {
   //! Greatest common divisor

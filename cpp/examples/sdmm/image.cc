@@ -81,7 +81,7 @@ int main(int argc, char const **argv) {
   auto convergence = [&y, &sampling, &psi, &relvar](
       sopt::algorithm::SDMM<Scalar> const&, t_Vector const &x) {
     SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
-    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm((psi.adjoint() * x).eval()));
+    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
     SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
   };
