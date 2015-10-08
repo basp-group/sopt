@@ -33,7 +33,7 @@ include(AddPyTest)
 cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 
 # search/install dependencies
-set(REGRESSION_ORACLE_ID "approx-admm"
+set(REGRESSION_ORACLE_ID "development"
   CACHE STRING "Commmit/tag/branch againts which to run regressions")
 include(dependencies)
 # sets rpath policy explicitly
