@@ -58,9 +58,9 @@ int main(int argc, char const **argv) {
   // standard deviation affects the dispersion of generated values from the mean
   std::normal_distribution<> gaussian_dist(0,sigma);
   t_Vector y(y0.size());
-  for (sopt::t_uint i = 0; i < y0.size(); i++){
+  for (t_Vector::Index i = 0; i < y0.size(); i++)
     y(i) = y0(i) + gaussian_dist(gen);
-  }
+
   t_Vector dirty = sampling.adjoint() * y;
   assert(dirty.size() == image.size());
   sopt::write_tiff(t_Matrix::Map(dirty.data(), image.rows(), image.cols()), "dirty_" + std::string(argv[2]));
@@ -81,7 +81,7 @@ int main(int argc, char const **argv) {
   auto convergence = [&y, &sampling, &psi, &relvar](
       sopt::algorithm::SDMM<Scalar> const&, t_Vector const &x) {
     SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
-    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
+    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm((psi.adjoint() * x).eval()));
     SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
   };
