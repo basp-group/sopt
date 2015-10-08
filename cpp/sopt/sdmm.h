@@ -65,8 +65,8 @@ template<class SCALAR> class SDMM {
 #   undef SOPT_MACRO
     //! Helps setup conjugate gradient
     SDMM<SCALAR> & conjugate_gradient(t_uint itermax, t_real tolerance) {
-      conjugate_gradient().itermax(itermax);
-      conjugate_gradient().tolerance(tolerance);
+      conjugate_gradient_.itermax(itermax);
+      conjugate_gradient_.tolerance(tolerance);
       return *this;
     }
     //! \brief Appends a proximal and linear transform
