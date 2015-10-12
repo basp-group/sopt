@@ -14,6 +14,7 @@ if(regressions)
     REQUIRED DOWNLOAD_BY_DEFAULT
     PATHS "${EXTERNAL_ROOT}"
     NO_DEFAULT_PATH
+    KEEP
     ARGUMENTS
       GIT_REPOSITORY "git@github:astro-informatics/sopt"
       GIT_TAG ${REGRESSION_ORACLE_ID}
