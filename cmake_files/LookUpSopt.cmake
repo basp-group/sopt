@@ -5,8 +5,7 @@
 # - BUILD_TYPE: defaults to Release
 #
 if(Sopt_ARGUMENTS)
-    cmake_parse_arguments(Sopt "" "GIT_REPOSITORY;GIT_TAG;BUILD_TYPE" ""
-        ${Sopt_ARGUMENTS})
+    cmake_parse_arguments(Sopt "" "GIT_REPOSITORY;GIT_TAG;BUILD_TYPE" "" ${Sopt_ARGUMENTS})
 endif()
 if(NOT Sopt_GIT_REPOSITORY)
     set(Sopt_GIT_REPOSITORY https://github.com/UCL/sopt.git)
@@ -40,6 +39,7 @@ ExternalProject_Add(
       -DCMAKE_BUILD_TYPE=${Sopt_BUILD_TYPE}
       -DNOEXPORT=TRUE
     INSTALL_DIR ${EXTERNAL_ROOT}
+    UPDATE_COMMAND ""
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
