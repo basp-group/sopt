@@ -8,7 +8,7 @@ endif()
 
 function(add_benchmark targetname)
   cmake_parse_arguments(benchmark
-    "" "WORKING_DIRECTORY" "LIBRARIES;LABELS;COMPILE_FLAGS;DEPENDS" ${ARGN})
+    "" "WORKING_DIRECTORY" "LIBRARIES;LABELS;COMPILE_FLAGS;DEPENDS;INCLUDES" ${ARGN})
 
   # Source deduce from targetname if possible
   unset(source)
@@ -25,6 +25,9 @@ function(add_benchmark targetname)
   set_target_properties(benchmark_${targetname} PROPERTIES OUTPUT_NAME ${targetname})
   if(GBENCHMARK_INCLUDE_DIR)
     target_include_directories(benchmark_${targetname} PUBLIC ${GBENCHMARK_INCLUDE_DIR})
+  endif()
+  if(benchmark_INCLUDES)
+    target_include_directories(benchmark_${targetname} PUBLIC ${benchmark_INCLUDES})
   endif()
   if(benchmark_COMPILE_FLAGS)
     set_target_properties(benchmark_${targetname}
