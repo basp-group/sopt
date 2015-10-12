@@ -63,7 +63,6 @@ function(add_catch_test testname)
     message(FATAL_ERROR "No source given or found for ${testname}")
   endif()
 
-
   # By default, uses a common main function for all, compiled once
   # We create here
   if(catch_NOMAIN)
@@ -80,6 +79,9 @@ function(add_catch_test testname)
   endif()
   if(CATCH_INCLUDE_DIR)
     target_include_directories(test_${testname} PRIVATE ${CATCH_INCLUDE_DIR})
+  endif()
+  if(catch_INCLUDES)
+    target_include_directories(test_${testname} PRIVATE ${catch_INCLUDES})
   endif()
   if(catch_DEPENDS)
     add_dependencies(test_${testname} ${catch_DEPENDS})
