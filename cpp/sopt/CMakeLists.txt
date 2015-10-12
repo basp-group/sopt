@@ -5,6 +5,9 @@ set(headers
   relative_variation.h)
 
 add_library(sopt sampling.cc ${headers})
+if(SPDLOG_INCLUDE_DIR)
+  target_include_directories(sopt PUBLIC ${SPDLOG_INCLUDE_DIR})
+endif()
 add_dependencies(sopt lookup_dependencies)
 
 install(FILES ${headers} DESTINATION include/sopt)
