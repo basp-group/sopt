@@ -227,6 +227,10 @@ template<class SCALAR>
     t_Vector b = out.Zero(out.size());
     for(t_uint i(0); i < transforms().size(); ++i)
       b += transforms(i).adjoint() * (y[i] - z[i]);
+    if(b.stableNorm() < 1e-12) {
+      out.fill(0e0);
+      return {0, 0, true};
+    }
 
     SOPT_TRACE("B: {}", b.transpose());
     // Then create operator A
