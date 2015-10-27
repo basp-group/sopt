@@ -21,8 +21,6 @@ typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 std::string const filename = "cameraman256";
-std::string const outdir = sopt::notinstalled::output_directory() + "/sdmm/regressions/";
-std::string const outfile = "inpainting.tiff";
 
 t_Vector target(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
   return sampling * t_Vector::Map(image.data(), image.size());
@@ -36,8 +34,8 @@ Scalar sigma(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> cons
 
 t_Vector dirty(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
   using namespace sopt;
-
   extern std::unique_ptr<std::mt19937_64> mersenne;
+
   // values near the mean are the most likely
   // standard deviation affects the dispersion of generated values from the mean
   auto const y0 = target(sampling, image);
@@ -46,12 +44,6 @@ t_Vector dirty(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> co
   for (t_int i = 0; i < y0.size(); i++)
     y(i) = y0(i) + gaussian_dist(*mersenne);
 
-  t_Vector dirty = sampling.adjoint() * y;
-  assert(dirty.size() == image.size());
-  notinstalled::write_tiff(
-      t_Matrix::Map(dirty.data(), image.rows(), image.cols()),
-      outdir + "dirty_" + outfile
-  );
   return y;
 }
 
@@ -69,22 +61,13 @@ sopt::algorithm::SDMM<Scalar> create_sdmm(
     sopt_l1_sdmmparam const &params) {
 
   using namespace sopt;
-  auto prox_l2ball = proximal::translate(proximal::L2Ball<Scalar>(params.epsilon), -y);
-  auto relvar = RelativeVariation<Scalar>(params.rel_obj);
-  auto convergence = [&y, &sampling, &psi, relvar](t_Vector const &x) mutable {
-    // INFO("||x - y||_2: " << (y - sampling * x).stableNorm());
-    INFO("||Psi^Tx||_1: " << l1_norm(psi.adjoint() * x));
-    INFO("||abs(x) - x||_2: " << (x.array().abs().matrix() - x).stableNorm());
-    return relvar(x);
-  };
-
   return algorithm::SDMM<Scalar>()
     .itermax(params.max_iter)
     .gamma(params.gamma)
     .conjugate_gradient(params.cg_max_iter, params.cg_tol)
-    .is_converged(convergence)
+    .is_converged(RelativeVariation<Scalar>(params.rel_obj))
     .append(proximal::l1_norm<Scalar>, psi.adjoint(), psi)
-    .append(prox_l2ball, sampling)
+    .append(proximal::translate(proximal::L2Ball<Scalar>(params.epsilon), -y), sampling)
     .append(proximal::positive_quadrant<Scalar>);
 }
 
@@ -137,31 +120,30 @@ TEST_CASE("Compare SDMMS", "") {
   CData<Scalar> const sampling_data{image.size(), y.size(), sampling};
   CData<Scalar> const psi_data{image.size(), image.size(), psi};
 
-  SECTION("Using C++ operators") {
-    for(t_uint i: {1, 2, 5}) {
-      SECTION(fmt::format("With {} iterations", i)) {
-        sopt_l1_sdmmparam c_params = params;
-        c_params.max_iter = i;
-        auto sdmm = ::create_sdmm(sampling, psi, y, c_params);
-        t_Vector cpp(image.size());
-        auto const diagnostic = sdmm(cpp, t_Vector::Zero(image.size()));
+  // Try increasing number of iterations and check output of c and c++ algorithms are the same
+  for(t_uint i: {1, 2, 5, 10}) {
+    SECTION(fmt::format("With {} iterations", i)) {
+      sopt_l1_sdmmparam c_params = params;
+      c_params.max_iter = i;
+      auto sdmm = ::create_sdmm(sampling, psi, y, c_params);
+      t_Vector cpp(image.size());
+      auto const diagnostic = sdmm(cpp, t_Vector::Zero(image.size()));
 
-        t_Vector c = t_Vector::Zero(image.size());
-        t_Vector weights = t_Vector::Ones(image.size());
-        sopt_l1_sdmm(
-            (void*) c.data(), c.size(),
-            &direct_transform<Scalar>, (void**)&sampling_data,
-            &adjoint_transform<Scalar>, (void**)&sampling_data,
-            &direct_transform<Scalar>, (void**)&psi_data,
-            &adjoint_transform<Scalar>, (void**)&psi_data, // synthesis
-            c.size(),
-            (void*) y.data(), y.size(),
-            weights.data(),
-            c_params
-        );
+      t_Vector c = t_Vector::Zero(image.size());
+      t_Vector weights = t_Vector::Ones(image.size());
+      sopt_l1_sdmm(
+          (void*) c.data(), c.size(),
+          &direct_transform<Scalar>, (void**)&sampling_data,
+          &adjoint_transform<Scalar>, (void**)&sampling_data,
+          &direct_transform<Scalar>, (void**)&psi_data,
+          &adjoint_transform<Scalar>, (void**)&psi_data, // synthesis
+          c.size(),
+          (void*) y.data(), y.size(),
+          weights.data(),
+          c_params
+      );
 
-        CHECK(cpp.isApprox(c));
-      }
-    };
-  }
+      CHECK(cpp.isApprox(c));
+    }
+  };
 }
