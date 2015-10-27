@@ -20,7 +20,7 @@ extern "C" {
 typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
-std::string const filename = "cameraman256.tiff";
+std::string const filename = "cameraman256";
 std::string const outdir = sopt::notinstalled::output_directory() + "/sdmm/regressions/";
 std::string const outfile = "inpainting.tiff";
 
@@ -37,14 +37,14 @@ Scalar sigma(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> cons
 t_Vector dirty(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
   using namespace sopt;
 
-  std::mt19937 gen((std::random_device())());
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   // values near the mean are the most likely
   // standard deviation affects the dispersion of generated values from the mean
   auto const y0 = target(sampling, image);
   std::normal_distribution<> gaussian_dist(0, sigma(sampling, image));
   t_Vector y(y0.size());
   for (t_int i = 0; i < y0.size(); i++)
-    y(i) = y0(i) + gaussian_dist(gen);
+    y(i) = y0(i) + gaussian_dist(*mersenne);
 
   t_Vector dirty = sampling.adjoint() * y;
   assert(dirty.size() == image.size());
@@ -58,7 +58,7 @@ t_Vector dirty(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> co
 Scalar epsilon(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
   auto const y0 = target(sampling, image);
   auto const nmeasure = y0.size();
-  return std::sqrt(nmeasure + 2*std::sqrt(nmeasure)) * sigma(sampling, y0);
+  return std::sqrt(nmeasure + 2*std::sqrt(nmeasure)) * sigma(sampling, image);
 }
 
 
@@ -71,8 +71,8 @@ sopt::algorithm::SDMM<Scalar> create_sdmm(
   using namespace sopt;
   auto prox_l2ball = proximal::translate(proximal::L2Ball<Scalar>(params.epsilon), -y);
   auto relvar = RelativeVariation<Scalar>(params.rel_obj);
-  auto convergence = [&y, &sampling, &psi, &relvar](t_Vector const &x) {
-    INFO("||x - y||_2: " << (y - sampling * x).stableNorm());
+  auto convergence = [&y, &sampling, &psi, relvar](t_Vector const &x) mutable {
+    // INFO("||x - y||_2: " << (y - sampling * x).stableNorm());
     INFO("||Psi^Tx||_1: " << l1_norm(psi.adjoint() * x));
     INFO("||abs(x) - x||_2: " << (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
@@ -104,20 +104,21 @@ template<class T> void direct_transform(void *out, void *in, void **data) {
 template<class T> void adjoint_transform(void *out, void *in, void **data) {
   CData<T> const &cdata = *(CData<T>*)data;
   typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  t_Vector const eval = cdata.transform.adjoint() * t_Vector::Map((T*)in, cdata.nin);
-  t_Vector::Map((T*)out, cdata.nout) = eval;
+  t_Vector const eval = cdata.transform.adjoint() * t_Vector::Map((T*)in, cdata.nout);
+  t_Vector::Map((T*)out, cdata.nin) = eval;
 }
 
 TEST_CASE("Compare SDMMS", "") {
   using namespace sopt;
   // Read image and create target vector y
-  Image<> const image = notinstalled::read_standard_tiff(filename);
+  Image<> const image = Image<>::Random(4, 4); //notinstalled::read_standard_tiff(filename);
   t_uint const nmeasure = 0.5 * image.size();
-  auto const sampling = linear_transform<Scalar>(Sampling(image.size(), nmeasure));
+  extern std::unique_ptr<std::mt19937_64> mersenne;
+  auto const sampling = linear_transform<Scalar>(Sampling(image.size(), nmeasure, *mersenne));
   auto const y = dirty(sampling, image);
 
   sopt_l1_sdmmparam params = {
-    0,    // verbosity
+    4,    // verbosity
     50,   // max iter
     0.1,  // gamma
     0.01, // relative change
@@ -129,36 +130,38 @@ TEST_CASE("Compare SDMMS", "") {
   };
 
   // Create c++ SDMM
-  auto const wavelet = wavelets::factory("DB8", 4);
+  auto const wavelet = wavelets::factory("DB2", 2);
   auto const psi = linear_transform<Scalar>(wavelet, image.rows(), image.cols());
-  auto const sdmm = ::create_sdmm(sampling, psi, y, params);
 
-  // Run sdmms
-  t_Vector cpp(image.size());
-  auto const diagnostic = sdmm(cpp, t_Vector::Zero(image.size()));
-  CHECK(diagnostic.good);
-  t_Vector weights = t_Vector::Ones(image.size());
-  t_Vector c = t_Vector::Zero(image.size());
+  // Create C bindings for C++ operators
   CData<Scalar> const sampling_data{image.size(), y.size(), sampling};
-  CData<Scalar> const psi_data{image.size(), y.size(), psi};
-  sopt_l1_sdmm(
-      (void*) c.data(), c.size(),
-      &direct_transform<Scalar>, (void**)&sampling_data,
-      &adjoint_transform<Scalar>, (void**)&sampling_data,
-      &adjoint_transform<Scalar>, (void**)&psi_data, // synthesis
-      &direct_transform<Scalar>, (void**)&psi_data,
-      c.size(),
-      (void*) y.data(), y.size(),
-      weights.data(),
-      params
-  );
+  CData<Scalar> const psi_data{image.size(), image.size(), psi};
 
-  notinstalled::write_tiff(
-    t_Matrix::Map(cpp.data(), image.rows(), image.cols()),
-    outdir + "cpp_" + outfile
-  );
-  notinstalled::write_tiff(
-    t_Matrix::Map(c.data(), image.rows(), image.cols()),
-    outdir + "c_" + outfile
-  );
+  SECTION("Using C++ operators") {
+    for(t_uint i: {1, 2, 5}) {
+      SECTION(fmt::format("With {} iterations", i)) {
+        sopt_l1_sdmmparam c_params = params;
+        c_params.max_iter = i;
+        auto sdmm = ::create_sdmm(sampling, psi, y, c_params);
+        t_Vector cpp(image.size());
+        auto const diagnostic = sdmm(cpp, t_Vector::Zero(image.size()));
+
+        t_Vector c = t_Vector::Zero(image.size());
+        t_Vector weights = t_Vector::Ones(image.size());
+        sopt_l1_sdmm(
+            (void*) c.data(), c.size(),
+            &direct_transform<Scalar>, (void**)&sampling_data,
+            &adjoint_transform<Scalar>, (void**)&sampling_data,
+            &direct_transform<Scalar>, (void**)&psi_data,
+            &adjoint_transform<Scalar>, (void**)&psi_data, // synthesis
+            c.size(),
+            (void*) y.data(), y.size(),
+            weights.data(),
+            c_params
+        );
+
+        CHECK(cpp.isApprox(c));
+      }
+    };
+  }
 }
