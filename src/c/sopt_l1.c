@@ -942,7 +942,7 @@ void sopt_l1_sdmm(void *xsol,
             //x3=prox_p(z2), projection onto the positive orthant
             sopt_utility_projposr((double*)x3, (double*)z3, nx);
             //z3=z3-x3
-            cblas_daxpy(nx, -1.0, (double*)x1, 1, (double*)z1, 1); 
+            cblas_daxpy(nx, -1.0, (double*)x3, 1, (double*)z3, 1); 
             //Log
             if (param.verbose > 1){
                 cblas_dcopy(nx, (double*)xsol, 1, (double*)s3, 1);
@@ -1398,7 +1398,7 @@ void sopt_l1_sdmm2(void *xsol,
             //x3=prox_p(z2), projection onto the positive orthant
             sopt_utility_projposr((double*)x3, (double*)z3, nx);
             //z3=z3-x3
-            cblas_daxpy(nx, -1.0, (double*)x1, 1, (double*)z1, 1); 
+            cblas_daxpy(nx, -1.0, (double*)x3, 1, (double*)z3, 1);
             //Log
             if (param.verbose > 1){
                 cblas_dcopy(nx, (double*)xsol, 1, (double*)s3, 1);
