@@ -141,8 +141,8 @@ template<class SCALAR> class SDMM {
     //! \brief Forwards to internal conjugage gradient object
     //! \details Removes the need for ugly extra brackets.
     template<class T0, class T1, class T2>
-      ConjugateGradient::Diagnostic conjugate_gradient(T0 &t0, T1 const &t1, T2 const &t2) const {
-        return conjugate_gradient()(t0, t1, t2);
+      ConjugateGradient::Diagnostic conjugate_gradient(T0 &x, T1 const &A, T2 const &b) const {
+        return conjugate_gradient()(x, A, b);
       }
 
     //! Forwards to convergence function parameter
