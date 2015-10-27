@@ -174,7 +174,6 @@ template<class SCALAR>
   SDMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
 
     sanity_check(input);
-    ConjugateGradient::Diagnostic cg_diagnostic;
     bool  convergence = false;
     t_uint niters (0);
     // Figures out where itermax or convergence reached
@@ -190,7 +189,7 @@ template<class SCALAR>
     // Initial step replaces iteration update with initialization
     SOPT_TRACE("Input {} ", input.transpose());
     initialization(y, z, input);
-    cg_diagnostic = solve_for_xn(out, y, z);
+    auto cg_diagnostic = solve_for_xn(out, y, z);
 
     while(not has_finished(out)) {
       SOPT_INFO("Iteration {}/{}. ", niters, itermax());
@@ -232,15 +231,11 @@ template<class SCALAR>
       return {0, 0, true};
     }
 
-    SOPT_TRACE("B: {}", b.transpose());
     // Then create operator A
     auto A = [this](t_Vector& out, t_Vector const &input) {
-      SOPT_TRACE("x = {}", input.transpose());
       out = out.Zero(input.size());
-      for(auto const &transform: this->transforms()) {
-        SOPT_TRACE("A^TAx = {}", (transform.adjoint() * (transform * input).eval()).transpose());
+      for(auto const &transform: this->transforms())
         out += transform.adjoint() * (transform * input).eval();
-      }
     };
 
     // Call conjugate gradient
@@ -260,6 +255,7 @@ template<class SCALAR>
 
 template<class SCALAR>
   void SDMM<SCALAR>::update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const {
+    SOPT_TRACE("Updating directions");
     for(t_uint i(0); i < transforms().size(); ++i) {
       z[i] += transforms(i) * x;
       y[i] = proximals(i, z[i]);
