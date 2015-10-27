@@ -2,6 +2,7 @@
 #define SOPT_SAMPLING_H
 
 #include <random>
+#include <memory>
 #include <initializer_list>
 
 #include <Eigen/Core>
@@ -18,7 +19,10 @@ class Sampling {
     //! Constructs from a vector
     Sampling(t_uint size, std::vector<t_uint> const &indices) : indices(indices), size(size) {}
     //! Constructs from the size and the number of samples to pick
-    Sampling(t_uint size, t_uint samples);
+    template<class RNG> Sampling(t_uint size, t_uint samples, RNG&& rng);
+    //! Constructs from the size and the number of samples to pick
+    Sampling(t_uint size, t_uint samples)
+      : Sampling(size, samples, std::mt19937_64(std::random_device()())) {}
 
     // Performs sampling
     template<class T0, class T1>
@@ -79,6 +83,14 @@ template<class T>
         {{0, 1, static_cast<t_int>(sampling.cols())}}
     );
   }
+
+template<class RNG>
+  Sampling::Sampling(t_uint size, t_uint samples, RNG && rng) : indices(size), size(size) {
+    std::iota(indices.begin(), indices.end(), 0);
+    std::shuffle(indices.begin(), indices.end(), rng);
+    indices.resize(samples);
+  }
+
 } /* sopt  */
 #endif
 
