@@ -1,7 +1,10 @@
 add_library(tools_for_tests STATIC tiffwrappers.cc tiffwrappers.h)
 target_link_libraries(tools_for_tests ${TIFF_LIBRARY})
-target_include_directories(tools_for_tests PUBLIC ${TIFF_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR})
-add_dependencies(lookup_dependencies tools_for_tests)
+target_include_directories(tools_for_tests PUBLIC ${TIFF_INCLUDE_DIR})
+if(SPDLOG_INCLUDE_DIR)
+  target_include_directories(tools_for_tests PUBLIC ${SPDLOG_INCLUDE_DIR})
+endif()
+add_dependencies(tools_for_tests lookup_dependencies)
 
 # Simple manual tester of read/write tiff
 add_executable(copy_tiff copy_tiff.cc)

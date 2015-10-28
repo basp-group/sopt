@@ -16,7 +16,7 @@ if(regressions)
     NO_DEFAULT_PATH
     KEEP
     ARGUMENTS
-      GIT_REPOSITORY "git@github:astro-informatics/sopt"
+      GIT_REPOSITORY "git@github.com:astro-informatics/sopt"
       GIT_TAG ${REGRESSION_ORACLE_ID}
   )
 endif()

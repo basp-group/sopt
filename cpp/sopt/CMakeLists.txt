@@ -8,7 +8,7 @@ add_library(sopt INTERFACE)
 if(SPDLOG_INCLUDE_DIR)
   set_target_properties(sopt PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${SPDLOG_INCLUDE_DIR})
 endif()
-add_dependencies(sopt lookup_dependencies)
+set_target_properties(sopt PROPERTIES INTERFACE_DEPENDS lookup_dependencies)
 
 install(FILES ${headers} DESTINATION include/sopt)
 install(TARGETS sopt

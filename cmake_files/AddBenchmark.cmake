@@ -46,6 +46,9 @@ function(add_benchmark targetname)
   if(benchmark_LIBRARIES)
     target_link_libraries(benchmark_${targetname} ${benchmark_LIBRARIES})
   endif()
+  if(TARGET lookup_dependencies)
+    add_dependencies(benchmark_${targetname} lookup_dependencies)
+  endif()
 
   add_custom_target(benchmark_${targetname}-run COMMAND benchmark_${targetname}
     COMMENT "Running benchmark ${targetname}" )

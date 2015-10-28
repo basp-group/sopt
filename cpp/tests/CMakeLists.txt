@@ -6,6 +6,7 @@ if(logging)
   if(SPDLOG_INCLUDE_DIR)
     target_include_directories(common_catch_main_object PRIVATE ${SPDLOG_INCLUDE_DIR})
   endif()
+  add_dependencies(common_catch_main_object lookup_dependencies)
 endif()
 
 add_catch_test(wavelets LIBRARIES wavelets)
