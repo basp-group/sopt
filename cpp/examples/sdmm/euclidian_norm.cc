@@ -10,8 +10,9 @@ int main(int, char const **) {
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Some typedefs for simplicity
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef sopt::t_complex t_Scalar;
+  typedef sopt::Vector<t_Scalar> t_Vector;
+  typedef sopt::Matrix<t_Scalar> t_Matrix;
 
   // Creates the transformation matrices
   auto const N = 10;
@@ -19,10 +20,8 @@ int main(int, char const **) {
   t_Matrix const L1 = t_Matrix::Random(N, N) * 4;
   // L1_direct and L1_adjoint are used to demonstrate that we can define L_i in SDMM both directly
   // as matrices, or as a pair of functions that apply a linear operator and its transpose.
-  auto L1_direct = [&L1](t_Vector &out, t_Vector const &input) { out = L1 * input; };
-  auto L1_adjoint = [&L1](t_Vector &out, t_Vector const &input) {
-    out = L1.transpose().conjugate() * input;
-  };
+  auto L1_direct = [&L1](t_Vector& out, t_Vector const &input) { out = L1 * input; };
+  auto L1_adjoint = [&L1](t_Vector& out, t_Vector const &input) { out = L1.adjoint() * input; };
   // Creates the target vectors
   t_Vector const target0 = t_Vector::Random(N);
   t_Vector const target1 = t_Vector::Random(N);
@@ -38,9 +37,8 @@ int main(int, char const **) {
   // been achieved.
   // It takes the convex minimizer and the current candidate output vector as arguments.
   // The example below assumes convergence when the candidate vector does not change anymore.
-  typedef sopt::algorithm::SDMM<t_Vector::Scalar> SDMM;
   std::shared_ptr<t_Vector> previous;
-  auto relative = [&previous](SDMM const&, t_Vector const &candidate) {
+  auto relative = [&previous](t_Vector const &candidate) {
     if(not previous) {
       previous = std::make_shared<t_Vector>(candidate);
       return false;
@@ -54,7 +52,7 @@ int main(int, char const **) {
 
   // Now we can create the sdmm convex minimizer
   // Its parameters are set by calling member functions with appropriate names.
-  auto sdmm = SDMM()
+  auto sdmm = sopt::algorithm::SDMM<t_Scalar>()
     .itermax(500) // maximum number of iterations
     .gamma(1)
     .conjugate_gradient(std::numeric_limits<sopt::t_uint>::max(), 1e-12)

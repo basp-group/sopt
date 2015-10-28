@@ -15,7 +15,11 @@ namespace sopt {
       //! Underlying scalar type
       typedef typename real_type<Scalar>::type Real;
       //! Maximum variation from one step to the next
-      RelativeVariation(Real epsilon) : epsilon_(epsilon), is_first(true) {};
+      RelativeVariation(Real epsilon)
+        : epsilon_(epsilon), previous(typename Array<Scalar>::Index(0)) {};
+      //! Copy constructor
+      RelativeVariation(RelativeVariation const& c)
+        : epsilon_(c.epsilon_), previous(c.previous) {};
 
       //! True if object has changed by less than epsilon
       template<class T>
@@ -25,8 +29,7 @@ namespace sopt {
       //! True if object has changed by less than epsilon
       template<class T>
         bool operator()(Eigen::ArrayBase<T> const &input) {
-          if(is_first) {
-            is_first = false;
+          if(previous.size() != input.size()) {
             previous = input;
             return false;
           }
@@ -41,9 +44,8 @@ namespace sopt {
       RelativeVariation& epsilon(Real &e) const { epsilon_ = e; return *this; }
 
     protected:
-      typename real_type<Scalar>::type epsilon_;
-      bool is_first;
-      Eigen::Array<Scalar, Eigen::Dynamic, 1> previous;
+      Real epsilon_;
+      Array<Scalar> previous;
   };
 } /* sopt  */
 

@@ -9,14 +9,14 @@ TEST_CASE("Linear Transforms", "[ops]") {
   using namespace sopt;
 
   typedef int SCALAR;
-  typedef Eigen::Array<SCALAR, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Array<SCALAR, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef Array<SCALAR> t_Vector;
+  typedef Image<SCALAR> t_Matrix;
   auto const N = 10;
 
   SECTION("Functions") {
 
-    auto direct = [](t_Vector &out, t_Vector const&input) { out = input * 2 - 1; };
-    auto indirect = [](t_Vector &out, t_Vector const&input) { out = input * 4 - 1; };
+    auto direct = [](t_Vector& out, t_Vector const&input) { out = input * 2 - 1; };
+    auto indirect = [](t_Vector& out, t_Vector const&input) { out = input * 4 - 1; };
     t_Vector const x = t_Vector::Random(2*N) * 5;
 
     auto op = sopt::linear_transform<t_Vector>(direct, indirect);
@@ -63,8 +63,8 @@ TEST_CASE("Array of Linear transforms", "[ops]") {
   using namespace sopt;
 
   typedef int SCALAR;
-  typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, 1> t_Vector;
-  typedef Eigen::Matrix<SCALAR, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef Vector<SCALAR> t_Vector;
+  typedef Matrix<SCALAR> t_Matrix;
 
   auto const N = 10;
   t_Vector const x = t_Vector::Random(N) * 5;

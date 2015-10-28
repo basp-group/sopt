@@ -44,7 +44,8 @@ template<class FUNCTION, class DERIVED>
 //! = func * input`.
 template<class VECTOR> class WrapFunction {
   public:
-    typedef std::function<void(VECTOR &out, VECTOR const &input)> t_Function;
+    //! Type of function wrapped here
+    typedef OperatorFunction<VECTOR> t_Function;
 
     //! Initializes the wrapper
     //! \param[in] func: function to wrap
@@ -116,9 +117,7 @@ template<class VECTOR> class WrapFunction {
 //! Helper function to wrap functor into expression-able object
 template<class VECTOR>
   WrapFunction<VECTOR> wrap(
-      std::function<void(VECTOR &input, VECTOR const& out)> const &func,
-      std::array<t_int, 3> sizes = {{1, 1, 0}}
-  ) {
+      OperatorFunction<VECTOR> const &func, std::array<t_int, 3> sizes = {{1, 1, 0}}) {
     return WrapFunction<VECTOR>(func, sizes);
   }
 }}

@@ -18,6 +18,7 @@ ExternalProject_Add(
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS
         -C "${EXTERNAL_ROOT}/src/GBenchmarkVariables.cmake"
+        -DBENCHMARK_ENABLE_TESTING=OFF
         -DCMAKE_BUILD_TYPE=Release
 
     # Wrap download, configure and build steps in a script to log output

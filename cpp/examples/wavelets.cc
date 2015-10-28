@@ -6,7 +6,7 @@ int main(int, char const **) {
   auto const wavelets = sopt::wavelets::factory("DB4", 5);
 
   // Creates a random signal
-  sopt::t_cMatrix input = sopt::t_cMatrix::Random(128, 128);
+  sopt::Image<sopt::t_complex> input = sopt::Image<sopt::t_complex>::Random(128, 128);
   // Now gets its coefficients
   auto coefficients = wavelets.direct(input);
   // And transform back

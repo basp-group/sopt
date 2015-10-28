@@ -8,7 +8,7 @@ namespace sopt { namespace wavelets {
 namespace {
   //! Vector setup from initializer list, because easier
   WaveletData::t_vector init_db(std::initializer_list<t_real> const &input) {
-    Eigen::Matrix<t_real, Eigen::Dynamic, 1> result(input.size());
+    sopt::Vector<> result(input.size());
     std::copy(input.begin(), input.end(), result.data());
     return result;
   }

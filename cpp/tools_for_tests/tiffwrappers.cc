@@ -2,10 +2,12 @@
 #include <tiffio.h>
 #include <fstream>
 
-#include <sopt/exception.h>
-#include "tiffwrappers.h"
+#include "sopt/exception.h"
 #include "sopt/logging.h"
+#include "tools_for_tests/directories.h"
+#include "tools_for_tests/tiffwrappers.h"
 
+namespace {
 //! A single pixel
 //! Converts ABGR to greyscale double value
 double convert_to_greyscale(uint32_t &pixel) {
@@ -29,11 +31,11 @@ uint32_t convert_from_greyscale(double pixel) {
   ptr[3] = 255;
   return result;
 }
+}
 
 
-
-namespace sopt {
-sopt::t_rMatrix read_tiff(std::string const & filename) {
+namespace sopt { namespace notinstalled {
+sopt::Image<> read_tiff(std::string const & filename) {
   SOPT_INFO("Reading image file {} ", filename);
   TIFF* tif = TIFFOpen(filename.c_str(), "r");
   if(not tif)
@@ -45,7 +47,7 @@ sopt::t_rMatrix read_tiff(std::string const & filename) {
   TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &t);
   SOPT_DEBUG("- image size {}, {} ", width, height);
-  sopt::t_rMatrix result = sopt::t_rMatrix::Zero(height, width);
+  sopt::Image<> result = sopt::Image<>::Zero(height, width);
 
   uint32* raster = (uint32*) _TIFFmalloc(width * height * sizeof (uint32));
   if(not raster)
@@ -65,13 +67,13 @@ sopt::t_rMatrix read_tiff(std::string const & filename) {
   return result;
 }
 
-sopt::t_rMatrix read_standard_tiff(std::string const &name) {
-  std::string const stdname = sopt::data_directory() + "/" + name + ".tiff";
+sopt::Image<> read_standard_tiff(std::string const &name) {
+  std::string const stdname = sopt::notinstalled::data_directory() + "/" + name + ".tiff";
   bool const is_std = std::ifstream(stdname).good();
-  return sopt::read_tiff(is_std ? stdname: name);
+  return sopt::notinstalled::read_tiff(is_std ? stdname: name);
 }
 
-void write_tiff(sopt::t_rMatrix const & image, std::string const & filename) {
+void write_tiff(sopt::Image<> const & image, std::string const & filename) {
   SOPT_INFO("Writing image file {} ", filename);
   SOPT_DEBUG("- image size {}, {} ", image.rows(), image.cols());
   TIFF* tif = TIFFOpen(filename.c_str(), "w");
@@ -108,4 +110,4 @@ void write_tiff(sopt::t_rMatrix const & image, std::string const & filename) {
   TIFFClose(tif);
   SOPT_TRACE("Freeing raster");
 }
-} /* sopt  */
+}} /* sopt::notinstalled  */
