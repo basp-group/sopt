@@ -20,7 +20,6 @@ extern "C" {
 typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
-std::string const filename = "cameraman256";
 
 t_Vector target(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
   return sampling * t_Vector::Map(image.data(), image.size());
@@ -94,7 +93,7 @@ template<class T> void adjoint_transform(void *out, void *in, void **data) {
 TEST_CASE("Compare SDMMS", "") {
   using namespace sopt;
   // Read image and create target vector y
-  Image<> const image = Image<>::Random(4, 4); //notinstalled::read_standard_tiff(filename);
+  Image<> const image = notinstalled::read_standard_tiff("cameraman256");
   t_uint const nmeasure = 0.5 * image.size();
   extern std::unique_ptr<std::mt19937_64> mersenne;
   auto const sampling = linear_transform<Scalar>(Sampling(image.size(), nmeasure, *mersenne));
