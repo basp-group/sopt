@@ -102,7 +102,7 @@ param.tight_L1 = 1; % Indicate if Psit is a tight frame (1) or not (0)
 %param.rel_obj_L1 = 1e-3; % Tolerance for the prox L1
 
 % Solve BPDN problem with positivity constraint
-sol1 = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param);
+sol1 = sopt_mltb_dr_BPDN(y, epsilon, A, At, Psi, Psit, param);
 
 % Compute SNR
 RSNR1 = 20*log10(norm(im,'fro') ...
@@ -113,7 +113,7 @@ param.pos_B2 = 0; %Positivity flag
 param.real_B2 = 1; %Reality flag
 
 % Solve BPDN problem
-sol2 = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param);
+sol2 = sopt_mltb_dr_BPDN(y, epsilon, A, At, Psi, Psit, param);
 
 % Compute SNR
 RSNR2 = 20*log10(norm(im,'fro') ...
