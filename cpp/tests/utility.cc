@@ -69,17 +69,31 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
   sopt::Array<> input(6);
   input << 1e1, 2e1, 3e1, 4e1, 1e4, 2e4;
 
-  // check thresshold
-  CHECK(sopt::soft_threshhold(input, 1.1e1)(0) == Approx(0));
-  CHECK(not (sopt::soft_threshhold(input, 1.1e1)(1) == Approx(0)));
+  SECTION("Single-valued threshhold") {
+    // check thresshold
+    CHECK(sopt::soft_threshhold(input, 1.1e1)(0) == Approx(0));
+    CHECK(not (sopt::soft_threshhold(input, 1.1e1)(1) == Approx(0)));
 
-  // check linearity
-  auto a = sopt::soft_threshhold(input, 9e0)(0);
-  auto b = sopt::soft_threshhold(input, 4.5e0)(0);
-  auto c = sopt::soft_threshhold(input, 2.25e0)(0);
-  CAPTURE(b - a);
-  CAPTURE(c - b);
-  CHECK((b - a) == Approx(2*(c - b)));
+    // check linearity
+    auto a = sopt::soft_threshhold(input, 9e0)(0);
+    auto b = sopt::soft_threshhold(input, 4.5e0)(0);
+    auto c = sopt::soft_threshhold(input, 2.25e0)(0);
+    CAPTURE(b - a);
+    CAPTURE(c - b);
+    CHECK((b - a) == Approx(2*(c - b)));
+  }
+
+  SECTION("Multi-values threshhold") {
+    sopt::Array<> threshhold(6);
+    input[2] *= -1;
+    threshhold << 1.1e1, 1.1e1, 1e0, 4.5, 2.25;
+
+    sopt::Array<> const actual = sopt::soft_threshhold(input, threshhold);
+    CHECK(actual(0) == 0e0);
+    CHECK(actual(1) == input(1) - threshhold(1));
+    CHECK(actual(2) == input(2) + threshhold(2));
+    CHECK(actual(3) == input(3) - threshhold(3));
+  }
 }
 
 TEST_CASE("Sampling", "[utility][sampling]") {
