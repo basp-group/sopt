@@ -93,6 +93,8 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
     CHECK(actual(1) == input(1) - threshhold(1));
     CHECK(actual(2) == input(2) + threshhold(2));
     CHECK(actual(3) == input(3) - threshhold(3));
+
+    CHECK_THROWS_AS(sopt::soft_threshhold(input, threshhold.head(2)), sopt::Exception);
   }
 }
 

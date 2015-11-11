@@ -7,6 +7,7 @@
 #include <complex>
 
 #include "sopt/types.h"
+#include "sopt/exception.h"
 
 namespace sopt {
 
@@ -14,7 +15,8 @@ namespace sopt {
 template<class SCALAR>
   typename std::enable_if<
     // standard_layout allows SCALAR = std::complex
-    // and disallows Eigen::EigenBase<DERIVED> objects
+    // and disallows Eigen::EigenBase<DERIVED> objects.
+    // Also allows stuff it shouldn't... but whatever.
     std::is_arithmetic<SCALAR>::value or std::is_pod<SCALAR>::value,
     SCALAR
   >::type soft_threshhold(SCALAR const & x, typename real_type<SCALAR>::type const & threshhold) {
@@ -40,7 +42,7 @@ namespace details {
        }
   };
 
-  //! Expression to create projection onto positive orthant
+  //! Helper template typedef to instantiate soft_threshhold that takes an Eigen object
   template<class SCALAR>
     using SoftThreshhold = decltype(
         std::bind(
@@ -83,7 +85,8 @@ template<class T>
 template<class T0, class T1>
   Eigen::CwiseBinaryOp<details::BinaryOp<typename T0::Scalar>, const T0, const T1>
   soft_threshhold(Eigen::DenseBase<T0> const &input, Eigen::DenseBase<T1> const &threshhold) {
-    assert(input.size() == threshhold.size());
+    if(input.size() != threshhold.size())
+      SOPT_THROW("Threshhold and input should have the same size");
     return {input.derived(), threshhold.derived(), soft_threshhold<typename T0::Scalar>};
   }
 
