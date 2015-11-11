@@ -10,6 +10,13 @@
 
 namespace sopt {
 
+//! abs(x) < threshhold ? 0: x - sgn(x) * threshhold
+template<class SCALAR>
+  SCALAR soft_threshhold(SCALAR const & x, typename real_type<SCALAR>::type const & threshhold) {
+    auto const normalized = std::abs(x);
+    return normalized < threshhold ? SCALAR(0): (x * (SCALAR(1) - threshhold/normalized));
+  }
+
 namespace details {
   //! Expression to create projection onto positive orthant
   template<class SCALAR> class ProjectPositiveQuadrant {
@@ -28,20 +35,14 @@ namespace details {
   };
 
   //! Expression to create projection onto positive orthant
-  template<class SCALAR> class SoftThreshhold {
-     public:
-       typedef typename Eigen::NumTraits<SCALAR>::Real t_Threshhold;
-       SoftThreshhold(t_Threshhold const &threshhold) : threshhold(threshhold) {
-         if(threshhold < 0e0)
-           throw std::domain_error("Threshhold must be negative");
-       }
-       SCALAR operator()(const SCALAR &value) const {
-         auto const normalized = std::abs(value);
-         return normalized < threshhold ? SCALAR(0): (value * (SCALAR(1) - threshhold/normalized));
-       }
-     private:
-       t_Threshhold threshhold;
-  };
+  template<class SCALAR>
+    using SoftThreshhold = decltype(
+        std::bind(
+          soft_threshhold<SCALAR>,
+          std::placeholders::_1,
+          typename real_type<SCALAR>::type(1)
+        )
+    );
 }
 
 //! Expression to create projection onto positive quadrant
@@ -57,9 +58,12 @@ template<class T>
 template<class T>
   Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
   soft_threshhold(Eigen::DenseBase<T> const &input, typename T::Scalar const &threshhold) {
-    typedef details::SoftThreshhold<typename T::Scalar> Threshhold;
-    typedef Eigen::CwiseUnaryOp<const Threshhold, const T> UnaryOp;
-    return UnaryOp(input.derived(), Threshhold(threshhold));
+    typedef typename T::Scalar Scalar;
+    typedef typename real_type<Scalar>::type Real;
+    return {
+      input.derived(),
+      std::bind(soft_threshhold<Scalar>, std::placeholders::_1, Real(threshhold))
+    };
   }
 
 //! Computes weighted L1 norm

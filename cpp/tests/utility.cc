@@ -68,7 +68,6 @@ TEST_CASE("Weighted l1 norm", "[utility][l1]") {
 TEST_CASE("Soft threshhold", "[utility][threshhold]") {
   sopt::Array<> input(6);
   input << 1e1, 2e1, 3e1, 4e1, 1e4, 2e4;
-  CHECK_THROWS_AS(sopt::soft_threshhold(input, -10), std::domain_error);
 
   // check thresshold
   CHECK(sopt::soft_threshhold(input, 1.1e1)(0) == Approx(0));
