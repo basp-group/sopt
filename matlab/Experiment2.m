@@ -136,7 +136,7 @@ param.rel_obj_L1 = 1e-2;
     
 % Solve BPSA problem
     
-sol1 = sopt_mltb_dr_BPDN(y, epsilon, A, At, Psi, Psit, param);
+sol1 = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi, Psit, param);
     
 RSNR1=20*log10(norm(im,'fro')/norm(im-sol1,'fro'));
     
@@ -146,13 +146,13 @@ maxiter=10;
 sigma=sigma_noise*sqrt(numel(y)/(numel(im)*8));
 tol=1e-3;
   
-sol2 = sopt_mltb_sara_rwBPDN(y, epsilon, A, At, Psi, Psit, param, sigma, tol, maxiter, sol1);
+sol2 = sopt_mltb_solve_rwBPDN(y, epsilon, A, At, Psi, Psit, param, sigma, tol, maxiter, sol1);
 
 RSNR2=20*log10(norm(im,'fro')/norm(im-sol2,'fro'));
 
 % Solve BPBb8 problem
     
-sol3 = sopt_mltb_dr_BPDN(y, epsilon, A, At, Psi2, Psit2, param);
+sol3 = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi2, Psit2, param);
     
 RSNR3=20*log10(norm(im,'fro')/norm(im-sol3,'fro'));
     
@@ -162,7 +162,7 @@ maxiter=10;
 sigma=sigma_noise*sqrt(numel(y)/(numel(im)));
 tol=1e-3;
   
-sol4 = sopt_mltb_sara_rwBPDN(y, epsilon, A, At, Psi2, Psit2, param, sigma, tol, maxiter, sol3);
+sol4 = sopt_mltb_solve_rwBPDN(y, epsilon, A, At, Psi2, Psit2, param, sigma, tol, maxiter, sol3);
       
 RSNR4=20*log10(norm(im,'fro')/norm(im-sol4,'fro'));
 
@@ -184,7 +184,7 @@ param3.tight_L1 = 1; % Indicate if Psit is a tight frame (1) or not (0)
 
 % Solve BP Curvelet problem
     
-sol5 = sopt_mltb_dr_BPDN(y, epsilon, A, At, Psi3, Psit3, param3);
+sol5 = sopt_mltb_solve_BPDN(y, epsilon, A, At, Psi3, Psit3, param3);
     
 RSNR5=20*log10(norm(im,'fro')/norm(im-sol5,'fro'));
     
@@ -194,7 +194,7 @@ maxiter=10;
 sigma=sigma_noise*sqrt(numel(y)/(numel(im)));
 tol=1e-3;
   
-sol6 = sopt_mltb_sara_rwBPDN(y, epsilon, A, At, Psi3, Psit3, param3, sigma, tol, maxiter, sol5);
+sol6 = sopt_mltb_solve_rwBPDN(y, epsilon, A, At, Psi3, Psit3, param3, sigma, tol, maxiter, sol5);
      
 RSNR6=20*log10(norm(im,'fro')/norm(im-sol6,'fro'));
 
@@ -213,7 +213,7 @@ param1.pos_B2 = 1;
     
 % Solve TV problem
     
-sol7 = sopt_mltb_dr_TVDN(y, epsilon, A, At, param1);
+sol7 = sopt_mltb_solve_TVDN(y, epsilon, A, At, param1);
     
 RSNR7=20*log10(norm(im,'fro')/norm(im-sol7,'fro'));
     
@@ -223,7 +223,7 @@ maxiter=10;
 sigma=sigma_noise*sqrt(numel(y)/(numel(im)));
 tol=1e-3;
   
-sol8 = sopt_mltb_sara_rwTVDN(y, epsilon, A, At, param1,sigma, tol, maxiter, sol7);
+sol8 = sopt_mltb_solve_rwTVDN(y, epsilon, A, At, param1,sigma, tol, maxiter, sol7);
     
 RSNR8=20*log10(norm(im,'fro')/norm(im-sol8,'fro'));
 
