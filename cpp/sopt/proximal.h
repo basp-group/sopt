@@ -12,7 +12,10 @@ namespace sopt {
 namespace proximal {
 
 namespace details {
-  //! Expression referencing a lazy proximal function call
+  //! \brief Expression referencing a lazy proximal function call
+  //! \details It helps transform the call ``proximal(out, gamma, input)``
+  //! to ``out = proximal(gamma, input)`` without incurring copy or allocation overhead if ``out``
+  //! already exists.
   template<class FUNCTION, class DERIVED>
     class AppliedProximalFunction
       : public Eigen::ReturnByValue<AppliedProximalFunction<FUNCTION, DERIVED>> {
