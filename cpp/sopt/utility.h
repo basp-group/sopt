@@ -52,7 +52,7 @@ namespace details {
   //! Helper template typedef defining binary operation
   //! Merely defines a pointer to the right kind of function for eigen binary op.
   template<class SCALAR>
-    using BinaryOp = SCALAR(*)(SCALAR const&, SCALAR const&);
+    using BinaryOp = SCALAR(*)(SCALAR const&, typename real_type<SCALAR>::type const&);
 }
 
 //! Expression to create projection onto positive quadrant
@@ -67,7 +67,10 @@ template<class T>
 //! Expression to create soft-threshhold
 template<class T>
   Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
-  soft_threshhold(Eigen::DenseBase<T> const &input, typename T::Scalar const &threshhold) {
+  soft_threshhold(
+      Eigen::DenseBase<T> const &input,
+      typename real_type<typename T::Scalar>::type const &threshhold
+  ) {
     typedef typename T::Scalar Scalar;
     typedef typename real_type<Scalar>::type Real;
     return {
