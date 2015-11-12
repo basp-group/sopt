@@ -206,5 +206,14 @@ template<class DERIVED>
       return {matrix, matrix.adjoint(), {{b, a, 0}}};
     }
   }
+
+//! Helper function to create a linear transform that's just the identity
+template<class SCALAR>
+  LinearTransform<Vector<SCALAR>> linear_transform_identity() {
+    return {
+      [](Vector<SCALAR>& out, Vector<SCALAR> const &in) { out = in; },
+      [](Vector<SCALAR>& out, Vector<SCALAR> const &in) { out = in; }
+    };
+  }
 }
 #endif

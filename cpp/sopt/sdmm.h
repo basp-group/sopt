@@ -77,13 +77,7 @@ template<class SCALAR> class SDMM {
       }
     //! \brief Appends a proximal with identity as the linear transform
     template<class PROXIMAL> SDMM<SCALAR>& append(PROXIMAL proximal) {
-      return append(
-          proximal,
-          linear_transform<t_Vector>(
-            [](t_Vector& out, t_Vector const &in) { out = in; },
-            [](t_Vector& out, t_Vector const &in) { out = in; }
-          )
-      );
+      return append(proximal, linear_transform_identity<Scalar>());
     }
     //! \brief Appends a proximal with the linear transform as pair of functions
     template<class PROXIMAL, class L, class LADJOINT>
