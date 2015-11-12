@@ -12,6 +12,7 @@
 #include "sopt/exception.h"
 #include "sopt/conjugate_gradient.h"
 #include "sopt/logging.h"
+#include "sopt/proximal_expression.h"
 
 namespace sopt { namespace algorithm {
 
@@ -121,12 +122,9 @@ template<class SCALAR> class SDMM {
     std::vector<t_Proximal> & proximals() { return proximals_; }
     //! Lazy call to specific proximal function
     template<class T0>
-      proximal::details::AppliedProximalFunction<t_Proximal const&, Eigen::MatrixBase<T0>>
+      proximal::ProximalExpression<t_Proximal const&, T0>
       proximals(t_uint i, Eigen::MatrixBase<T0> const &x) const {
-        typedef proximal::details::AppliedProximalFunction<
-          t_Proximal const&, Eigen::MatrixBase<T0>
-        > t_LazyProximal;
-        return t_LazyProximal(proximals()[i], gamma(), x);
+        return {proximals()[i], gamma(), x};
       }
 
     //! Number of terms
