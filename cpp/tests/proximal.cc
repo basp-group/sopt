@@ -4,6 +4,7 @@
 #include "catch.hpp"
 
 #include "sopt/proximal.h"
+#include "sopt/l1_proximal.h"
 
 TEST_CASE("L2Ball", "[proximal]") {
   using namespace sopt;
@@ -45,4 +46,13 @@ TEST_CASE("Translation", "[proximal]") {
   out = translated(0, x);
   Vector<t_real> expected = ball(1, x * 0.5) + x * 0.5;
   CHECK(out.isApprox(expected));
+}
+
+TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
+  using namespace sopt;
+  auto const l1 = proximal::L1TightFrame<t_complex>();
+
+  // Vector<t_complex> const input = Vector<t_complex>::Random(8);
+  // Vector<t_complex> const actual = l1(1, input);
+  // CHECK(proximal::l1_norm(1, input).isApprox(actual));
 }
