@@ -14,10 +14,7 @@ namespace sopt {
 //! abs(x) < threshhold ? 0: x - sgn(x) * threshhold
 template<class SCALAR>
   typename std::enable_if<
-    // standard_layout allows SCALAR = std::complex
-    // and disallows Eigen::EigenBase<DERIVED> objects.
-    // Also allows stuff it shouldn't... but whatever.
-    std::is_arithmetic<SCALAR>::value or std::is_pod<SCALAR>::value,
+    std::is_arithmetic<SCALAR>::value or is_complex<SCALAR>::value,
     SCALAR
   >::type soft_threshhold(SCALAR const & x, typename real_type<SCALAR>::type const & threshhold) {
     auto const normalized = std::abs(x);

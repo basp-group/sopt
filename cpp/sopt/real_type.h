@@ -2,6 +2,7 @@
 #define SOPT_REAL_TYPE_H
 
 #include <type_traits>
+#include <complex>
 
 namespace sopt {
 namespace details {
@@ -39,5 +40,9 @@ namespace details {
 }
 //! Gets to the underlying real type
 template<class T> using real_type = details::underlying_value_type<T>;
+//! True if underlying type is complex
+template<class T, class SP = void> struct is_complex : public std::false_type {};
+//! True if underlying type is complex
+template<class T> struct is_complex<std::complex<T>, void> : public std::true_type {};
 } /* sopt  */
 #endif

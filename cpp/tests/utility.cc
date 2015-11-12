@@ -138,3 +138,9 @@ static_assert(
     std::is_same<sopt::real_type<sopt::t_real>::type, sopt::t_real>::value, "");
 static_assert(
     std::is_same<sopt::real_type<sopt::t_complex>::type, sopt::t_real>::value, "");
+
+static_assert(sopt::is_complex<std::complex<double>>::value, "Testing is_complex");
+static_assert(sopt::is_complex<std::complex<int>>::value, "Testing is_complex");
+static_assert(not sopt::is_complex<double>::value, "Testing is_complex");
+static_assert(not sopt::is_complex<sopt::Vector<double>>::value, "Testing is_complex");
+static_assert(not sopt::is_complex<sopt::Vector<std::complex<int>>>::value, "Testing is_complex");
