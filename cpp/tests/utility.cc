@@ -84,17 +84,29 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
   }
 
   SECTION("Multi-values threshhold") {
-    sopt::Array<> threshhold(6);
+    using namespace sopt;
+    Array<> threshhold(6);
     input[2] *= -1;
     threshhold << 1.1e1, 1.1e1, 1e0, 4.5, 2.25;
 
-    sopt::Array<> const actual = sopt::soft_threshhold(input, threshhold);
-    CHECK(actual(0) == 0e0);
-    CHECK(actual(1) == input(1) - threshhold(1));
-    CHECK(actual(2) == input(2) + threshhold(2));
-    CHECK(actual(3) == input(3) - threshhold(3));
+    SECTION("Real input") {
+      Array<> const actual = soft_threshhold(input, threshhold);
+      CHECK(actual(0) == 0e0);
+      CHECK(actual(1) == input(1) - threshhold(1));
+      CHECK(actual(2) == input(2) + threshhold(2));
+      CHECK(actual(3) == input(3) - threshhold(3));
 
-    CHECK_THROWS_AS(sopt::soft_threshhold(input, threshhold.head(2)), sopt::Exception);
+      CHECK_THROWS_AS(soft_threshhold(input, threshhold.head(2)), sopt::Exception);
+    }
+    SECTION("Complex input") {
+      Array<t_complex> const actual = soft_threshhold(input.cast<t_complex>(), threshhold);
+      CHECK(actual(0) == 0e0);
+      CHECK(actual(1) == input(1) - threshhold(1));
+      CHECK(actual(2) == input(2) + threshhold(2));
+      CHECK(actual(3) == input(3) - threshhold(3));
+
+      CHECK_THROWS_AS(soft_threshhold(input, threshhold.head(2)), sopt::Exception);
+    }
   }
 }
 

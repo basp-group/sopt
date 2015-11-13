@@ -83,7 +83,7 @@ template<class T0, class T1>
     std::is_arithmetic<typename T0::Scalar>::value
     and std::is_arithmetic<typename T1::Scalar>::value,
     Eigen::CwiseBinaryOp<
-      typename T0::Scalar(*)(typename T0::Scalar const&, typename T0::Scalar const &),
+      typename T0::Scalar(*)(typename T0::Scalar const&, typename T1::Scalar const &),
       const T0, const T1
     >
   >::type
@@ -91,6 +91,28 @@ template<class T0, class T1>
     if(input.size() != threshhold.size())
       SOPT_THROW("Threshhold and input should have the same size");
     return {input.derived(), threshhold.derived(), soft_threshhold<typename T0::Scalar>};
+  }
+
+//! \brief Expression to create soft-threshhold with multiple parameters
+//! \details Operates over a vector of threshholds: ``out(i) = soft_threshhold(x(i), h(i))``
+//! Threshhold and input vectors must have the same size and type. The latter condition is enforced
+//! by CwiseBinaryOp, unfortunately. So we cast threshhold from real to complex and back.
+template<class T0, class T1>
+  typename std::enable_if<
+    is_complex<typename T0::Scalar>::value and std::is_arithmetic<typename T1::Scalar>::value,
+    Eigen::CwiseBinaryOp<
+      typename T0::Scalar(*)(typename T0::Scalar const&, typename T0::Scalar const &),
+      const T0, decltype(std::declval<const T1>().template cast<typename T0::Scalar>())
+    >
+  >::type
+  soft_threshhold(Eigen::DenseBase<T0> const &input, Eigen::DenseBase<T1> const &threshhold) {
+    if(input.size() != threshhold.size())
+      SOPT_THROW("Threshhold and input should have the same size");
+    typedef typename T0::Scalar Complex;
+    auto const func = [](Complex const &x, Complex const &t) -> Complex {
+      return soft_threshhold(x, t.real());
+    };
+    return {input.derived(), threshhold.derived().template cast<Complex>(), func};
   }
 
 //! Computes weighted L1 norm
