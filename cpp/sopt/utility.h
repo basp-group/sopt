@@ -48,11 +48,6 @@ namespace details {
           typename real_type<SCALAR>::type(1)
         )
     );
-
-  //! Helper template typedef defining binary operation
-  //! Merely defines a pointer to the right kind of function for eigen binary op.
-  template<class SCALAR>
-    using BinaryOp = SCALAR(*)(SCALAR const&, typename real_type<SCALAR>::type const&);
 }
 
 //! Expression to create projection onto positive quadrant
@@ -81,9 +76,17 @@ template<class T>
 
 //! \brief Expression to create soft-threshhold with multiple parameters
 //! \details Operates over a vector of threshholds: ``out(i) = soft_threshhold(x(i), h(i))``
-//! Threshhold and input vectors must have the same size.
+//! Threshhold and input vectors must have the same size and type. The latter condition is enforced
+//! by CwiseBinaryOp, unfortunately.
 template<class T0, class T1>
-  Eigen::CwiseBinaryOp<details::BinaryOp<typename T0::Scalar>, const T0, const T1>
+  typename std::enable_if<
+    std::is_arithmetic<typename T0::Scalar>::value
+    and std::is_arithmetic<typename T1::Scalar>::value,
+    Eigen::CwiseBinaryOp<
+      typename T0::Scalar(*)(typename T0::Scalar const&, typename T0::Scalar const &),
+      const T0, const T1
+    >
+  >::type
   soft_threshhold(Eigen::DenseBase<T0> const &input, Eigen::DenseBase<T1> const &threshhold) {
     if(input.size() != threshhold.size())
       SOPT_THROW("Threshhold and input should have the same size");
@@ -115,7 +118,5 @@ namespace details {
   //! Greatest common divisor
   inline t_int gcd(t_int a, t_int b) { return b == 0 ? a : gcd(b, a % b); }
 }
-
-
 } /* sopt */
 #endif
