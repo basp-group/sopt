@@ -43,9 +43,30 @@ template<class T0>
   ) -> decltype(EuclidianNorm(), t, x) { return EuclidianNorm()(t, x); }
 
 //! Proximal of the l1 norm
-template<class T>
-  void l1_norm(Vector<T>& out, typename real_type<T>::type gamma, Vector<T> const &x) {
+template<class T0, class T1>
+  void l1_norm(
+      Eigen::DenseBase<T0>& out,
+      typename real_type<typename T0::Scalar>::type gamma,
+      Eigen::DenseBase<T1> const &x
+  ) {
     out = soft_threshhold(x, gamma);
+  }
+
+//! \brief Proximal of the l1 norm
+//! \detail This specialization makes it easier to use in algorithms, e.g. within `SDMM::append`.
+template<class S>
+  void l1_norm(Vector<S>& out, typename real_type<S>::type gamma, Vector<S> const &x) {
+    l1_norm<Vector<S>, Vector<S>>(out, gamma, x);
+  }
+
+
+//! \brief Proximal of l1 norm
+//! \details For more complex version involving linear transforms and weights, see L1TightFrame and
+//! L1 classes. In practice, this is an alias for soft_threshhold.
+template<class T>
+  auto l1_norm(typename real_type<typename T::Scalar>::type gamma, Eigen::DenseBase<T> const &x)
+  -> decltype(soft_threshhold(x, gamma)) {
+    return soft_threshhold(x, gamma);
   }
 
 //! Proximal for projection on the positive quadrant
