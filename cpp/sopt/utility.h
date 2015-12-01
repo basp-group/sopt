@@ -107,7 +107,8 @@ template<class T0, class T1>
   >::type
   soft_threshhold(Eigen::DenseBase<T0> const &input, Eigen::DenseBase<T1> const &threshhold) {
     if(input.size() != threshhold.size())
-      SOPT_THROW("Threshhold and input should have the same size");
+      SOPT_THROW("Threshhold and input should have the same size: ")
+        << threshhold.size() << " vs " << input.size();
     typedef typename T0::Scalar Complex;
     auto const func = [](Complex const &x, Complex const &t) -> Complex {
       return soft_threshhold(x, t.real());
