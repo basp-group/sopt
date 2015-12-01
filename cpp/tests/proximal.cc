@@ -1,10 +1,14 @@
 #include <random>
 #include <utility>
 #include <numeric>
+
 #include "catch.hpp"
 
 #include "sopt/proximal.h"
 #include "sopt/l1_proximal.h"
+
+std::random_device rd;
+std::default_random_engine rengine(rd());
 
 TEST_CASE("L2Ball", "[proximal]") {
   using namespace sopt;
@@ -50,9 +54,56 @@ TEST_CASE("Translation", "[proximal]") {
 
 TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
   using namespace sopt;
-  auto const l1 = proximal::L1TightFrame<t_complex>();
+  auto l1 = proximal::L1TightFrame<t_complex>();
+  auto check_is_minimum = [&l1](Vector<t_complex> const &x, t_real gamma = 1e0) {
+    typedef t_complex comp;
+    Vector<t_complex> const p = l1(gamma, x);
+    auto const mini = l1.objective(x, p, gamma);
+    auto const eps = 1e-4;
+    for(Vector<t_complex>::Index i(0); i < p.size(); ++i) {
+      for(auto const dir: {comp(eps, 0), comp(0, eps), comp(-eps, 0), comp(0, -eps)}) {
+        Vector<t_complex> p_plus = p;
+        p_plus[i] += dir;
+        CHECK(l1.objective(x, p_plus, gamma) >= mini);
+      }
+    }
+  };
 
-  // Vector<t_complex> const input = Vector<t_complex>::Random(8);
-  // Vector<t_complex> const actual = l1(1, input);
-  // CHECK(proximal::l1_norm(1, input).isApprox(actual));
+  Vector<t_complex> const input = Vector<t_complex>::Random(8);
+
+  // no weights
+  SECTION("Scalar weights") {
+    CHECK(l1(1, input).isApprox(proximal::l1_norm(1, input)));
+    CHECK(l1(0.3, input).isApprox(proximal::l1_norm(0.3, input)));
+    check_is_minimum(input, 0.664);
+  }
+
+  // with weights == 1
+  SECTION("vector weights") {
+    l1.weights(Vector<t_real>::Ones(input.size()));
+    CHECK(l1(1, input).isApprox(proximal::l1_norm(1, input)));
+    CHECK(l1(0.2, input).isApprox(proximal::l1_norm(0.2, input)));
+    check_is_minimum(input, 0.664);
+  }
+
+  SECTION("vector weights with random values") {
+    l1.weights(Vector<t_real>::Random(input.size()));
+    check_is_minimum(input, 0.235);
+  }
+
+  SECTION("Psi is a concatenation of simple rotations") {
+    auto const N = 10;
+    std::vector<size_t> cols(input.size() * N);
+    std::iota(cols.begin(), cols.end(), 0);
+    std::shuffle(cols.begin(), cols.end(), rengine);
+
+    Matrix<t_complex> psi = Matrix<t_complex>::Zero(input.size(), cols.size());
+    for(Matrix<t_complex>::Index i(0); i < psi.cols(); ++i) {
+      auto const j = cols[i];
+      psi(j / N, i) = 1e0 / std::sqrt(static_cast<t_real>(N));
+    }
+
+    l1.Psi(psi).weights(1e0);
+    check_is_minimum(input, 0.235);
+  }
 }
