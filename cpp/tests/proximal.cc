@@ -10,6 +10,20 @@
 std::random_device rd;
 std::default_random_engine rengine(rd());
 
+template<class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
+  std::vector<size_t> cols(j);
+  std::iota(cols.begin(), cols.end(), 0);
+  std::shuffle(cols.begin(), cols.end(), rengine);
+
+  assert(j % i == 0);
+  auto const N = j / i;
+  auto const elem = 1e0 / std::sqrt(static_cast<typename sopt::real_type<T>::type>(N));
+  sopt::Matrix<T> result = sopt::Matrix<T>::Zero(i, cols.size());
+  for(typename sopt::Matrix<T>::Index k(0); k < result.cols(); ++k)
+    result(cols[k] / N, k) = elem;
+  return result;
+}
+
 TEST_CASE("L2Ball", "[proximal]") {
   using namespace sopt;
   proximal::L2Ball<t_real> ball(0.5);
@@ -91,18 +105,8 @@ TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
     check_is_minimum(input, 0.235);
   }
 
-  SECTION("Psi is a concatenation of simple rotations") {
-    auto const N = 10;
-    std::vector<size_t> cols(input.size() * N);
-    std::iota(cols.begin(), cols.end(), 0);
-    std::shuffle(cols.begin(), cols.end(), rengine);
-
-    Matrix<t_complex> psi = Matrix<t_complex>::Zero(input.size(), cols.size());
-    for(Matrix<t_complex>::Index i(0); i < psi.cols(); ++i) {
-      auto const j = cols[i];
-      psi(j / N, i) = 1e0 / std::sqrt(static_cast<t_real>(N));
-    }
-
+  SECTION("Psi is a concatenation of permutations") {
+    auto const psi = concatenated_permutations<t_complex>(input.size(), input.size() * 10);
     l1.Psi(psi).weights(1e0);
     check_is_minimum(input, 0.235);
   }
