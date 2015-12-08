@@ -87,7 +87,7 @@ TEST_CASE("Soft threshhold", "[utility][threshhold]") {
     using namespace sopt;
     Array<> threshhold(6);
     input[2] *= -1;
-    threshhold << 1.1e1, 1.1e1, 1e0, 4.5, 2.25;
+    threshhold << 1.1e1, 1.1e1, 1e0, 4.5, 2.25, 2.26;
 
     SECTION("Real input") {
       Array<> const actual = soft_threshhold(input, threshhold);
