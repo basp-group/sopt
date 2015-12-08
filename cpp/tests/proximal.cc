@@ -111,3 +111,30 @@ TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
     check_is_minimum(input, 0.235);
   }
 }
+
+TEST_CASE("L1 proximal", "[l1][proximal]") {
+  using namespace sopt;
+  auto l1 = proximal::L1<t_complex>();
+  Vector<t_complex> const input = Vector<t_complex>::Random(8);
+
+  SECTION("Check against tight-frame") {
+    SECTION("Scalar weights") {
+      auto const result = l1(1, input);
+      CHECK(result.good);
+      CHECK(result.niters > 0);
+      CHECK(l1.itermax() == 0);
+      CHECK(result.proximal.isApprox(proximal::L1TightFrame<t_complex>()(1, input)));
+    }
+    SECTION("Vector weights and more complex Psi") {
+      auto const Psi = concatenated_permutations<t_complex>(input.size(), input.size() * 10);
+      auto const weights = Vector<t_real>::Random(Psi.cols()).eval();
+      l1.Psi(Psi).weights(weights);
+      auto const result = l1(1, input);
+      CHECK(result.good);
+      CHECK(result.niters > 0);
+      CHECK(l1.itermax() == 0);
+      auto const l1_tight_frame = proximal::L1TightFrame<t_complex>().Psi(Psi).weights(weights);
+      CHECK(result.proximal.isApprox(l1_tight_frame(1, input)));
+    }
+  }
+}

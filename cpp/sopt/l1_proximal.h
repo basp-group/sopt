@@ -55,9 +55,7 @@ template<class SCALAR> class L1TightFrame
         return Psi(linear_transform(psi));
       }
 
-    //! \brief Computes proximal for given gamm
-    //! \details Argument gamma temporaly changes the class member lambda.
-    //! This is the signature proximal functions generally use.
+    //! Computes proximal for given γ
     template<class T0, class T1>
     typename std::enable_if<
       is_complex<Scalar>::value == is_complex<typename T0::Scalar>::value
@@ -110,6 +108,176 @@ typename std::enable_if<
   else
     return 0.5 * (x - z).squaredNorm()
       + gamma * sopt::l1_norm(Psi().adjoint() * z, weights());
+}
+
+//! \brief L1 proximal, including linear transform
+//! \details This function computes the prox operator of the l1
+//!  norm for the input vector \f$x\f$. It solves the problem:
+//!  \f[ min_{z} 0.5||x - z||_2^2 + γ ||Ψ^† z||_w1 \f]
+//!  where \f$Ψ \in C^{N_x \times N_r} \f$ is the sparsifying operator, and \f[|| ||_w1\f] is the
+//!  weighted L1 norm.
+template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
+  public:
+    //! Underlying scalar type
+    typedef typename L1TightFrame<SCALAR>::Scalar Scalar;
+    //! Underlying real scalar type
+    typedef typename L1TightFrame<SCALAR>::Real Real;
+
+    //! How did calling L1 go?
+    struct Diagnostic {
+      //! Number of iterations
+      t_uint niters;
+      //! Relative variation of the objective function
+      Real relative_variation;
+      //! Value of the objective function
+      Real objective;
+      //! Wether convergence was achieved
+      bool good;
+    };
+
+    //! Result from calling L1
+    struct DiagnosticAndResult : public Diagnostic {
+      //! The proximal value
+      Vector<SCALAR> proximal;
+    };
+
+    //! Computes proximal for given γ
+    template<class T0, class T1>
+    Diagnostic operator()(
+        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const;
+
+    //! Lazy version
+    template<class T0>
+    DiagnosticAndResult operator()(Real const &gamma, Eigen::MatrixBase<T0> const &x) const {
+      DiagnosticAndResult result;
+      static_cast<Diagnostic&>(result) = operator()(result.proximal, gamma, x);
+      return result;
+    }
+
+    L1() : L1TightFrame<SCALAR>(), itermax_(0), tolerance_(1e-8), positivity_constraint_(false),
+      real_constraint_(false) {}
+
+#   define SOPT_MACRO(NAME, TYPE)                                                           \
+        TYPE const& NAME() const { return NAME ## _; }                                      \
+        L1<Scalar> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }             \
+      protected:                                                                            \
+        TYPE NAME ## _;                                                                     \
+      public:
+    //! \brief Maximum number of iterations before bailing out
+    //! \details 0 means algorithm breaks only if convergence is reached.
+    SOPT_MACRO(itermax, t_uint);
+    //! Tolerance criteria
+    SOPT_MACRO(tolerance, Real);
+    //! Whether to apply positivity constraints
+    SOPT_MACRO(positivity_constraint, bool);
+    //! Whether the output should be constrained to be real
+    SOPT_MACRO(real_constraint, bool);
+#   undef SOPT_MACRO
+
+#   define SOPT_MACRO(NAME, TYPE)   \
+        TYPE const & NAME() const { return L1TightFrame<SCALAR>::NAME(); }                      \
+        L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; } \
+    //! Linear transform applied to input prior to L1 norm
+    SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
+    //! Bound on the squared norm of the operator Psi
+    SOPT_MACRO(nu, Real);
+    //! Conjugate gradient
+    SOPT_MACRO(weights, Vector<Real>);
+#   undef SOPT_MACRO
+
+#   define SOPT_MACRO(NAME, TYPE)   \
+        L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; }
+    //! Set weights to a single value
+    SOPT_MACRO(weights, Real);
+    //! Set Psi and Psi^† using a matrix
+    template<class T> SOPT_MACRO(Psi, Eigen::MatrixBase<T>);
+#   undef SOPT_MACRO
+
+    //! \f[ 0.5||x - z||_2^2 + γ||Ψ^† z||_w1 \f]
+    template<class T0, class T1>
+    Real objective(
+        Eigen::MatrixBase<T0> const &x, Eigen::MatrixBase<T1> const &z, Real const &gamma) const {
+      return L1TightFrame<SCALAR>::objective(x, z, gamma);
+    }
+
+  protected:
+    //! Applies one or another soft-threshhold, depending on weight
+    template<class T0, class T1>
+    void apply_soft_threshhold(
+        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const;
+    //! Applies constraints to input expression
+    template<class T0, class T1>
+    void apply_constraints(Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &x) const;
+};
+
+//! Computes proximal for given γ
+template<class SCALAR> template<class T0, class T1>
+typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
+    Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+
+  if(positivity_constraint() or real_constraint())
+    out = x.real().template cast<SCALAR>();
+  else
+    out = x;
+
+  Real previous_objective(0);
+  Real rel_obj(0);
+
+  SOPT_INFO("  Proximal L1 operator:");
+  t_uint niters = 0;
+  bool good = false;
+
+  // first iteration sets things up
+  auto const obj = objective(x, out, gamma);
+  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, obj);
+  Vector<Scalar> const res = Psi().adjoint() * out;
+  Vector<Scalar> threshholded;
+  apply_soft_threshhold(threshholded, gamma, res);
+  Vector<Scalar> u_l1 = 1e0 / nu() * (res - threshholded);
+  apply_constraints(out, x - Psi() * u_l1);
+
+  // Move on to other iterations
+  for(++niters; niters < itermax() or itermax() == 0; ++niters) {
+
+    auto const obj = objective(x, out, gamma);
+    rel_obj = std::abs(obj - previous_objective) / obj;
+
+    SOPT_NOTICE("    - iter {}, prox_fval = {}, rel_fval = {}", niters, obj, rel_obj);
+    if(rel_obj < tolerance()) {
+      good = true;
+      previous_objective = obj;
+      break;
+    }
+
+    Vector<Scalar> const res = u_l1 * nu() + Psi().adjoint() * out;
+    apply_soft_threshhold(threshholded, gamma, res);
+    u_l1 = 1e0 / nu() * (res - threshholded);
+
+    apply_constraints(out, x - Psi() * u_l1);
+    previous_objective = obj;
+  }
+
+  return {niters, rel_obj, previous_objective, good};
+}
+
+template<class SCALAR> template<class T0, class T1>
+void L1<SCALAR>::apply_soft_threshhold(
+    Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+  if(weights().size() == 1)
+    out = soft_threshhold(x, gamma * weights()(0));
+  else
+    out = soft_threshhold(x, gamma * weights());
+}
+
+template<class SCALAR> template<class T0, class T1>
+void L1<SCALAR>::apply_constraints(
+    Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &x) const {
+  if(positivity_constraint())
+    out = sopt::positive_quadrant(x);
+  else if(real_constraint())
+    out = x.real().template cast<SCALAR>();
+  else
+    out = x;
 }
 
 }} /* sopt::proximal */
