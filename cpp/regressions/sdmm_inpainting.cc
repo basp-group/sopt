@@ -12,6 +12,7 @@
 #include "sopt/proximal.h"
 #include "tools_for_tests/tiffwrappers.h"
 #include "tools_for_tests/directories.h"
+#include "tools_for_tests/cdata.h"
 
 extern "C" {
 #include "sopt/sopt_l1.h"
@@ -68,26 +69,6 @@ sopt::algorithm::SDMM<Scalar> create_sdmm(
     .append(proximal::l1_norm<Scalar>, psi.adjoint(), psi)
     .append(proximal::translate(proximal::L2Ball<Scalar>(params.epsilon), -y), sampling)
     .append(proximal::positive_quadrant<Scalar>);
-}
-
-// Wraps calls to sampling and wavelets to C style
-template<class T> struct CData {
-  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  typename t_Vector::Index nin, nout;
-  sopt::LinearTransform<t_Vector> const &transform;
-};
-
-template<class T> void direct_transform(void *out, void *in, void **data) {
-  CData<T> const &cdata = *(CData<T>*)data;
-  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  t_Vector const eval = cdata.transform * t_Vector::Map((T*)in, cdata.nin);
-  t_Vector::Map((T*)out, cdata.nout) = eval;
-}
-template<class T> void adjoint_transform(void *out, void *in, void **data) {
-  CData<T> const &cdata = *(CData<T>*)data;
-  typedef Eigen::Matrix<T, Eigen::Dynamic, 1> t_Vector;
-  t_Vector const eval = cdata.transform.adjoint() * t_Vector::Map((T*)in, cdata.nout);
-  t_Vector::Map((T*)out, cdata.nin) = eval;
 }
 
 TEST_CASE("Compare SDMMS", "") {
