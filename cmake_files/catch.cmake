@@ -46,12 +46,44 @@ function(common_catch_main)
   endif()
 endfunction()
 
+# A function to create a test, once a an executable exists
+function(add_catch_test_with_seed testname testexec seed)
+  cmake_parse_arguments(catch "NOCATCHLABEL" "WORKING_DIRECTORY" "LABELS;ARGUMENTS" ${ARGN})
+
+  unset(EXTRA_ARGS)
+  if(catch_WORKING_DIRECTORY)
+    set(EXTRA_ARGS WORKING_DIRECTORY ${catch_WORKING_DIRECTORY})
+  endif()
+  set(arguments ${catch_ARGUMENTS})
+  if(catch_SEED)
+    list(APPEND arguments --rng-seed ${catch_SEED})
+  else()
+    list(APPEND arguments --rng-seed time)
+  endif()
+
+  if(CATCH_JUNIT)
+    add_test(NAME ${testname}
+      COMMAND ${testexec}
+          ${arguments}
+          -r junit
+          -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
+    )
+  else()
+    add_test(NAME ${testname} COMMAND ${testexec} ${arguments} ${EXTRA_ARGS})
+  endif()
+
+  if(NOT catch_NOCATCHLABEL)
+    list(APPEND catch_LABELS catch)
+  endif()
+  set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+endfunction()
+
 # Then adds a function to create a test
 function(add_catch_test testname)
   cmake_parse_arguments(catch
     "NOMAIN;NOTEST;NOCATCHLABEL"
-    "WORKING_DIRECTORY;SEED"
-    "LIBRARIES;LABELS;DEPENDS;ARGUMENTS;INCLUDES"
+    "SEED;WORKING_DIRECTORY"
+    "LIBRARIES;DEPENDS;INCLUDES;LABELS;ARGUMENTS"
     ${ARGN}
   )
 
@@ -90,31 +122,19 @@ function(add_catch_test testname)
     add_dependencies(test_${testname} lookup_dependencies)
   endif()
 
-  unset(EXTRA_ARGS)
-  if(catch_WORKING_DIRECTORY)
-    set(EXTRA_ARGS WORKING_DIRECTORY ${catch_WORKING_DIRECTORY})
+  if(NOT catch_SEED)
+    set(catch_SEED time)
   endif()
-  set(arguments ${catch_ARGUMENTS})
-  if(catch_SEED)
-    list(APPEND arguments --rng-seed ${catch_SEED})
+  if(catch_NOCATCHLABEL)
+    set(catch_NOCATCHLABEL "NOCATCHLABEL")
   else()
-    list(APPEND arguments --rng-seed time)
+    unset(catch_NOCATCHLABEL)
   endif()
   if(NOT catch_NOTEST)
-    if(CATCH_JUNIT)
-      add_test(NAME ${testname}
-        COMMAND test_${testname}
-            ${arguments}
-            -r junit
-            -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
-      )
-    else()
-      add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
-    endif()
-
-    if(NOT catch_NOCATCHLABEL)
-      list(APPEND catch_LABELS catch)
-    endif()
-    set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+    add_catch_test_with_seed(
+      test_${testname} test_${testname} ${catch_SEED} ${catch_UNPARSED_ARGUMENTS}
+      ${catch_NOCATCHLABEL} WORKING_DIRECTORY ${catch_WORKING_DIRECTORY}
+      LABELS ${catch_LABELS} ARGUMENTS ${catch_ARGUMENTS}
+    )
   endif()
 endfunction()
