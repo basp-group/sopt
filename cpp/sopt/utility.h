@@ -35,7 +35,7 @@ namespace details {
          return std::max(value, SCALAR(0));
        }
        std::complex<SCALAR> operator()(std::complex<SCALAR> const &value) const {
-         return std::complex<SCALAR>((*this)(value.real()), SCALAR(0));
+         return {operator()(value.real()), SCALAR(0)};
        }
   };
 
