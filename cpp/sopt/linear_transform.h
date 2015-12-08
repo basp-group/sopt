@@ -153,6 +153,11 @@ namespace details {
 
       //! Performs operation
       void operator()(PlainObject &out, PlainObject const& x) const {
+#       ifndef NDEBUG
+          if((*matrix).cols() != x.size())
+            SOPT_THROW("Input vector and matrix do not match: ")
+              << out.cols() << " columns for " << x.size() << " elements.";
+#       endif
         out = (*matrix) * x;
       }
       //! \brief Returns conjugate transpose operator
@@ -179,6 +184,11 @@ namespace details {
 
       //! Performs operation
       void operator()(PlainObject &out, PlainObject const& x) const {
+#       ifndef NDEBUG
+          if((*matrix).rows() != x.size())
+            SOPT_THROW("Input vector and matrix adjoint do not match: ")
+              << out.cols() << " rows for " << x.size() << " elements.";
+#       endif
         out = matrix->adjoint() * x;
       }
       //! \brief Returns adjoint operator
