@@ -39,12 +39,23 @@ template<class SCALAR> class L1TightFrame
     SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
     //! Bound on the squared norm of the operator Psi
     SOPT_MACRO(nu, Real);
-    //! Conjugate gradient
-    SOPT_MACRO(weights, Vector<Real>);
 #   undef SOPT_MACRO
+    //! Weights of the l1 norm
+    Vector<Real> const & weights() const { return weights_; }
+    //! Weights of the l1 norm
+    template<class T> L1TightFrame<Scalar>& weights(Eigen::MatrixBase<T> const &w)  {
+      if((w.array() < 0e0).any())
+        SOPT_THROW("Weights cannot be negative");
+      if(w.stableNorm() < 1e-12)
+        SOPT_THROW("Weights cannot be null");
+      weights_ = w;
+      return *this;
+    }
 
     //! Set weights to a single value
     L1TightFrame<Scalar> & weights(Real const &value) {
+      if(value <= 0e0)
+        SOPT_THROW("Weight cannot be negative or null");
       weights_ = Vector<Real>::Ones(1) * value;
       return *this;
     }
@@ -78,6 +89,11 @@ template<class SCALAR> class L1TightFrame
       Real
     > :: type objective(
         Eigen::MatrixBase<T0> const &x, Eigen::MatrixBase<T1> const &z, Real const &gamma) const;
+
+  protected:
+    //! Weights associated with the l1-norm
+    Vector<Real> weights_;
+
 };
 
 template<class SCALAR> template<class T0, class T1>
@@ -103,11 +119,11 @@ typename std::enable_if<
 > :: type L1TightFrame<SCALAR>::objective(
     Eigen::MatrixBase<T0> const &x, Eigen::MatrixBase<T1> const &z, Real const &gamma) const {
   if(weights().size() == 1)
-    return 0.5 * (x - z).squaredNorm()
-      + gamma * sopt::l1_norm(Psi().adjoint() * z) * std::abs(weights()(0));
-  else
+    return 0.5 * (x - z).squaredNorm() + gamma * sopt::l1_norm(Psi().adjoint() * z) * weights()(0);
+  else {
     return 0.5 * (x - z).squaredNorm()
       + gamma * sopt::l1_norm(Psi().adjoint() * z, weights());
+  }
 }
 
 //! \brief L1 proximal, including linear transform
@@ -123,6 +139,12 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     //! Underlying real scalar type
     typedef typename L1TightFrame<SCALAR>::Real Real;
 
+    enum class Error : t_uint {
+      NONE = 0,
+      OTHER = 1,
+      CYCLE = 2,
+      ITERATIONS = 3,
+    };
     //! How did calling L1 go?
     struct Diagnostic {
       //! Number of iterations
@@ -133,6 +155,8 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
       Real objective;
       //! Wether convergence was achieved
       bool good;
+      //! Kind of error
+      Error error;
     };
 
     //! Result from calling L1
@@ -200,6 +224,14 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
       return L1TightFrame<SCALAR>::objective(x, z, gamma);
     }
 
+    //! \brief Special case if Psi ia a tight frame.
+    //! \see L1TightFrame
+    template<class ... T>
+    auto tight_frame(T &&... args) const
+    -> decltype(L1TightFrame<Scalar>::operator()(std::forward<T>(args)...)) {
+      return L1TightFrame<Scalar>::operator()(std::forward<T>(args)...);
+    }
+
   protected:
     //! Applies one or another soft-threshhold, depending on weight
     template<class T0, class T1>
@@ -215,11 +247,6 @@ template<class SCALAR> template<class T0, class T1>
 typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
     Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
 
-  if(positivity_constraint() or real_constraint())
-    out = x.real().template cast<SCALAR>();
-  else
-    out = x;
-
   Real previous_objective(0);
   Real rel_obj(0);
 
@@ -228,36 +255,53 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
   bool good = false;
 
   // first iteration sets things up
-  auto const obj = objective(x, out, gamma);
-  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, obj);
+  t_uint const CURRENT = 0, PREVIOUS = 1, FAR = 2, FARTHER = 3;
+  // Storing more objectives to detect cycles of 2
+  out = x;
+  Real objectives[4] = {objective(x, out, gamma), 0, 0, 0};
+  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, objectives[CURRENT]);
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> threshholded;
   apply_soft_threshhold(threshholded, gamma, res);
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - threshholded);
   apply_constraints(out, x - Psi() * u_l1);
+  objectives[PREVIOUS] = objectives[CURRENT];
 
+  auto const next_fista = [](Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); };
+  Real fista = next_fista(1);
+  Error error = Error::ITERATIONS;
   // Move on to other iterations
   for(++niters; niters < itermax() or itermax() == 0; ++niters) {
 
-    auto const obj = objective(x, out, gamma);
-    rel_obj = std::abs(obj - previous_objective) / obj;
+    objectives[CURRENT] = objective(x, out, gamma);
+    rel_obj = std::abs(objectives[CURRENT] - objectives[PREVIOUS]) / objectives[CURRENT];
 
-    SOPT_NOTICE("    - iter {}, prox_fval = {}, rel_fval = {}", niters, obj, rel_obj);
+    SOPT_NOTICE(
+        "    - iter {}, prox_fval = {}, rel_fval = {}", niters, objectives[CURRENT], rel_obj);
     if(rel_obj < tolerance()) {
       good = true;
-      previous_objective = obj;
+      error = Error::NONE;
+      break;
+    } else if( std::abs(objectives[CURRENT] - objectives[FAR]) < tolerance()
+        and std::abs(objectives[PREVIOUS] - objectives[FARTHER]) < tolerance() ) {
+      good = false;
+      error = Error::CYCLE;
       break;
     }
 
     Vector<Scalar> const res = u_l1 * nu() + Psi().adjoint() * out;
     apply_soft_threshhold(threshholded, gamma, res);
-    u_l1 = 1e0 / nu() * (res - threshholded);
+    auto const alpha = (fista - 1) / next_fista(fista);
+    u_l1 = (1e0 + alpha) / nu() * (res - threshholded) - alpha * u_l1;
 
     apply_constraints(out, x - Psi() * u_l1);
-    previous_objective = obj;
+    objectives[FARTHER] = objectives[FAR];
+    objectives[FAR] = objectives[PREVIOUS];
+    objectives[PREVIOUS] = objectives[CURRENT];
+    fista = next_fista(fista);
   }
 
-  return {niters, rel_obj, previous_objective, good};
+  return {niters, rel_obj, objectives[CURRENT], good, error};
 }
 
 template<class SCALAR> template<class T0, class T1>
