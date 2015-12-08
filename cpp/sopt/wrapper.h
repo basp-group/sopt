@@ -93,6 +93,12 @@ template<class VECTOR> class WrapFunction {
         return AppliedFunction<t_Function const &, Eigen::MatrixBase<T0>>(func, x, rows(x));
       }
 
+    //! \brief Defines relation-ship between input and output sizes
+    //! \details An integer tuple (a, b, c) where, if N is the size of the input, then
+    //! \f$(N * a) / b + c\f$ is the output. \f$b\f$ cannot be zero.
+    //! In the simplest case where this objects wraps a square matrix, then the sizes are (1, 1, 0).
+    //! If this objects wraps a rectangular matrix which halves the number of elements, then the
+    //! sizes would be (1, 2, 0).
     std::array<t_int, 3> const & sizes() const { return sizes_; }
 
     //! Output vector size for a input with `xsize` elements
