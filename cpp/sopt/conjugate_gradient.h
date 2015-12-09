@@ -126,7 +126,7 @@ template<class VECTOR, class T1, class MATRIXLIKE>
 
     t_uint i(0);
     for(; i < itermax(); ++i) {
-      Ap.noalias() = A * p;
+      Ap = A * p;
       Scalar const alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
       residuals -= alpha * Ap;
