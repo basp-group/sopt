@@ -258,15 +258,11 @@ template<class SCALAR> template<class T0, class T1, class MIXING>
 typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
     Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x, MIXING mixing) const {
 
-  Real previous_objective(0);
-  Real rel_obj(0);
-
-  SOPT_INFO("  Proximal L1 operator:");
+  SOPT_NOTICE("  Starting Proximal L1 operator:");
   t_uint niters = 0;
-
-  // Storing more objectives to detect cycles of 2
   out = x;
-  Breaker breaker(objective(x, out, gamma), tolerance(), not fista_mixing());
+
+  Breaker breaker(objective(x, x, gamma), tolerance(), not fista_mixing());
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));
@@ -290,7 +286,13 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
 
   if(breaker.two_cycle())
     SOPT_NOTICE("Two-cycle detected when computing L1");
-  return {niters, rel_obj, breaker.current(), breaker.converged()};
+
+  if(breaker.converged()) {
+    SOPT_INFO(
+        "  Proximal L1 operator converged at {} in {} iterations", breaker.current(), niters);
+  } else
+    SOPT_INFO("  Proximal L1 operator did not converge after {} iterations", niters);
+  return {niters, breaker.relative_variation(), breaker.current(), breaker.converged()};
 }
 
 template<class SCALAR> template<class T1>
