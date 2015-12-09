@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <type_traits>
+#include <array>
 #include <Eigen/Core>
 
 #include "sopt/utility.h"
@@ -138,17 +139,14 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     class FistaMixing;
     //! Functor to do no mixing
     class NoMixing;
+    //! Functor to check convergence and cycling
+    class Breaker;
+
     //! Underlying scalar type
     typedef typename L1TightFrame<SCALAR>::Scalar Scalar;
     //! Underlying real scalar type
     typedef typename L1TightFrame<SCALAR>::Real Real;
 
-    enum class Error : t_uint {
-      NONE = 0,
-      OTHER = 1,
-      CYCLE = 2,
-      ITERATIONS = 3,
-    };
     //! How did calling L1 go?
     struct Diagnostic {
       //! Number of iterations
@@ -159,8 +157,6 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
       Real objective;
       //! Wether convergence was achieved
       bool good;
-      //! Kind of error
-      Error error;
     };
 
     //! Result from calling L1
@@ -267,49 +263,34 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
 
   SOPT_INFO("  Proximal L1 operator:");
   t_uint niters = 0;
-  bool good = false;
 
-  // first iteration sets things up
-  t_uint const CURRENT = 0, PREVIOUS = 1, FAR = 2, FARTHER = 3;
   // Storing more objectives to detect cycles of 2
   out = x;
-  Real objectives[4] = {objective(x, out, gamma), 0, 0, 0};
-  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, objectives[CURRENT]);
+  Breaker breaker(objective(x, out, gamma), tolerance());
+  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));
   apply_constraints(out, x - Psi() * u_l1);
-  objectives[PREVIOUS] = objectives[CURRENT];
 
-  Error error = Error::ITERATIONS;
   // Move on to other iterations
   for(++niters; niters < itermax() or itermax() == 0; ++niters) {
 
-    objectives[CURRENT] = objective(x, out, gamma);
-    rel_obj = std::abs(objectives[CURRENT] - objectives[PREVIOUS]) / objectives[CURRENT];
-
+    auto const do_break = breaker(objective(x, out, gamma));
     SOPT_NOTICE(
-        "    - iter {}, prox_fval = {}, rel_fval = {}", niters, objectives[CURRENT], rel_obj);
-    if(rel_obj < tolerance()) {
-      good = true;
-      error = Error::NONE;
+        "    - iter {}, prox_fval = {}, rel_fval = {}",
+        niters, breaker.current(), breaker.relative_variation()
+    );
+    if(do_break)
       break;
-    } else if( std::abs(objectives[CURRENT] - objectives[FAR]) < tolerance()
-        and std::abs(objectives[PREVIOUS] - objectives[FARTHER]) < tolerance() ) {
-      good = false;
-      error = Error::CYCLE;
-      break;
-    }
 
     Vector<Scalar> const res = u_l1 * nu() + Psi().adjoint() * out;
     mixing(u_l1, 1e0 / nu() * (res -  apply_soft_threshhold(gamma, res)), niters);
-
     apply_constraints(out, x - Psi() * u_l1);
-    objectives[FARTHER] = objectives[FAR];
-    objectives[FAR] = objectives[PREVIOUS];
-    objectives[PREVIOUS] = objectives[CURRENT];
   }
 
-  return {niters, rel_obj, objectives[CURRENT], good, error};
+  if(breaker.two_cycle())
+    SOPT_NOTICE("Two-cycle detected when computing L1");
+  return {niters, rel_obj, breaker.current(), breaker.converged()};
 }
 
 template<class SCALAR> template<class T1>
@@ -359,6 +340,55 @@ template<class SCALAR> class L1<SCALAR>::NoMixing {
       void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint) {
         previous = unmixed;
       }
+};
+
+template<class SCALAR> class L1<SCALAR>::Breaker {
+  public:
+    typedef typename real_type<SCALAR>::type Real;
+    Breaker(Real objective, Real tolerance = 1e-8)
+      : tolerance_(tolerance), iter(0), objectives({{objective, 0, 0, 0}}) {}
+    //! True if we should break out of loop
+    bool operator()(Real objective) {
+      ++iter;
+      objectives = {{objective, objectives[0], objectives[1], objectives[2]}};
+      return converged() or two_cycle();
+    }
+    //! Current objective
+    Real current() const { return objectives[0]; }
+    //! Current objective
+    Real previous() const { return objectives[1]; }
+    //! Variation in the objective function
+    Real relative_variation() const {
+      return std::abs((current() - previous()) / current());
+    }
+    //! \brief Whether we have a cycle of period two
+    //! \details Cycling is prone to happen without mixing, it seems.
+    bool two_cycle() const {
+      return iter > 3
+        and std::abs(objectives[0] - objectives[2]) < tolerance()
+        and std::abs(objectives[1] - objectives[3]) < tolerance();
+    }
+
+    //! True if relative variation smaller than tolerance
+    bool converged() const {
+      // If current ~ 0, then defaults to absolute convergence
+      // This is mainly to avoid a division by zero
+      if(std::abs(current() * 1000) < tolerance())
+        return std::abs(previous() * 1000) < tolerance();
+      return relative_variation() < tolerance();
+    }
+    //! Tolerance criteria
+    Real tolerance() const { return tolerance_; }
+    //! Tolerance criteria
+    L1<SCALAR>::Breaker & tolerance(Real tol) const {
+      tolerance_ = tol;
+      return *this;
+    }
+
+  protected:
+    Real tolerance_;
+    t_uint iter;
+    std::array<Real, 4> objectives;
 };
 
 }} /* sopt::proximal */

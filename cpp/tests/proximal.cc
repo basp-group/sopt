@@ -122,31 +122,60 @@ TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
 TEST_CASE("L1 proximal utilities", "[l1][utilities]") {
   using namespace sopt;
   typedef t_complex Scalar;
-  auto const input = Vector<Scalar>::Random(10).eval();
-  Vector<Scalar> output;
 
-  SECTION("No Mixing") {
-    proximal::L1<Scalar>::NoMixing()(output, 2.1 * input, 0);
-    CHECK(output.isApprox(2.1 * input));
-    proximal::L1<Scalar>::NoMixing()(output, 4.1 * input, 10);
-    CHECK(output.isApprox(4.1 * input));
+  SECTION("Mixing") {
+    auto const input = Vector<Scalar>::Random(10).eval();
+    Vector<Scalar> output;
+
+    SECTION("No Mixing") {
+      proximal::L1<Scalar>::NoMixing()(output, 2.1 * input, 0);
+      CHECK(output.isApprox(2.1 * input));
+      proximal::L1<Scalar>::NoMixing()(output, 4.1 * input, 10);
+      CHECK(output.isApprox(4.1 * input));
+    }
+
+    SECTION("Fista Mixing") {
+      proximal::L1<Scalar>::FistaMixing fista;
+      // step zero: no mixing yet
+      fista(output, 2.1 * input, 0);
+      CHECK(output.isApprox(2.1 * input));
+      // step one: first mixing
+      fista(output, 3.1 * input, 1);
+      auto const alpha = (fista.next(1) - 1) / fista.next(fista.next(1));
+      Vector<Scalar> const first = (1e0 + alpha) * 3.1 * input - alpha * 2.1 * input;
+      CHECK(output.isApprox(first));
+      // step two: second mixing
+      fista(output, 4.1 * input, 1);
+      auto const beta = (fista.next(fista.next(1)) - 1) / fista.next(fista.next(fista.next(1)));
+      Vector<Scalar> const second = (1e0 + alpha) * 4.1 * input - alpha * first;
+      CHECK(output.isApprox(second));
+    }
   }
 
-  SECTION("Fista Mixing") {
-    proximal::L1<Scalar>::FistaMixing fista;
-    // step zero: no mixing yet
-    fista(output, 2.1 * input, 0);
-    CHECK(output.isApprox(2.1 * input));
-    // step one: first mixing
-    fista(output, 3.1 * input, 1);
-    auto const alpha = (fista.next(1) - 1) / fista.next(fista.next(1));
-    Vector<Scalar> const first = (1e0 + alpha) * 3.1 * input - alpha * 2.1 * input;
-    CHECK(output.isApprox(first));
-    // step two: second mixing
-    fista(output, 4.1 * input, 1);
-    auto const beta = (fista.next(fista.next(1)) - 1) / fista.next(fista.next(fista.next(1)));
-    Vector<Scalar> const second = (1e0 + alpha) * 4.1 * input - alpha * first;
-    CHECK(output.isApprox(second));
+  SECTION("Breaker") {
+    proximal::L1<Scalar>::Breaker breaker(2e0);
+    SECTION("Finds convergence") {
+      std::vector<t_real> objectives = {
+        1.0, 0.9, 0.5, 0.6, 0.4, 0.4 + 0.41 * 1e-8, 0.3, 0.3 + 0.29 * 1e-8};
+      for(size_t i(0); i < objectives.size() - 1; ++i) {
+        CHECK(not breaker(objectives[i]));
+        CHECK(breaker.current() == Approx(objectives[i]).epsilon(1e-12));
+      }
+      CHECK(breaker(objectives.back()));
+      CHECK(not breaker.two_cycle());
+      CHECK(breaker.converged());
+    }
+
+    SECTION("Find cycle") {
+      std::vector<t_real> objectives = {1.0, 0.9, 0.5, 0.6, 0.4, 0.3, 0.4, 0.3};
+      for(size_t i(0); i < objectives.size() - 1; ++i) {
+        CHECK(not breaker(objectives[i]));
+        CHECK(breaker.current() == Approx(objectives[i]).epsilon(1e-12));
+      }
+      CHECK(breaker(objectives.back()));
+      CHECK(breaker.two_cycle());
+      CHECK(not breaker.converged());
+    }
   }
 }
 
@@ -161,7 +190,6 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
     SECTION("Scalar weights") {
       auto const result = l1(1, input);
       CHECK(result.good);
-      CHECK(result.error == proximal::L1<Scalar>::Error::NONE);
       CHECK(result.niters > 0);
       CHECK(l1.itermax() == 0);
       CHECK(result.proximal.isApprox(proximal::L1TightFrame<Scalar>()(1, input)));
@@ -220,28 +248,28 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
 
     l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(10000);
 
-    SECTION("No constraints") {
-      CHECK(not l1.positivity_constraint());
-      CHECK(not l1.real_constraint());
-      for(size_t i(0); i < 10; ++i)
-        if(check_is_minimum(input))
-          break;
-    }
-    SECTION("Real constraints") {
-      l1.real_constraint(true);
-      CHECK(not l1.positivity_constraint());
-      CHECK(l1.real_constraint());
-      for(size_t i(0); i < 10; ++i)
-        if(check_is_minimum(input))
-          break;
-    }
-    SECTION("Positivity constraints") {
-      l1.positivity_constraint(true);
-      CHECK(l1.positivity_constraint());
-      CHECK(not l1.real_constraint());
-      for(size_t i(0); i < 10; ++i)
-        if(check_is_minimum(input))
-          break;
-    }
+    // SECTION("No constraints") {
+    //   CHECK(not l1.positivity_constraint());
+    //   CHECK(not l1.real_constraint());
+    //   for(size_t i(0); i < 10; ++i)
+    //     if(check_is_minimum(input))
+    //       break;
+    // }
+    // SECTION("Real constraints") {
+    //   l1.real_constraint(true);
+    //   CHECK(not l1.positivity_constraint());
+    //   CHECK(l1.real_constraint());
+    //   for(size_t i(0); i < 10; ++i)
+    //     if(check_is_minimum(input))
+    //       break;
+    // }
+    // SECTION("Positivity constraints") {
+    //   l1.positivity_constraint(true);
+    //   CHECK(l1.positivity_constraint());
+    //   CHECK(not l1.real_constraint());
+    //   for(size_t i(0); i < 10; ++i)
+    //     if(check_is_minimum(input))
+    //       break;
+    // }
   }
 }
