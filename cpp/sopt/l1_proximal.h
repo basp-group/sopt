@@ -266,7 +266,7 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
 
   // Storing more objectives to detect cycles of 2
   out = x;
-  Breaker breaker(objective(x, out, gamma), tolerance());
+  Breaker breaker(objective(x, out, gamma), tolerance(), not fista_mixing());
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));
@@ -324,9 +324,9 @@ template<class SCALAR> class L1<SCALAR>::FistaMixing {
           return;
         }
         if(iter <= 1) t = next(1);
-        auto const next_t = next(t);
-        auto const alpha = (t - 1) / next_t;
-        t = next_t;
+        auto const prior_t = t;
+        t = next(t);
+        auto const alpha = (prior_t - 1) / t;
         previous = (1e0 + alpha) * unmixed.derived() - alpha * previous;
       }
     static Real next(Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); }
@@ -345,8 +345,14 @@ template<class SCALAR> class L1<SCALAR>::NoMixing {
 template<class SCALAR> class L1<SCALAR>::Breaker {
   public:
     typedef typename real_type<SCALAR>::type Real;
-    Breaker(Real objective, Real tolerance = 1e-8)
-      : tolerance_(tolerance), iter(0), objectives({{objective, 0, 0, 0}}) {}
+    //! Constructs a breaker object
+    //! \param[in] objective: the first objective function
+    //! \param[in] tolerance: Convergence criteria for convergence
+    //! \param[in] do_two_cycle: Whether to enable two cycle detections. Only necessary when mixing
+    //! is not enabled.
+    Breaker(Real objective, Real tolerance = 1e-8, bool do_two_cycle=true)
+      : tolerance_(tolerance), iter(0),
+        objectives({{objective, 0, 0, 0}}), do_two_cycle(do_two_cycle) {}
     //! True if we should break out of loop
     bool operator()(Real objective) {
       ++iter;
@@ -364,7 +370,7 @@ template<class SCALAR> class L1<SCALAR>::Breaker {
     //! \brief Whether we have a cycle of period two
     //! \details Cycling is prone to happen without mixing, it seems.
     bool two_cycle() const {
-      return iter > 3
+      return do_two_cycle and iter > 3
         and std::abs(objectives[0] - objectives[2]) < tolerance()
         and std::abs(objectives[1] - objectives[3]) < tolerance();
     }
@@ -389,6 +395,7 @@ template<class SCALAR> class L1<SCALAR>::Breaker {
     Real tolerance_;
     t_uint iter;
     std::array<Real, 4> objectives;
+    bool do_two_cycle;
 };
 
 }} /* sopt::proximal */

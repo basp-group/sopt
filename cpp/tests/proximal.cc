@@ -182,11 +182,12 @@ TEST_CASE("L1 proximal utilities", "[l1][utilities]") {
 TEST_CASE("L1 proximal", "[l1][proximal]") {
   using namespace sopt;
   typedef t_complex Scalar;
-  auto l1 = proximal::L1<Scalar>();
+  auto l1 = proximal::L1<Scalar>().tolerance(1e-10);
 
   Vector<Scalar> const input = Vector<Scalar>::Random(4);
 
   SECTION("Check against tight-frame") {
+    l1.fista_mixing(false);
     SECTION("Scalar weights") {
       auto const result = l1(1, input);
       CHECK(result.good);
@@ -197,79 +198,78 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
     SECTION("Vector weights and more complex Psi") {
       auto const Psi = concatenated_permutations<Scalar>(input.size(), input.size() * 10);
       auto const weights = Vector<t_real>::Random(Psi.cols()).array().abs().matrix().eval();
-      auto const gamma = 1e0 / static_cast<t_real>(weights.size());
+      auto const gamma = 1e-1 / Psi.array().abs().sum();
       l1.Psi(Psi).weights(weights).tolerance(1e-12);
       auto const result = l1(gamma, input);
       CHECK(result.good);
       CHECK(result.niters > 0);
       auto const expected = l1.tight_frame(gamma, input).eval();
       CHECK(result.objective == Approx(l1.objective(input, expected, gamma)));
+      CAPTURE((result.proximal - expected).array().abs().transpose());
       CHECK(result.proximal.isApprox(expected));
     }
   }
 
   SECTION("General case") {
-    auto const Psi = Matrix<Scalar>::Random(input.size(), input.size() * 10).eval();
-    auto const weights = Vector<t_real>::Random(Psi.cols()).array().abs().matrix().eval();
-    auto const gamma = 1e0 / static_cast<t_real>(weights.size());
-
-    auto check_is_minimum = [&l1, &gamma](Vector<Scalar> const &x) {
-      auto const result = l1(gamma, x);
+    auto check_is_minimum = [&l1, &input](t_real gamma, Vector<Scalar> const &proximal) {
       // returns false if did not converge.
       // Looks like computing the proximal does not always work...
-      if(not result.good)
-        return false;
-      auto const mini = l1.objective(x, result.proximal, gamma);
+      auto const mini = l1.objective(input, proximal, gamma);
       auto const eps = 1e-4;
       // check alongst specific directions
-      for(Vector<Scalar>::Index i(0); i < result.proximal.size(); ++i) {
+      for(Vector<Scalar>::Index i(0); i < proximal.size(); ++i) {
         for(auto const dir: {Scalar(eps, 0), Scalar(0, eps), Scalar(-eps, 0), Scalar(0, -eps)}) {
-          Vector<Scalar> p_plus = result.proximal;
+          Vector<Scalar> p_plus = proximal;
           p_plus[i] += dir;
           if(l1.positivity_constraint())
             p_plus = sopt::positive_quadrant(p_plus);
           else if(l1.real_constraint())
             p_plus = p_plus.real().template cast<Scalar>();
-          CHECK(l1.objective(x, p_plus, gamma) >= mini);
+          auto const rel_var = std::abs((l1.objective(input, p_plus, gamma) - mini) / mini);
+          CHECK((l1.objective(input, p_plus, gamma) > mini or rel_var < l1.tolerance() * 10));
         }
       }
       // check alongst non-specific directions
       for(size_t i(0); i < 10; ++i) {
         Vector<Scalar> p_plus
-          = result.proximal + result.proximal.Random(result.proximal.size()) * eps;
+          = proximal + proximal.Random(proximal.size()) * eps;
         if(l1.positivity_constraint())
           p_plus = sopt::positive_quadrant(p_plus);
         else if(l1.real_constraint())
           p_plus = p_plus.real().template cast<Scalar>();
-        CHECK(l1.objective(x, p_plus, gamma) >= mini);
+        auto const rel_var = std::abs((l1.objective(input, p_plus, gamma) - mini) / mini);
+        CHECK((l1.objective(input, p_plus, gamma) > mini or rel_var < l1.tolerance() * 10));
       }
-      return true;
     };
 
-    l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(10000);
+    auto const Psi = Matrix<Scalar>::Random(input.size(), input.size() * 10).eval();
+    auto const weights = Vector<t_real>::Random(Psi.cols()).array().abs().matrix().eval();
+    auto const gamma = 1e-1 / Psi.array().abs().sum();
 
-    // SECTION("No constraints") {
-    //   CHECK(not l1.positivity_constraint());
-    //   CHECK(not l1.real_constraint());
-    //   for(size_t i(0); i < 10; ++i)
-    //     if(check_is_minimum(input))
-    //       break;
-    // }
-    // SECTION("Real constraints") {
-    //   l1.real_constraint(true);
-    //   CHECK(not l1.positivity_constraint());
-    //   CHECK(l1.real_constraint());
-    //   for(size_t i(0); i < 10; ++i)
-    //     if(check_is_minimum(input))
-    //       break;
-    // }
-    // SECTION("Positivity constraints") {
-    //   l1.positivity_constraint(true);
-    //   CHECK(l1.positivity_constraint());
-    //   CHECK(not l1.real_constraint());
-    //   for(size_t i(0); i < 10; ++i)
-    //     if(check_is_minimum(input))
-    //       break;
-    // }
+    l1.Psi(Psi).weights(weights).fista_mixing(true).tolerance(1e-10).itermax(5000);
+
+    SECTION("No constraints") {
+      CHECK(not l1.positivity_constraint());
+      CHECK(not l1.real_constraint());
+      auto const result = l1(gamma, input);
+      CHECK(result.good);
+      check_is_minimum(gamma, result.proximal);
+    }
+    SECTION("Positivity constraints") {
+      l1.positivity_constraint(true);
+      CHECK(l1.positivity_constraint());
+      CHECK(not l1.real_constraint());
+      auto const result = l1(gamma, input);
+      CHECK(result.good);
+      check_is_minimum(gamma, result.proximal);
+    }
+    SECTION("Real constraints") {
+      l1.real_constraint(true);
+      CHECK(l1.real_constraint());
+      CHECK(not l1.positivity_constraint());
+      auto const result = l1(gamma, input);
+      CHECK(result.good);
+      check_is_minimum(gamma, result.proximal);
+    }
   }
 }

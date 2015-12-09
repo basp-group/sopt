@@ -96,17 +96,21 @@ TEST_CASE("Compare L1 proximals", "") {
     auto const gamma = 1e0 / static_cast<t_real>(weights.size());
 
     SECTION("No constraints") {
-      l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(10);
-      auto const c = c_proximal(l1, gamma, input, false, false);
-      auto const cpp = l1.itermax(l1.itermax()+1)(gamma, input);
-      CHECK(cpp.proximal.isApprox(c));
+      for(auto i: {2, 10, 25, 500, 1000}) {
+        l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1);
+        auto const c = c_proximal(l1, gamma, input, false, false);
+        auto const cpp = l1.itermax(i)(gamma, input);
+        CHECK(cpp.proximal.isApprox(c));
+      }
     }
 
     SECTION("Positivity constraints") {
-      l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(10).positivity_constraint(true);
-      auto const c = c_proximal(l1, gamma, input, true, false);
-      auto const cpp = l1.itermax(l1.itermax()+1)(gamma, input);
-      CHECK(cpp.proximal.isApprox(c));
+      for(auto i: {2, 10, 25, 500, 1000}) {
+        l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1).positivity_constraint(true);
+        auto const c = c_proximal(l1, gamma, input, true, false);
+        auto const cpp = l1.itermax(i)(gamma, input);
+        CHECK(cpp.proximal.isApprox(c));
+      }
     }
   }
 }
