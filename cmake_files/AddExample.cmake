@@ -23,6 +23,9 @@ function(add_example targetname)
   if(example_DEPENDS)
     add_dependencies(example_${targetname} ${example_DEPENDS})
   endif()
+  if(TARGET lookup_dependencies)
+    add_dependencies(example_${targetname} lookup_dependencies)
+  endif()
 
   # Add to tests
   if(NOT example_NOTEST)

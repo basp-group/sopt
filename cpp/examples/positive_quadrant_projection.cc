@@ -4,7 +4,7 @@
 int main(int, char const **) {
 
   // Create a matrix with a single negative real numbers
-  typedef Eigen::Array<std::complex<int>, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+  typedef sopt::Image<std::complex<int>> t_Matrix;
   t_Matrix input = t_Matrix::Ones(5, 5) + t_Matrix::Random(5, 5);
   input.real()(2, 3) *= -1;
 

@@ -2,8 +2,10 @@
 #define SOPT_PROXIMAL_H
 
 #include <iostream>
+#include <type_traits>
 #include <Eigen/Core>
-#include "utility.h"
+
+#include "sopt/utility.h"
 
 namespace sopt {
 //! Holds some standard proximals
@@ -44,9 +46,9 @@ namespace details {
 
 //! Proximal of euclidian norm
 struct EuclidianNorm {
-  template<class VECTOR, class T0>
+  template<class T0>
     void operator()(
-        VECTOR &out,
+        Vector<typename T0::Scalar>& out,
         typename real_type<typename T0::Scalar>::type const &t,
         Eigen::MatrixBase<T0> const &x
     ) const {
@@ -55,7 +57,7 @@ struct EuclidianNorm {
       if(norm > t)
         out = (Scalar(1) - t/norm) * x;
       else
-        out = x.Zero(x.size());
+        out.fill(0);
     }
   //! Lazy version
   template<class T0>
@@ -75,19 +77,56 @@ template<class T0>
       typename real_type<typename T0::Scalar>::type const & t,
       Eigen::MatrixBase<T0> const &x
   ) {
-    typedef details::AppliedProximalFunction<EuclidianNorm, Eigen::MatrixBase<T0>>
-      t_Lazy;
+    typedef details::AppliedProximalFunction<EuclidianNorm, Eigen::MatrixBase<T0>> t_Lazy;
     return t_Lazy(EuclidianNorm(), t, x);
   }
 
+//! Proximal of the l1 norm
 template<class T>
-  Eigen::CwiseUnaryOp<
-    const sopt::details::SoftThreshhold<typename T::Scalar>,
-    const T
-  > l1_norm(
-      typename real_type<typename T::Scalar>::type const &t,
-      Eigen::MatrixBase<T> const &input
-  ) { return soft_threshhold(input, t); }
+  void l1_norm(Vector<T>& out, typename real_type<T>::type gamma, Vector<T> const &x) {
+    out = soft_threshhold(x, gamma);
+  }
+
+//! Proximal for projection on the positive quadrant
+template<class T>
+  void positive_quadrant(Vector<T>& out, typename real_type<T>::type, Vector<T> const &x) {
+    out = sopt::positive_quadrant(x);
+  };
+
+//! Proximal for indicator function of L2 ball
+template<class T> class L2Ball {
+  public:
+    typedef typename real_type<T>::type Real;
+    //! Constructs an L2 ball proximal of size epsilon
+    L2Ball(Real epsilon) : epsilon_(epsilon) {}
+    //! Calls proximal function
+    void operator()(Vector<T>& out, typename real_type<T>::type, Vector<T> const &x) const {
+      return operator()(out, x);
+    }
+    //! Calls proximal function
+    void operator()(Vector<T>& out, Vector<T> const &x) const {
+      auto const norm = x.stableNorm();
+      if(norm < epsilon())
+        out = x;
+      else
+        out = x * (epsilon() / norm);
+    }
+    //! Lazy version
+    template<class T0>
+      details::AppliedProximalFunction<L2Ball, Eigen::MatrixBase<T0>>
+      operator()(typename T0::Scalar const &t, Eigen::MatrixBase<T0> const &x) const {
+        typedef details::AppliedProximalFunction<L2Ball, Eigen::MatrixBase<T0>> t_Lazy;
+        return t_Lazy(*this, t, x);
+      }
+
+    //! Size of the ball
+    Real epsilon() const { return epsilon_; }
+    //! Size of the ball
+    L2Ball epsilon(Real eps) { epsilon_ = eps; return *this; }
+  protected:
+    //! Size of the ball
+    Real epsilon_;
+};
 
 //! Translation over proximal function
 template<class FUNCTION, class VECTOR> class Translation {
@@ -97,12 +136,21 @@ template<class FUNCTION, class VECTOR> class Translation {
       Translation(FUNCTION const &func, T_VECTOR const &trans) : func(func), trans(trans) {}
     //! Computes proximal of translated function
     template<class OUTPUT, class T0>
-      void operator()(
-          OUTPUT &out,
+      typename std::enable_if<std::is_reference<OUTPUT>::value, void>::type operator()(
+          OUTPUT out,
           typename real_type<typename T0::Scalar>::type const &t,
           Eigen::MatrixBase<T0> const &x
       ) const {
-        typedef typename T0::Scalar Scalar;
+        func(out, t, x + trans);
+        out -= trans;
+      }
+    //! Computes proximal of translated function
+    template<class T0>
+      void operator()(
+          Vector<typename T0::Scalar>& out,
+          typename real_type<typename T0::Scalar>::type const &t,
+          Eigen::MatrixBase<T0> const &x
+      ) const {
         func(out, t, x + trans);
         out -= trans;
       }

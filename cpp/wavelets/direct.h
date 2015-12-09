@@ -43,7 +43,6 @@ namespace {
       assert(coeffs.cols() == signal.cols());
       assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
-      auto const N = signal.size() / 2;
       for(t_uint i(0); i < coeffs.rows(); ++i)
         direct_transform_impl(coeffs.row(i).transpose(), signal.row(i).transpose(), wavelet);
 

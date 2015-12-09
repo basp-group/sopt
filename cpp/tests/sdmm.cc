@@ -13,16 +13,16 @@ sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
 };
 
 typedef double Scalar;
-typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
-typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> t_Matrix;
+typedef sopt::Vector<Scalar> t_Vector;
+typedef sopt::Matrix<Scalar> t_Matrix;
 
 auto const N = 3;
 
 // Makes members public so we can test one at a time
 class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
   public:
-    void initialization(t_Vectors &y, t_Vector const &x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, x);
+    void initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const override {
+      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, z, x);
     }
     sopt::ConjugateGradient::Diagnostic solve_for_xn(
         t_Vector &out, t_Vectors const &y, t_Vectors const &z) const override {
@@ -32,6 +32,7 @@ class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
       return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
     }
     using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
+    using sopt::algorithm::SDMM<sopt::t_real>::t_Vector;
 };
 
 TEST_CASE("Proximal translation", "[proximal]") {
@@ -60,7 +61,6 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   t_Vector const target0 = t_Vector::Zero(N);
   t_Vector const target1 = t_Vector::Random(N);
 
-  auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
   auto const g0 = proximal::translate(proximal::EuclidianNorm(), -target0);
   auto const g1 = proximal::translate(proximal::EuclidianNorm(), -target1);
   t_Vector const input = 10 * t_Vector::Random(N);
@@ -69,7 +69,6 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
   sdmm.itermax(10)
     .gamma(0.01)
     .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-    .is_converged(always_false) // iterates until itermax is reached
     .append(g0, Id)
     .append(g1, Id);
 
@@ -78,7 +77,7 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
     t_Vector out = input;
     IntrospectSDMM::t_Vectors y(sdmm.transforms().size(), t_Vector::Zero(out.size()));
     IntrospectSDMM::t_Vectors z(sdmm.transforms().size(), t_Vector::Zero(out.size()));
-    sdmm.initialization(y, out);
+    sdmm.initialization(y, z, out);
     CHECK(y[0].isApprox(input));
     CHECK(y[1].isApprox(input));
 
@@ -182,12 +181,10 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
   t_Vector target1 = t_Vector::Random(N) * 4;
   // for(t_uint i(0); i < N; ++i) target1(i) = i + 1;
 
-  auto always_false = [](algorithm::SDMM<Scalar> const&, t_Vector const &) { return false; };
   auto sdmm = algorithm::SDMM<Scalar>()
     .itermax(500)
     .gamma(1)
     .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-    .is_converged(always_false) // iterates until itermax is reached
     .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
     .append(proximal::translate(proximal::EuclidianNorm(), -target1), Id);
 

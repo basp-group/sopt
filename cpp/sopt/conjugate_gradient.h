@@ -27,7 +27,7 @@ class ConjugateGradient {
     };
     //! Values indicating how the algorithm ran and its result;
     template<class T> struct DiagnosticAndResult : public Diagnostic {
-      Eigen::Matrix<T, Eigen::Dynamic, 1> result;
+      Vector<T> result;
     };
     //! \brief Creates conjugate gradient operator
     //! \param[in] itermax: Maximum number of iterations. 0 means algorithm breaks only if
@@ -64,7 +64,7 @@ class ConjugateGradient {
       DiagnosticAndResult<typename T0::Scalar> operator()(
           A_TYPE const& A, Eigen::MatrixBase<T0> const& b) const {
         DiagnosticAndResult<typename T0::Scalar> result;
-        result.result = Eigen::Matrix<typename T0::Scalar, Eigen::Dynamic, 1>::Zero(b.size());
+        result.result = Vector<typename T0::Scalar>::Zero(b.size());
         *static_cast<Diagnostic*>(&result) = operator()(result.result, A, b);
         return result;
       }
@@ -89,11 +89,11 @@ class ConjugateGradient {
     //! Maximum number of iteration
     t_uint itermax_;
     //! \details Work array to hold v
-    t_rMatrix work_v;
+    Image<> work_v;
     //! Work array to hold r
-    t_rMatrix work_r;
+    Image<> work_r;
     //! Work array to hold p
-    t_rMatrix work_p;
+    Image<> work_p;
 
   private:
     //! \brief Just one implementation for all types
@@ -109,8 +109,7 @@ template<class VECTOR, class T1, class MATRIXLIKE>
   ConjugateGradient::Diagnostic ConjugateGradient::implementation(
       VECTOR &x, MATRIXLIKE const &A, Eigen::MatrixBase<T1> const & b) const {
     typedef typename T1::Scalar Scalar;
-    typedef typename underlying_value_type<Scalar>::type Real;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> t_Vector;
+    typedef typename real_type<Scalar>::type Real;
 
     x.resize(b.size());
     if(std::abs((b.transpose().conjugate() * b)(0)) < tolerance()) {
@@ -118,18 +117,17 @@ template<class VECTOR, class T1, class MATRIXLIKE>
       return {0, 0, 1};
     }
 
-    t_Vector Ap(b.size());
-    Scalar alpha;
+    Vector<Scalar> Ap(b.size());
 
     x = b;
-    t_Vector residuals = b - A * x;
-    t_Vector p = residuals;
+    Vector<Scalar> residuals = b - A * x;
+    Vector<Scalar> p = residuals;
     Real residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
 
     t_uint i(0);
     for(; i < itermax(); ++i) {
       Ap.noalias() = A * p;
-      Scalar alpha = residual / (p.transpose().conjugate() * Ap)(0);
+      Scalar const alpha = residual / (p.transpose().conjugate() * Ap)(0);
       x += alpha * p;
       residuals -= alpha * Ap;
 

@@ -8,9 +8,9 @@ TEST_CASE("Conjugate gradient", "[cg]") {
 
   ConjugateGradient const cg(std::numeric_limits<t_uint>::max(), 1e-12);
   SECTION("Real valued") {
-    auto const A = t_rMatrix::Random(10, 10).eval();
+    auto const A = Image<>::Random(10, 10).eval();
     auto const AtA = (A.transpose().matrix() * A.matrix()).eval();
-    auto const expected = t_rVector::Random(A.rows()).eval();
+    auto const expected = Array<>::Random(A.rows()).eval();
 
     auto const actual = cg(AtA, (A.transpose().matrix() * expected.matrix()).eval());
 
@@ -23,9 +23,9 @@ TEST_CASE("Conjugate gradient", "[cg]") {
   }
 
   SECTION("Complex valued") {
-    auto const A = t_cMatrix::Random(10, 10).eval();
+    auto const A = Image<t_complex>::Random(10, 10).eval();
     auto const AhA = (A.conjugate().transpose().matrix() * A.matrix()).eval();
-    auto const expected = t_cVector::Random(A.rows()).eval();
+    auto const expected = Array<t_complex>::Random(A.rows()).eval();
 
     auto const actual = cg(AhA, (A.conjugate().transpose().matrix() * expected.matrix()).eval());
 

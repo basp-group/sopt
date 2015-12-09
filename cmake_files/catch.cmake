@@ -49,7 +49,11 @@ endfunction()
 # Then adds a function to create a test
 function(add_catch_test testname)
   cmake_parse_arguments(catch
-    "NOMAIN" "WORKING_DIRECTORY;SEED" "LIBRARIES;LABELS;DEPENDS;ARGUMENTS" ${ARGN})
+    "NOMAIN;NOTEST;NOCATCHLABEL"
+    "WORKING_DIRECTORY;SEED"
+    "LIBRARIES;LABELS;DEPENDS;ARGUMENTS;INCLUDES"
+    ${ARGN}
+  )
 
   # Source deduce from testname if possible
   unset(source)
@@ -58,7 +62,6 @@ function(add_catch_test testname)
   elseif("${catch_UNPARSED_ARGUMENTS}" STREQUAL "")
     message(FATAL_ERROR "No source given or found for ${testname}")
   endif()
-
 
   # By default, uses a common main function for all, compiled once
   # We create here
@@ -77,8 +80,14 @@ function(add_catch_test testname)
   if(CATCH_INCLUDE_DIR)
     target_include_directories(test_${testname} PRIVATE ${CATCH_INCLUDE_DIR})
   endif()
+  if(catch_INCLUDES)
+    target_include_directories(test_${testname} PRIVATE ${catch_INCLUDES})
+  endif()
   if(catch_DEPENDS)
     add_dependencies(test_${testname} ${catch_DEPENDS})
+  endif()
+  if(TARGET lookup_dependencies)
+    add_dependencies(test_${testname} lookup_dependencies)
   endif()
 
   unset(EXTRA_ARGS)
@@ -91,17 +100,21 @@ function(add_catch_test testname)
   else()
     list(APPEND arguments --rng-seed time)
   endif()
-  if(CATCH_JUNIT)
-    add_test(NAME ${testname}
-      COMMAND test_${testname}
-          ${arguments}
-          -r junit
-          -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
-    )
-  else()
-    add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
-  endif()
+  if(NOT catch_NOTEST)
+    if(CATCH_JUNIT)
+      add_test(NAME ${testname}
+        COMMAND test_${testname}
+            ${arguments}
+            -r junit
+            -o ${PROJECT_BINARY_DIR}/Testing/${testname}.xml
+      )
+    else()
+      add_test(NAME ${testname} COMMAND test_${testname} ${arguments} ${EXTRA_ARGS})
+    endif()
 
-  list(APPEND catch_LABELS catch)
-  set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+    if(NOT catch_NOCATCHLABEL)
+      list(APPEND catch_LABELS catch)
+    endif()
+    set_tests_properties(${testname} PROPERTIES LABELS "${catch_LABELS}")
+  endif()
 endfunction()

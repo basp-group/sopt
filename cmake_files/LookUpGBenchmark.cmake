@@ -12,12 +12,13 @@ passon_variables(GTest
 
 ExternalProject_Add(
     GBenchmark
-    GIT_REPOSITORY https://github.com/google/benchmark.git
+    GIT_REPOSITORY https://github.com/mdavezac/benchmark.git
     PREFIX "${EXTERNAL_ROOT}"
     # Force separate output paths for debug and release builds to allow easy
     # identification of correct lib in subsequent TARGET_LINK_LIBRARIES commands
     CMAKE_ARGS
         -C "${EXTERNAL_ROOT}/src/GBenchmarkVariables.cmake"
+        -DBENCHMARK_ENABLE_TESTING=OFF
         -DCMAKE_BUILD_TYPE=Release
 
     # Wrap download, configure and build steps in a script to log output

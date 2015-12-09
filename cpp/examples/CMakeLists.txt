@@ -1,7 +1,8 @@
 add_example(wavelets LIBRARIES wavelets LABELS wavelets)
 add_example(sara LIBRARIES wavelets LABELS wavelets)
-add_example(positive_quadrant_projection DEPENDS lookup_dependencies LABELS proximals)
-add_example(l1_norm DEPENDS lookup_dependencies LABELS proximals)
-add_example(soft_threshhold DEPENDS lookup_dependencies LABELS proximals)
-add_example(conjugate_gradient DEPENDS lookup_dependencies)
+add_example(positive_quadrant_projection LIBRARIES sopt LABELS proximals)
+add_example(l1_norm LIBRARIES sopt LABELS proximals)
+add_example(soft_threshhold LIBRARIES sopt LABELS proximals)
+add_example(conjugate_gradient LIBRARIES sopt)
+
 add_subdirectory(sdmm)

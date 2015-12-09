@@ -6,7 +6,7 @@
 #include "wavelets/indirect.h"
 #include "wavelets/direct.h"
 
-typedef Eigen::Array<sopt::t_int, Eigen::Dynamic, 1> t_iVector;
+typedef sopt::Array<sopt::t_uint> t_iVector;
 t_iVector even(t_iVector const & x) {
   t_iVector result((x.size()+1) / 2);
   for(t_iVector::Index i(0); i < x.size(); i += 2)
@@ -181,7 +181,7 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
   using namespace sopt;
   using namespace sopt::wavelets;
 
-  t_rMatrix const data = t_rMatrix::Random(16, 16);
+  Image<> const data = Image<>::Random(16, 16);
   auto const &wavelet = daubechies_data(4);
 
   // Condition on input fixture data
@@ -189,7 +189,7 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
 
   SECTION("Direct transform == two downsample + convolution") {
      auto const actual = direct_transform(data.row(0), 1, wavelet);
-     t_rVector high(data.cols() / 2), low(data.cols() / 2);
+     Array<> high(data.cols() / 2), low(data.cols() / 2);
      down_convolve(high, data.row(0), wavelet.direct_filter.high);
      down_convolve(low, data.row(0), wavelet.direct_filter.low);
      CHECK(low.transpose().isApprox(actual.head(data.row(0).size() / 2)));
@@ -213,15 +213,15 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
 
   SECTION("Round-trip test for single level") {
     for(t_int i(0); i < 20; ++i) {
-      check_round_trip(t_rVector::Random(random_integer(2, 100)*2), random_integer(1, 38), 1);
+      check_round_trip(Array<>::Random(random_integer(2, 100)*2), random_integer(1, 38), 1);
     }
   }
 
   SECTION("Round-trip test for two levels") {
-    check_round_trip(t_rVector::Random(8), 1, 2);
-    check_round_trip(t_rVector::Random(8), 2, 2);
-    check_round_trip(t_rVector::Random(16), 4, 2);
-    check_round_trip(t_rVector::Random(52), 10, 2);
+    check_round_trip(Array<>::Random(8), 1, 2);
+    check_round_trip(Array<>::Random(8), 2, 2);
+    check_round_trip(Array<>::Random(16), 4, 2);
+    check_round_trip(Array<>::Random(52), 10, 2);
   }
 
   t_uint nlevels = 5;
@@ -229,7 +229,7 @@ TEST_CASE("1D wavelet transform with floating point data", "[wavelet]") {
     for(t_int i(0); i < 10; ++i) {
       auto const n = random_integer(2, nlevels);
       check_round_trip(
-        t_rVector::Random(random_integer(2, 100) * (1u << n)),
+        Array<>::Random(random_integer(2, 100) * (1u << n)),
         random_integer(1, 38),
         n
       );
@@ -241,7 +241,7 @@ TEST_CASE("1D wavelet transform with complex data", "[wavelet]") {
   using namespace sopt;
   using namespace sopt::wavelets;
   SECTION("Round-trip test for complex data") {
-    auto input = t_cVector::Random(random_integer(2, 100)*2).eval();
+    auto input = Array<t_complex>::Random(random_integer(2, 100)*2).eval();
     auto const &dbwave = daubechies_data(random_integer(1, 38));
     auto const actual = indirect_transform(direct_transform(input, 1, dbwave), 1, dbwave);
     CHECK(input.isApprox(actual, 1e-14));
@@ -254,19 +254,19 @@ TEST_CASE("2D wavelet transform with real data", "[wavelet]") {
   using namespace sopt::wavelets;
   SECTION("Single level round-trip test for square matrix") {
     auto N = random_integer(2, 100) * 2;
-    check_round_trip(t_rMatrix::Random(N, N), random_integer(1, 38), 1);
+    check_round_trip(Image<>::Random(N, N), random_integer(1, 38), 1);
   }
   SECTION("Single level round-trip test for non-square matrix") {
     auto Nx = random_integer(2, 5) * 2;
     auto Ny = Nx + 5 * 2;
-    check_round_trip(t_rMatrix::Random(Nx, Ny), random_integer(1, 38), 1);
+    check_round_trip(Image<>::Random(Nx, Ny), random_integer(1, 38), 1);
   }
   SECTION("Round-trip test for multiple levels") {
     for(t_int i(0); i < 10; ++i) {
       auto const n = random_integer(2, 5);
       auto const Nx = random_integer(2, 5) * (1u << n);
       auto const Ny = random_integer(2, 5) * (1u << n);
-      check_round_trip(t_rMatrix::Random(Nx, Ny), random_integer(1, 38), n);
+      check_round_trip(Image<>::Random(Nx, Ny), random_integer(1, 38), n);
     }
   }
 }
@@ -274,14 +274,14 @@ TEST_CASE("2D wavelet transform with real data", "[wavelet]") {
 TEST_CASE("Functor implementation", "[wavelet]") {
   using namespace sopt;
   auto const wavelet = wavelets::factory("DB3", 4);
-  auto const input = t_cMatrix::Random(256, 128).eval();
+  auto const input = Image<t_complex>::Random(256, 128).eval();
   SECTION("Normal instances") {
     auto const transform = wavelet.direct(input);
     CHECK(transform.isApprox(wavelets::direct_transform(input, wavelet.levels(), wavelet)));
     CHECK(input.isApprox(wavelet.indirect(transform)));
   }
   SECTION("Expression instances") {
-    t_cMatrix output(2, input.cols());
+    Image<t_complex> output(2, input.cols());
     wavelet.direct(output.row(0).transpose(), input.row(0).transpose());
     wavelet.indirect(output.row(0).transpose(), output.row(1).transpose());
     CHECK(input.row(0).isApprox(output.row(1)));
@@ -291,8 +291,8 @@ TEST_CASE("Functor implementation", "[wavelet]") {
 TEST_CASE("Automatic input resizing", "[wavelet]") {
   using namespace sopt;
   auto const wavelet = wavelets::factory("DB3", 4);
-  auto const input = t_cMatrix::Random(256, 128).eval();
-  t_cMatrix output(1, 1);
+  auto const input = Image<t_complex>::Random(256, 128).eval();
+  Image<t_complex> output(1, 1);
   wavelet.direct(output, input);
   CHECK(output.rows() == input.rows());
   CHECK(output.cols() == input.cols());

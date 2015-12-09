@@ -1,7 +1,11 @@
 #define CATCH_CONFIG_RUNNER
 
-#include "catch.hpp"
+#include <catch.hpp>
 #include "sopt/logging.h"
+#include <random>
+#include <memory>
+
+std::unique_ptr<std::mt19937_64> mersenne(new std::mt19937_64(0));
 
 int main( int argc, char* const argv[] )
 {
@@ -10,6 +14,7 @@ int main( int argc, char* const argv[] )
   int returnCode = session.applyCommandLine( argc, argv );
   if( returnCode != 0 ) // Indicates a command line error
     return returnCode;
+  mersenne.reset(new std::mt19937_64(session.configData().rngSeed));
 
   sopt::logging::initialize();
   sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);

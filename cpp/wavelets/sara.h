@@ -50,8 +50,8 @@ class SARA : public std::vector<Wavelet>
     //! allows non-constant Eigen expressions to be passe on without the ugly `const_cast` of the
     //! cannonical approach.
     template<class T0, class T1>
-      void direct(Eigen::ArrayBase<T1> && coeffs, Eigen::ArrayBase<T0> const &signal) const {
-        (*this)(coeffs, signal);
+      void direct(Eigen::ArrayBase<T1> && coefficients, Eigen::ArrayBase<T0> const &signal) const {
+        direct(coefficients, signal);
       }
     //! \brief Indirect transform
     //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
@@ -66,7 +66,7 @@ class SARA : public std::vector<Wavelet>
     //! \param[inout] signal: Reconstructed signal. Must be of the same size and type as the input.
     //! \details Supports 1 and 2 dimensional tranforms for real and complex data.
     template<class T0, class T1>
-      void indirect(Eigen::ArrayBase<T1> const &, Eigen::ArrayBase<T0> &) const;
+      void indirect(Eigen::ArrayBase<T1> const & coefficients, Eigen::ArrayBase<T0> &signal) const;
     //! \brief Indirect transform
     //! \param[in] coefficients: Input wavelet coefficients. Its size must be a multiple of $2^l$
     //! where $l$ is the number of levels. Can be a matrix (2d-transform) or a column vector (1-d
@@ -76,7 +76,7 @@ class SARA : public std::vector<Wavelet>
     //! cannonical approach.
     template<class T0, class T1>
       void indirect(Eigen::ArrayBase<T1> const & coeffs, Eigen::ArrayBase<T0> &&signal) const {
-        (*this)(coeffs, signal);
+        indirect(coeffs, signal);
       }
 
     //! Number of levels over which to do transform
@@ -90,7 +90,6 @@ class SARA : public std::vector<Wavelet>
 };
 
 #define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                        \
-    typedef typename T0::Index t_Index;                                                        \
     if(INPUT.rows() % (1u << max_levels()) != 0)                                               \
       throw std::length_error("Inconsistent number of columns and wavelet levels");            \
     else if(INPUT.cols() != 1 and INPUT.cols() % (1u << max_levels()))                         \
@@ -104,7 +103,7 @@ template<class T0, class T1>
     if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
       throw std::length_error("Incorrect size for output matrix(or could not resize)");
     auto const Ncols = signal.cols();
-    t_Index colindex = Ncols;
+    auto colindex = Ncols;
     for(auto const &wavelet: *this) {
       wavelet.direct(coeffs.leftCols(colindex).rightCols(Ncols), signal);
       colindex += Ncols;

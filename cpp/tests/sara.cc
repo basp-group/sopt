@@ -27,14 +27,14 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
     CHECK(sara[2].coefficients.isApprox(factory("DB1", 1).coefficients));
   }
 
-  t_rMatrix input = t_rMatrix::Random((1u << sara.max_levels()) * 3, (1u << sara.max_levels()));
-  t_rMatrix coeffs;
+  Image<> input = Image<>::Random((1u << sara.max_levels()) * 3, (1u << sara.max_levels()));
+  Image<> coeffs;
   sara.direct(coeffs, input);
 
   SECTION("Direct transform") {
-    t_rMatrix const first = sara[0].direct(input) / std::sqrt(sara.size());
-    t_rMatrix const second = sara[1].direct(input) / std::sqrt(sara.size());
-    t_rMatrix const third = sara[2].direct(input) / std::sqrt(sara.size());
+    Image<> const first = sara[0].direct(input) / std::sqrt(sara.size());
+    Image<> const second = sara[1].direct(input) / std::sqrt(sara.size());
+    Image<> const third = sara[2].direct(input) / std::sqrt(sara.size());
 
     auto const N = input.cols();
     CAPTURE(coeffs.leftCols(N));

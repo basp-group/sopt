@@ -77,3 +77,4 @@ lib/*.a
 build/
 .*.swp
 .settings
+python/tests/__pycache__
