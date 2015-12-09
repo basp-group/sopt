@@ -49,7 +49,7 @@ template<class T0, class T1>
       typename real_type<typename T0::Scalar>::type gamma,
       Eigen::DenseBase<T1> const &x
   ) {
-    out = soft_threshhold(x, gamma);
+    out = sopt::soft_threshhold(x, gamma);
   }
 
 //! \brief Proximal of the l1 norm
@@ -65,8 +65,8 @@ template<class S>
 //! L1 classes. In practice, this is an alias for soft_threshhold.
 template<class T>
   auto l1_norm(typename real_type<typename T::Scalar>::type gamma, Eigen::DenseBase<T> const &x)
-  -> decltype(soft_threshhold(x, gamma)) {
-    return soft_threshhold(x, gamma);
+  -> decltype(sopt::soft_threshhold(x, gamma)) {
+    return sopt::soft_threshhold(x, gamma);
   }
 
 //! Proximal for projection on the positive quadrant
