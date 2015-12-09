@@ -245,9 +245,8 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
 
   protected:
     //! Applies one or another soft-threshhold, depending on weight
-    template<class T0, class T1>
-    void apply_soft_threshhold(
-        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const;
+    template<class T1>
+    Vector<SCALAR> apply_soft_threshhold(Real gamma, Eigen::MatrixBase<T1> const &x) const;
     //! Applies constraints to input expression
     template<class T0, class T1>
     void apply_constraints(Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &x) const;
@@ -277,9 +276,7 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
   Real objectives[4] = {objective(x, out, gamma), 0, 0, 0};
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, objectives[CURRENT]);
   Vector<Scalar> const res = Psi().adjoint() * out;
-  Vector<Scalar> threshholded;
-  apply_soft_threshhold(threshholded, gamma, res);
-  Vector<Scalar> u_l1 = 1e0 / nu() * (res - threshholded);
+  Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));
   apply_constraints(out, x - Psi() * u_l1);
   objectives[PREVIOUS] = objectives[CURRENT];
 
@@ -304,8 +301,7 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
     }
 
     Vector<Scalar> const res = u_l1 * nu() + Psi().adjoint() * out;
-    apply_soft_threshhold(threshholded, gamma, res);
-    mixing(u_l1, 1e0 / nu() * (res - threshholded), niters);
+    mixing(u_l1, 1e0 / nu() * (res -  apply_soft_threshhold(gamma, res)), niters);
 
     apply_constraints(out, x - Psi() * u_l1);
     objectives[FARTHER] = objectives[FAR];
@@ -316,13 +312,12 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
   return {niters, rel_obj, objectives[CURRENT], good, error};
 }
 
-template<class SCALAR> template<class T0, class T1>
-void L1<SCALAR>::apply_soft_threshhold(
-    Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+template<class SCALAR> template<class T1>
+Vector<SCALAR> L1<SCALAR>::apply_soft_threshhold(Real gamma, Eigen::MatrixBase<T1> const &x) const {
   if(weights().size() == 1)
-    out = soft_threshhold(x, gamma * weights()(0));
+    return soft_threshhold(x, gamma * weights()(0));
   else
-    out = soft_threshhold(x, gamma * weights());
+    return soft_threshhold(x, gamma * weights());
 }
 
 template<class SCALAR> template<class T0, class T1>
