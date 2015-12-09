@@ -130,11 +130,14 @@ template<class SCALAR> class SDMM {
     //! Number of terms
     t_uint size() const { return proximals().size(); }
 
+    // We must declare the first argument explicitly so that the function never
+    // match the getter with the same name.
     //! \brief Forwards to internal conjugage gradient object
     //! \details Removes the need for ugly extra brackets.
-    template<class T0, class T1, class T2>
-      ConjugateGradient::Diagnostic conjugate_gradient(T0 &x, T1 const &A, T2 const &b) const {
-        return conjugate_gradient()(x, A, b);
+    template<class T0, class ... T>
+      auto  conjugate_gradient(T0 && t0, T &&... args) const
+      -> decltype(this->conjugate_gradient()(std::forward<T0>(t0), std::forward<T>(args)...)) {
+        return conjugate_gradient()(std::forward<T0>(t0), std::forward<T>(args)...);
       }
 
     //! Forwards to convergence function parameter
