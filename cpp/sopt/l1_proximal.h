@@ -133,6 +133,10 @@ typename std::enable_if<
 //!  where \f$Ψ \in C^{N_x \times N_r} \f$ is the sparsifying operator, and \f[|| ||_w1\f] is the
 //!  weighted L1 norm.
 template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
+    //! Functor to do fista mixing
+    struct FistaMixing;
+    //! Functor to do no mixing
+    struct NoMixing;
   public:
     //! Underlying scalar type
     typedef typename L1TightFrame<SCALAR>::Scalar Scalar;
@@ -168,7 +172,12 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     //! Computes proximal for given γ
     template<class T0, class T1>
     Diagnostic operator()(
-        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const;
+        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+      if(fista_mixing())
+        return operator()(out, gamma, x, FistaMixing());
+      else
+        return operator()(out, gamma, x, NoMixing());
+    }
 
     //! Lazy version
     template<class T0>
@@ -179,7 +188,7 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     }
 
     L1() : L1TightFrame<SCALAR>(), itermax_(0), tolerance_(1e-8), positivity_constraint_(false),
-      real_constraint_(false) {}
+      real_constraint_(false), fista_mixing_(true) {}
 
 #   define SOPT_MACRO(NAME, TYPE)                                                           \
         TYPE const& NAME() const { return NAME ## _; }                                      \
@@ -196,6 +205,8 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     SOPT_MACRO(positivity_constraint, bool);
     //! Whether the output should be constrained to be real
     SOPT_MACRO(real_constraint, bool);
+    //! Whether to do fista mixing or not
+    SOPT_MACRO(fista_mixing, bool);
 #   undef SOPT_MACRO
 
 #   define SOPT_MACRO(NAME, TYPE)   \
@@ -240,12 +251,17 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     //! Applies constraints to input expression
     template<class T0, class T1>
     void apply_constraints(Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &x) const;
+
+    //! Operation with explicit mixing step
+    template<class T0, class T1, class MIXING>
+    Diagnostic operator()(
+      Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x, MIXING mixing) const;
 };
 
 //! Computes proximal for given γ
-template<class SCALAR> template<class T0, class T1>
+template<class SCALAR> template<class T0, class T1, class MIXING>
 typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
-    Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+    Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x, MIXING mixing) const {
 
   Real previous_objective(0);
   Real rel_obj(0);
@@ -267,8 +283,6 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
   apply_constraints(out, x - Psi() * u_l1);
   objectives[PREVIOUS] = objectives[CURRENT];
 
-  auto const next_fista = [](Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); };
-  Real fista = next_fista(1);
   Error error = Error::ITERATIONS;
   // Move on to other iterations
   for(++niters; niters < itermax() or itermax() == 0; ++niters) {
@@ -291,14 +305,12 @@ typename L1<SCALAR>::Diagnostic L1<SCALAR>::operator()(
 
     Vector<Scalar> const res = u_l1 * nu() + Psi().adjoint() * out;
     apply_soft_threshhold(threshholded, gamma, res);
-    auto const alpha = (fista - 1) / next_fista(fista);
-    u_l1 = (1e0 + alpha) / nu() * (res - threshholded) - alpha * u_l1;
+    mixing(u_l1, 1e0 / nu() * (res - threshholded), niters);
 
     apply_constraints(out, x - Psi() * u_l1);
     objectives[FARTHER] = objectives[FAR];
     objectives[FAR] = objectives[PREVIOUS];
     objectives[PREVIOUS] = objectives[CURRENT];
-    fista = next_fista(fista);
   }
 
   return {niters, rel_obj, objectives[CURRENT], good, error};
@@ -323,6 +335,33 @@ void L1<SCALAR>::apply_constraints(
   else
     out = x;
 }
+
+template<class SCALAR> struct L1<SCALAR>::FistaMixing {
+  typedef typename real_type<SCALAR>::type Real;
+  FistaMixing() : t(1) {};
+  template<class T1>
+    void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint iter) {
+      // reset
+      if(iter == 0) {
+        previous = unmixed;
+        return;
+      }
+      if(iter <= 1) t = next(1);
+      auto const next_t = next(t);
+      auto const alpha = (t - 1) / next_t;
+      t = next_t;
+      previous = (1e0 + alpha) * unmixed.derived() - alpha * previous;
+    }
+  static Real next(Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); }
+  Real t;
+};
+
+template<class SCALAR> struct L1<SCALAR>::NoMixing {
+  template<class T1>
+    void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint) {
+      previous = unmixed;
+    }
+};
 
 }} /* sopt::proximal */
 
