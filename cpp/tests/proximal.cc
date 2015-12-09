@@ -119,6 +119,37 @@ TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
   }
 }
 
+TEST_CASE("L1 proximal utilities", "[l1][utilities]") {
+  using namespace sopt;
+  typedef t_complex Scalar;
+  auto const input = Vector<Scalar>::Random(10).eval();
+  Vector<Scalar> output;
+
+  SECTION("No Mixing") {
+    proximal::L1<Scalar>::NoMixing()(output, 2.1 * input, 0);
+    CHECK(output.isApprox(2.1 * input));
+    proximal::L1<Scalar>::NoMixing()(output, 4.1 * input, 10);
+    CHECK(output.isApprox(4.1 * input));
+  }
+
+  SECTION("Fista Mixing") {
+    proximal::L1<Scalar>::FistaMixing fista;
+    // step zero: no mixing yet
+    fista(output, 2.1 * input, 0);
+    CHECK(output.isApprox(2.1 * input));
+    // step one: first mixing
+    fista(output, 3.1 * input, 1);
+    auto const alpha = (fista.next(1) - 1) / fista.next(fista.next(1));
+    Vector<Scalar> const first = (1e0 + alpha) * 3.1 * input - alpha * 2.1 * input;
+    CHECK(output.isApprox(first));
+    // step two: second mixing
+    fista(output, 4.1 * input, 1);
+    auto const beta = (fista.next(fista.next(1)) - 1) / fista.next(fista.next(fista.next(1)));
+    Vector<Scalar> const second = (1e0 + alpha) * 4.1 * input - alpha * first;
+    CHECK(output.isApprox(second));
+  }
+}
+
 TEST_CASE("L1 proximal", "[l1][proximal]") {
   using namespace sopt;
   typedef t_complex Scalar;

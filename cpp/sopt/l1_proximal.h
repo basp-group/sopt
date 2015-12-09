@@ -133,11 +133,11 @@ typename std::enable_if<
 //!  where \f$Ψ \in C^{N_x \times N_r} \f$ is the sparsifying operator, and \f[|| ||_w1\f] is the
 //!  weighted L1 norm.
 template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
-    //! Functor to do fista mixing
-    struct FistaMixing;
-    //! Functor to do no mixing
-    struct NoMixing;
   public:
+    //! Functor to do fista mixing
+    class FistaMixing;
+    //! Functor to do no mixing
+    class NoMixing;
     //! Underlying scalar type
     typedef typename L1TightFrame<SCALAR>::Scalar Scalar;
     //! Underlying real scalar type
@@ -331,31 +331,34 @@ void L1<SCALAR>::apply_constraints(
     out = x;
 }
 
-template<class SCALAR> struct L1<SCALAR>::FistaMixing {
-  typedef typename real_type<SCALAR>::type Real;
-  FistaMixing() : t(1) {};
-  template<class T1>
-    void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint iter) {
-      // reset
-      if(iter == 0) {
-        previous = unmixed;
-        return;
+template<class SCALAR> class L1<SCALAR>::FistaMixing {
+  public:
+    typedef typename real_type<SCALAR>::type Real;
+    FistaMixing() : t(1) {};
+    template<class T1>
+      void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint iter) {
+        // reset
+        if(iter == 0) {
+          previous = unmixed;
+          return;
+        }
+        if(iter <= 1) t = next(1);
+        auto const next_t = next(t);
+        auto const alpha = (t - 1) / next_t;
+        t = next_t;
+        previous = (1e0 + alpha) * unmixed.derived() - alpha * previous;
       }
-      if(iter <= 1) t = next(1);
-      auto const next_t = next(t);
-      auto const alpha = (t - 1) / next_t;
-      t = next_t;
-      previous = (1e0 + alpha) * unmixed.derived() - alpha * previous;
-    }
-  static Real next(Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); }
-  Real t;
+    static Real next(Real t) { return 0.5 + 0.5 * std::sqrt(1e0 + 4e0 * t * t); }
+  private:
+    Real t;
 };
 
-template<class SCALAR> struct L1<SCALAR>::NoMixing {
-  template<class T1>
-    void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint) {
-      previous = unmixed;
-    }
+template<class SCALAR> class L1<SCALAR>::NoMixing {
+  public:
+    template<class T1>
+      void operator()(Vector<SCALAR> &previous, Eigen::MatrixBase<T1> const &unmixed, t_uint) {
+        previous = unmixed;
+      }
 };
 
 }} /* sopt::proximal */
