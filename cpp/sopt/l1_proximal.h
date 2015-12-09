@@ -235,8 +235,8 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     //! \see L1TightFrame
     template<class ... T>
     auto tight_frame(T &&... args) const
-    -> decltype(L1TightFrame<Scalar>::operator()(std::forward<T>(args)...)) {
-      return L1TightFrame<Scalar>::operator()(std::forward<T>(args)...);
+    -> decltype(this->L1TightFrame<Scalar>::operator()(std::forward<T>(args)...)) {
+      return this->L1TightFrame<Scalar>::operator()(std::forward<T>(args)...);
     }
 
   protected:
