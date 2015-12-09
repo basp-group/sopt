@@ -16,6 +16,9 @@
 
 namespace sopt { namespace algorithm {
 
+
+//! \brief Simultaneous-direction method of the multipliers
+//! \details The algorithm is detailed in (doi) 10.1093/mnras/stu202.
 template<class SCALAR> class SDMM {
   public:
     //! Values indicating how the algorithm ran
