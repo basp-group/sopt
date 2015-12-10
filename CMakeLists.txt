@@ -44,7 +44,7 @@ if(tests OR examples)
 endif()
 
 if(tests)
-  include(catch)
+  include(AddCatchTest)
 endif()
 if(examples)
   include(AddExample)
