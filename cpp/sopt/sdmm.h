@@ -38,7 +38,7 @@ template<class SCALAR> class SDMM {
     typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
     typedef Vector<SCALAR> t_Vector;
-    //! Type of the A and A^t operations
+    //! Type of the A and A^H operations
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the proximal functions
     typedef ProximalFunction<SCALAR> t_Proximal;
@@ -220,7 +220,7 @@ template<class SCALAR>
     assert(y.size() == transforms().size());
     SOPT_TRACE("Solving for x_n");
 
-    // Initialize b of A x = b = sum_i L_i^T(z_i - y_i)
+    // Initialize b of A x = b = sum_i L_i^H(z_i - y_i)
     t_Vector b = out.Zero(out.size());
     for(t_uint i(0); i < transforms().size(); ++i)
       b += transforms(i).adjoint() * (y[i] - z[i]);
