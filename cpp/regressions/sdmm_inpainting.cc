@@ -1,4 +1,5 @@
 #include <complex>
+#include <random>
 #include "catch.hpp"
 #include <iostream>
 #include <iomanip>
@@ -13,46 +14,11 @@
 #include "tools_for_tests/tiffwrappers.h"
 #include "tools_for_tests/directories.h"
 #include "tools_for_tests/cdata.h"
-
-extern "C" {
-#include "sopt/sopt_l1.h"
-}
+#include "tools_for_tests/inpainting.h"
 
 typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
-
-t_Vector target(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
-  return sampling * t_Vector::Map(image.data(), image.size());
-}
-
-Scalar sigma(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
-  auto const snr = 30.0;
-  auto const y0 = target(sampling, image);
-  return y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
-}
-
-t_Vector dirty(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
-  using namespace sopt;
-  extern std::unique_ptr<std::mt19937_64> mersenne;
-
-  // values near the mean are the most likely
-  // standard deviation affects the dispersion of generated values from the mean
-  auto const y0 = target(sampling, image);
-  std::normal_distribution<> gaussian_dist(0, sigma(sampling, image));
-  t_Vector y(y0.size());
-  for (t_int i = 0; i < y0.size(); i++)
-    y(i) = y0(i) + gaussian_dist(*mersenne);
-
-  return y;
-}
-
-Scalar epsilon(sopt::LinearTransform<t_Vector> const &sampling, sopt::Image<> const &image) {
-  auto const y0 = target(sampling, image);
-  auto const nmeasure = y0.size();
-  return std::sqrt(nmeasure + 2*std::sqrt(nmeasure)) * sigma(sampling, image);
-}
-
 
 sopt::algorithm::SDMM<Scalar> create_sdmm(
     sopt::LinearTransform<t_Vector> const &sampling,
@@ -78,7 +44,7 @@ TEST_CASE("Compare SDMMS", "") {
   t_uint const nmeasure = 0.5 * image.size();
   extern std::unique_ptr<std::mt19937_64> mersenne;
   auto const sampling = linear_transform<Scalar>(Sampling(image.size(), nmeasure, *mersenne));
-  auto const y = dirty(sampling, image);
+  auto const y = dirty(sampling, image, *mersenne);
 
   sopt_l1_sdmmparam params = {
     4,    // verbosity
