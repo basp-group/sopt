@@ -47,11 +47,11 @@ template<class SCALAR> class PADMM {
     };
 
     PADMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
-      lagrange_update_scale_(0.9),
+      lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
       is_converged_([](t_Vector const&) { return false; }),
       Phi_(linear_transform_identity<Scalar>()),
       target_(t_Vector::Zero(0)), tight_frame_(false),
-      l1_proximal_(), weighted_l2ball_proximal_(1e0){}
+      l1_proximal_(), weighted_l2ball_proximal_(1e0) {}
     virtual ~PADMM() {}
 
     // Macro helps define properties that can be initialized as in
@@ -69,7 +69,14 @@ template<class SCALAR> class PADMM {
     //! ν parameter
     SOPT_MACRO(nu, Real);
     //! Lagrange update scale β
-    SOPT_MACRO(lagrange_update_scale, Real)
+    SOPT_MACRO(lagrange_update_scale, Real);
+    //! \brief Convergence of the relative variation of the objective functions
+    //! \details If negative, this convergence criteria is disabled.
+    SOPT_MACRO(relative_variation, Real);
+    //! \brief Convergence of the residuals
+    //! \details If negative, this convergence criteria is disabled.
+    SOPT_MACRO(residual_convergence, Real);
+    //! A function verifying convergence
     //! A function verifying convergence
     SOPT_MACRO(is_converged, t_IsConverged);
     //! Measurement operator
@@ -165,10 +172,26 @@ template<class SCALAR> class PADMM {
     //! See therein for notation
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
 
-    //! Forwards to convergence function parameter
-    bool is_converged(t_Vector const &x) const { return is_converged()(x); }
+    bool relative_variation_convergence(Real previous, Real current) const {
+      return relative_variation() > 0e0
+        and std::abs(previous - current) > std::abs(current) * relative_variation();
+    }
+    bool residual_norm_convergence(Real residual) const {
+      return residual_convergence() > 0e0 and residual < residual_convergence();
+    }
 
   protected:
+    //! Checks convergence
+    //! \param[in] x: current solution
+    //! \param[in] previous: previous objective function
+    //! \param[in] current: current objective function
+    //! \param[in] residual: norm of the residuals
+    bool is_converged(t_Vector const &x, Real previous, Real current, Real residual) const {
+      return relative_variation_convergence(previous, current)
+        and residual_norm_convergence(residual)
+        and is_converged()(x);
+    }
+
     //! Calls l1 proximal operator, checking for thight frame
     template<class T0, class T1>
     typename proximal::L1<Scalar>::Diagnostic call_l1_proximal(
@@ -201,15 +224,14 @@ template<class SCALAR>
     for(t_uint niters(0); niters < itermax(); ++niters) {
       SOPT_NOTICE("Iteration {}/{}. ", niters, itermax());
 
+      // Iteration code
       t_Vector const z = weighted_l2ball_proximal(-lambda - residual);
-
       l1_diag = l1_proximal(
           out, gamma() / nu(), out - Phi().adjoint() * (residual + lambda + z) / nu());
-
-
       residual = Phi() * out - target();
       lambda += lagrange_update_scale() * (residual + z);
 
+      // Print-out stuff
       auto const previous_objective = objective;
       objective = sopt::l1_norm(Psi().adjoint() * out);
       t_real const relative_objective = std::abs(previous_objective - objective) / objective;
@@ -221,7 +243,8 @@ template<class SCALAR>
           objective, relative_objective, weighted_l2ball_proximal_epsilon(), norm_residuals
       );
 
-      if(is_converged(out)) {
+      // Convergence checking
+      if(is_converged(out, previous_objective, objective, norm_residuals)) {
         SOPT_INFO("Approximate PADDM converged in {} of {} iterations", niters, itermax());
         return {niters, true, l1_diag};
       }
