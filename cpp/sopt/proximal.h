@@ -152,7 +152,7 @@ template<class T> class WeightedL2Ball : public L2Ball<T> {
     //! Weights associated with each dimension
     t_Vector const & weights() const { return weights_; }
     //! Weights associated with each dimension
-    template<class T0> WeightedL2Ball<T> &weights(Eigen::MatrixBase<T0> const &w) const {
+    template<class T0> WeightedL2Ball<T> &weights(Eigen::MatrixBase<T0> const &w) {
       weights_ = w;
       return *this;
     }
