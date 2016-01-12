@@ -37,6 +37,22 @@ TEST_CASE("L2Ball", "[proximal]") {
   CHECK(x.isApprox(out));
 }
 
+TEST_CASE("WeightedL2Ball", "[proximal]") {
+  using namespace sopt;
+  Vector<t_real> const weights = 0.01 * Vector<t_real>::Random(5).array() + 1e0;
+  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  proximal::WeightedL2Ball<t_real> wball(0.5, weights);
+  proximal::L2Ball<t_real> ball(0.5);
+
+  Vector<t_real> const expected
+    = ball((x.array() * weights.array()).matrix()).array() / weights.array();
+  Vector<t_real> const actual = wball(x);
+  CHECK(actual.isApprox(expected));
+
+  wball.epsilon((x.array() * weights.array()).matrix().stableNorm() * 1.001);
+  CHECK(x.isApprox(wball(x)));
+}
+
 TEST_CASE("Euclidian norm", "[proximal]") {
   using namespace sopt;
   proximal::EuclidianNorm eucl;

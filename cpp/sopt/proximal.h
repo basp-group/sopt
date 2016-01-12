@@ -88,25 +88,84 @@ template<class T> class L2Ball {
     //! Calls proximal function
     void operator()(Vector<T>& out, Vector<T> const &x) const {
       auto const norm = x.stableNorm();
-      if(norm < epsilon())
-        out = x;
-      else
+      if(norm > epsilon())
         out = x * (epsilon() / norm);
+      else
+        out = x;
     }
     //! Lazy version
     template<class T0>
-      ProximalExpression<L2Ball, T0>
-      operator()(Real const &t, Eigen::MatrixBase<T0> const &x) const {
-        return {*this, t, x};
+      EnveloppeExpression<L2Ball, T0>
+      operator()(Real const &, Eigen::MatrixBase<T0> const &x) const {
+        return {*this, x};
+      }
+
+    //! Lazy version
+    template<class T0>
+      EnveloppeExpression<L2Ball, T0> operator()(Eigen::MatrixBase<T0> const &x) const {
+        return {*this, x};
       }
 
     //! Size of the ball
     Real epsilon() const { return epsilon_; }
     //! Size of the ball
-    L2Ball epsilon(Real eps) { epsilon_ = eps; return *this; }
+    L2Ball<T>& epsilon(Real eps) { epsilon_ = eps; return *this; }
   protected:
     //! Size of the ball
     Real epsilon_;
+};
+
+template<class T> class WeightedL2Ball : public L2Ball<T> {
+
+  public:
+    typedef typename L2Ball<T>::Real Real;
+    typedef Vector<Real> t_Vector;
+    //! Constructs an L2 ball proximal of size epsilon with given weights
+    template<class T0>
+    WeightedL2Ball(Real epsilon, Eigen::DenseBase<T0> const &w) : L2Ball<T>(epsilon), weights_(w) {}
+    //! Constructs an L2 ball proximal of size epsilon
+    WeightedL2Ball(Real epsilon) : WeightedL2Ball(epsilon, t_Vector::Ones(1)) {}
+    //! Calls proximal function
+    void operator()(Vector<T>& out, typename real_type<T>::type, Vector<T> const &x) const {
+      return operator()(out, x);
+    }
+    //! Calls proximal function
+    void operator()(Vector<T>& out, Vector<T> const &x) const {
+      auto const norm = (x.array() * weights().array()).matrix().stableNorm();
+      if(norm > epsilon())
+        out = x * (epsilon() / norm);
+      else
+        out = x;
+    }
+    //! Lazy version
+    template<class T0>
+      EnveloppeExpression<WeightedL2Ball, T0>
+      operator()(Real const &, Eigen::MatrixBase<T0> const &x) const {
+        return {*this, x};
+      }
+    //! Lazy version
+    template<class T0>
+      EnveloppeExpression<WeightedL2Ball, T0> operator()(Eigen::MatrixBase<T0> const &x) const {
+        return {*this, x};
+      }
+
+    //! Weights associated with each dimension
+    t_Vector const & weights() const { return weights_; }
+    //! Weights associated with each dimension
+    template<class T0> WeightedL2Ball<T> &weights(Eigen::MatrixBase<T0> const &w) const {
+      weights_ = w;
+      return *this;
+    }
+    //! Size of the ball
+    Real epsilon() const { return L2Ball<T>::epsilon(); }
+    //! Size of the ball
+    WeightedL2Ball<T> &epsilon(Real const & eps) {
+      L2Ball<T>::epsilon(eps);
+      return *this;
+    }
+
+  protected:
+    t_Vector weights_;
 };
 
 //! Translation over proximal function
