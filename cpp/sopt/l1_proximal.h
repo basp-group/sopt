@@ -212,7 +212,7 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
     //! Bound on the squared norm of the operator Psi
     SOPT_MACRO(nu, Real);
-    //! Conjugate gradient
+    //! Weights associated with the l1 proximal
     SOPT_MACRO(weights, Vector<Real>);
 #   undef SOPT_MACRO
 
