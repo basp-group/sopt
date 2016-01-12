@@ -145,6 +145,8 @@ template<class SCALAR> class PADMM {
     SOPT_MACRO(positivity_constraint, l1, L1);
     SOPT_MACRO(real_constraint, l1, L1);
     SOPT_MACRO(fista_mixing, l1, L1);
+    SOPT_MACRO(nu, l1, L1);
+    SOPT_MACRO(weights, l1, L1);
     SOPT_MACRO(epsilon, weighted_l2ball, WeightedL2Ball);
     SOPT_MACRO(weights, weighted_l2ball, WeightedL2Ball);
 #   undef SOPT_MACRO
