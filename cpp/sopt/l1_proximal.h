@@ -26,9 +26,8 @@ template<class SCALAR> class L1TightFrame
     //! Underlying real scalar type
     typedef typename real_type<Scalar>::type Real;
 
-    L1TightFrame() : Psi_(linear_transform_identity<Scalar>()), nu_(1e0), weights_(1) {
-      weights_(0) = 1;
-    }
+    L1TightFrame()
+      : Psi_(linear_transform_identity<Scalar>()), nu_(1e0), weights_(Vector<Real>::Ones(1)) {}
 
 #   define SOPT_MACRO(NAME, TYPE)                                                           \
         TYPE const& NAME() const { return NAME ## _; }                                      \
