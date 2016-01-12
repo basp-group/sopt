@@ -131,7 +131,9 @@ template<class T> class WeightedL2Ball : public L2Ball<T> {
     }
     //! Calls proximal function
     void operator()(Vector<T>& out, Vector<T> const &x) const {
-      auto const norm = (x.array() * weights().array()).matrix().stableNorm();
+      auto const norm = weights().size() == 1 ?
+        x.stableNorm() * std::abs(weights()(0)):
+        (x.array() * weights().array()).matrix().stableNorm();
       if(norm > epsilon())
         out = x * (epsilon() / norm);
       else
@@ -153,6 +155,10 @@ template<class T> class WeightedL2Ball : public L2Ball<T> {
     t_Vector const & weights() const { return weights_; }
     //! Weights associated with each dimension
     template<class T0> WeightedL2Ball<T> &weights(Eigen::MatrixBase<T0> const &w) {
+      if((w.array() < 0e0).any())
+        SOPT_THROW("Weights cannot be negative");
+      if(w.stableNorm() < 1e-12)
+        SOPT_THROW("Weights cannot be null");
       weights_ = w;
       return *this;
     }

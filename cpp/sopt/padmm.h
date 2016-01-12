@@ -205,6 +205,13 @@ template<class SCALAR> class PADMM {
       return l1_proximal()(out, gamma, x);
     }
 
+    //! Helper function to computed weighted norm of residuals
+    static Real weighted_norm(Vector<Scalar> const &residual, Vector<Real> const &weights) {
+      return weights.size() == 1 ?
+        residual.stableNorm() * std::abs(weights(0)):
+        (residual.array() * weights.array()).matrix().stableNorm();
+    }
+
 };
 
 template<class SCALAR>
@@ -237,8 +244,7 @@ template<class SCALAR>
       auto const previous_objective = objective;
       objective = sopt::l1_norm(Psi().adjoint() * out);
       t_real const relative_objective = std::abs(previous_objective - objective) / objective;
-      t_real const norm_residuals = (
-          residual.array() * weighted_l2ball_proximal_weights().array()).matrix().stableNorm();
+      auto const norm_residuals = weighted_norm(residual, weighted_l2ball_proximal_weights());
       SOPT_NOTICE(
           "    - objective: obj value = {}, rel obj = {}\n"
           "    - Residuals: epsilon = {}, residual norm = {}",
