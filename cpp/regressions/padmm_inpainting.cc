@@ -1,0 +1,115 @@
+#include <complex>
+#include "catch.hpp"
+#include <iostream>
+#include <iomanip>
+#include <type_traits>
+
+#include "sopt/padmm.h"
+#include "sopt/logging.h"
+#include "sopt/sampling.h"
+#include "sopt/wavelets.h"
+#include "sopt/relative_variation.h"
+#include "sopt/proximal.h"
+#include "tools_for_tests/tiffwrappers.h"
+#include "tools_for_tests/directories.h"
+#include "tools_for_tests/cdata.h"
+#include "tools_for_tests/inpainting.h"
+
+typedef double Scalar;
+typedef sopt::Vector<Scalar> t_Vector;
+typedef sopt::Matrix<Scalar> t_Matrix;
+
+sopt::algorithm::PADMM<Scalar> create_padmm(
+    sopt::LinearTransform<t_Vector> const &phi,
+    sopt::LinearTransform<t_Vector> const &psi,
+    t_Vector const &y,
+    sopt_l1_param_padmm const &params) {
+
+  using namespace sopt;
+  return algorithm::PADMM<Scalar>()
+    .itermax(params.max_iter)
+    .gamma(params.gamma)
+    .relative_variation(params.rel_obj)
+    .weighted_l2ball_proximal_epsilon(params.epsilon)
+    .tight_frame(params.paraml1.tight)
+    .l1_proximal_nu(params.paraml1.nu)
+    .l1_proximal_itermax(params.paraml1.max_iter)
+    .l1_proximal_positivity_constraint(params.paraml1.pos)
+    .residual_convergence(params.epsilon * params.epsilon_tol_scale)
+    .lagrange_update_scale(params.lagrange_update_scale)
+    .nu(params.nu)
+    .Psi(psi)
+    .Phi(phi)
+    .target(y)
+    // just for show, 1 is the default value, so these calls do not do anything
+    .weighted_l2ball_proximal_weights(Vector<t_real>::Ones(1))
+    .l1_proximal_weights(Vector<t_real>::Ones(1));
+}
+
+TEST_CASE("Compare PADMM C++ and C", "") {
+  using namespace sopt;
+  // Read image and create target vector y
+  Image<> const image = notinstalled::read_standard_tiff("cameraman256");
+  t_uint const nmeasure = 0.5 * image.size();
+  extern std::unique_ptr<std::mt19937_64> mersenne;
+  auto const sampling = linear_transform<Scalar>(Sampling(image.size(), nmeasure, *mersenne));
+  auto const y = dirty(sampling, image, *mersenne);
+
+  sopt_l1_param_padmm params{
+    2,    // verbosity
+    200,   // max iter
+    0.1,  // gamma
+    0.0005, // relative change
+    epsilon(sampling, image), // radius of the l2ball
+    1, // real out
+    1, // real meas
+    {
+      1,    // verbose = 1;
+      50,   // max_iter = 50;
+      0.01, // rel_obj = 0.01;
+      1,    // nu = 1;
+      0,    // tight = 0;
+      1,    // pos = 1;
+    },
+    1.001, // epsilon tol scale
+    0.9, // lagrange_update_scale
+    1.0, // nu
+  };
+
+  // Create c++ SDMM
+  auto const wavelet = wavelets::factory("DB2", 2);
+  auto const psi = linear_transform<Scalar>(wavelet, image.rows(), image.cols());
+
+  // Create C bindings for C++ operators
+  CData<Scalar> const sampling_data{image.size(), y.size(), sampling};
+  CData<Scalar> const psi_data{image.size(), image.size(), psi};
+
+  // Try increasing number of iterations and check output of c and c++ algorithms are the same
+  for(t_uint i: {1, 2, 5, 10}) {
+    SECTION(fmt::format("With {} iterations", i)) {
+      sopt_l1_param_padmm c_params = params;
+      c_params.max_iter = i;
+      auto padmm = ::create_padmm(sampling, psi, y, c_params);
+      t_Vector cpp(image.size());
+      auto const diagnostic = padmm(cpp, t_Vector::Zero(image.size()));
+
+      t_Vector c = t_Vector::Zero(image.size());
+      t_Vector l1_weights = t_Vector::Ones(image.size());
+      t_Vector l2_weights = t_Vector::Ones((sampling * image).size());
+      sopt_l1_solver_padmm(
+          (void*) c.data(), c.size(),
+          &direct_transform<Scalar>, (void**)&sampling_data,
+          &adjoint_transform<Scalar>, (void**)&sampling_data,
+          &direct_transform<Scalar>, (void**)&psi_data,
+          &adjoint_transform<Scalar>, (void**)&psi_data, // synthesis
+          c.size(),
+          (void*) y.data(), y.size(),
+          l1_weights.data(),
+          l2_weights.data(),
+          c_params
+      );
+
+      CHECK(cpp.isApprox(c));
+    }
+  };
+}
