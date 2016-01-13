@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 #include "sopt/proximal.h"
-#include "sopt/padmm.h"
+#include "sopt/admm.h"
 
 std::random_device rd;
 std::default_random_engine rengine(rd());
@@ -24,6 +24,6 @@ TEST_CASE("Do nothing") {
   t_Vector const input = t_Vector::Random(N).array() + 1e0;
   t_Matrix const Psi = t_Vector::Random(N, N).array();
   t_Vector output;
-  auto const padmm = algorithm::PADMM<Scalar>().Psi(Psi).itermax(30).gamma(0.01);
-  padmm(output, input);
+  auto const admm = algorithm::ADMM<Scalar>().Psi(Psi).itermax(30).gamma(0.01);
+  admm(output, input);
 }

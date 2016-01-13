@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <type_traits>
 
-#include "sopt/padmm.h"
+#include "sopt/admm.h"
 #include "sopt/logging.h"
 #include "sopt/sampling.h"
 #include "sopt/wavelets.h"
@@ -19,14 +19,14 @@ typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
-sopt::algorithm::PADMM<Scalar> create_padmm(
+sopt::algorithm::ADMM<Scalar> create_admm(
     sopt::LinearTransform<t_Vector> const &phi,
     sopt::LinearTransform<t_Vector> const &psi,
     t_Vector const &y,
     sopt_l1_param_padmm const &params) {
 
   using namespace sopt;
-  return algorithm::PADMM<Scalar>()
+  return algorithm::ADMM<Scalar>()
     .itermax(params.max_iter + 1)
     .gamma(params.gamma)
     .relative_variation(params.rel_obj)
@@ -48,7 +48,7 @@ sopt::algorithm::PADMM<Scalar> create_padmm(
     .l1_proximal_weights(Vector<t_real>::Ones(1));
 }
 
-TEST_CASE("Compare PADMM C++ and C", "") {
+TEST_CASE("Compare ADMM C++ and C", "") {
   using namespace sopt;
   // Read image and create target vector y
   Image<> const image = notinstalled::read_standard_tiff("cameraman256");
@@ -91,9 +91,9 @@ TEST_CASE("Compare PADMM C++ and C", "") {
     SECTION(fmt::format("With {} iterations", i)) {
       sopt_l1_param_padmm c_params = params;
       c_params.max_iter = i;
-      auto padmm = ::create_padmm(sampling, psi, y, c_params);
+      auto admm = ::create_admm(sampling, psi, y, c_params);
       t_Vector cpp(image.size());
-      auto const diagnostic = padmm(cpp, t_Vector::Zero(image.size()));
+      auto const diagnostic = admm(cpp, t_Vector::Zero(image.size()));
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector l1_weights = t_Vector::Ones(image.size());

@@ -1,5 +1,5 @@
-#ifndef SOPT_PADMM_H
-#define SOPT_PADMM_H
+#ifndef SOPT_ADMM_H
+#define SOPT_ADMM_H
 
 #include <vector>
 #include <limits>
@@ -21,7 +21,7 @@ namespace sopt { namespace algorithm {
 //! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$, where \f$f(x) =
 //! ||Ψ^Hx||_1 + i_C(x)\f$ and \f$h(x) = i_B(z)\f$ with \f$C = R^N_{+}\f$ and \f$B = {z \in R^M:
 //! ||z||_2 \leq \epsilon}\f$.
-template<class SCALAR> class PADMM {
+template<class SCALAR> class ADMM {
   public:
     //! Scalar type
     typedef SCALAR value_type;
@@ -46,19 +46,19 @@ template<class SCALAR> class PADMM {
       typename proximal::L1<Scalar>::Diagnostic l1_diag;
     };
 
-    PADMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
+    ADMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
       lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
       is_converged_([](t_Vector const&) { return false; }),
       Phi_(linear_transform_identity<Scalar>()),
       target_(t_Vector::Zero(0)), tight_frame_(false),
       l1_proximal_(), weighted_l2ball_proximal_(1e0) {}
-    virtual ~PADMM() {}
+    virtual ~ADMM() {}
 
     // Macro helps define properties that can be initialized as in
-    // auto sdmm  = PADMM<float>().prop0(value).prop1(value);
+    // auto sdmm  = ADMM<float>().prop0(value).prop1(value);
 #   define SOPT_MACRO(NAME, TYPE)                                                   \
         TYPE const& NAME() const { return NAME ## _; }                              \
-        PADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
+        ADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
       protected:                                                                    \
         TYPE NAME ## _;                                                             \
       public:
@@ -91,7 +91,7 @@ template<class SCALAR> class PADMM {
     SOPT_MACRO(weighted_l2ball_proximal, proximal::WeightedL2Ball<Scalar>);
 #   undef SOPT_MACRO
     //! Analysis operator Ψ
-    PADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
+    ADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
     //! \brief Analysis operator Ψ
     //! \details Under-the-hood, the object is actually owned by the L1 proximal.
     t_LinearTransform const & Psi() const { return l1_proximal().Psi(); }
@@ -100,7 +100,7 @@ template<class SCALAR> class PADMM {
     template<class T0, class ... T>
       typename std::enable_if<
         not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        PADMM<SCALAR> &
+        ADMM<SCALAR> &
       >::type Psi(T0 &&t0, T &&... args) {
         l1_proximal().Psi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
         return *this;
@@ -109,7 +109,7 @@ template<class SCALAR> class PADMM {
     template<class T0, class ... T>
       typename std::enable_if<
         not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        PADMM<SCALAR> &
+        ADMM<SCALAR> &
       >::type Phi(T0 &&t0, T &&... args) {
         return Phi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
       }
@@ -135,7 +135,7 @@ template<class SCALAR> class PADMM {
           return NAME ## _proximal().VAR();                                                 \
         }                                                                                   \
         /** \brief Forwards to l1_proximal **/                                              \
-        PADMM<Scalar> & NAME ## _proximal_ ## VAR(                                          \
+        ADMM<Scalar> & NAME ## _proximal_ ## VAR(                                          \
             decltype(std::declval<proximal::PROXIMAL<Scalar> const>().VAR()) VAR)        {  \
           NAME ## _proximal().VAR(VAR);                                                     \
           return *this;                                                                     \
@@ -168,7 +168,7 @@ template<class SCALAR> class PADMM {
       }
 
 
-    //! \brief Implements PADMM
+    //! \brief Implements ADMM
     //! \details Follows Combettes and Pesquet "Proximal Splitting Methods in Signal Processing",
     //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
     //! See therein for notation
@@ -214,14 +214,14 @@ template<class SCALAR> class PADMM {
 };
 
 template<class SCALAR>
-  typename PADMM<SCALAR>::Diagnostic
-  PADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
+  typename ADMM<SCALAR>::Diagnostic
+  ADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
 
     if((Phi().adjoint() * target()).size() != input.size()) {
       SOPT_THROW("target, measurement operator and input vector have inconsistent sizes");
     }
 
-    SOPT_INFO("Performing approximate PADMM ");
+    SOPT_INFO("Performing approximate ADMM ");
     SOPT_NOTICE("- Initialization");
     out = Phi().adjoint() * target() / nu();
     t_Vector residual = Phi() * out - target();
@@ -253,12 +253,12 @@ template<class SCALAR>
 
       // Convergence checking
       if(is_converged(out, previous_objective, objective, norm_residuals)) {
-        SOPT_INFO("Approximate PADMM converged in {} of {} iterations", niters, itermax());
+        SOPT_INFO("Approximate ADMM converged in {} of {} iterations", niters, itermax());
         return {niters, true, l1_diag};
       }
     }
 
-    SOPT_WARN("Approximate PADMM did not converge within {} iterations", itermax());
+    SOPT_WARN("Approximate ADMM did not converge within {} iterations", itermax());
     return {itermax(), false, l1_diag};
   }
 
