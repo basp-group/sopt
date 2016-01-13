@@ -168,10 +168,11 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     template<class T0, class T1>
     Diagnostic operator()(
         Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+      // Note that we *must* call eval on x, in case it is an expression involving out
       if(fista_mixing())
-        return operator()(out, gamma, x, FistaMixing());
+        return operator()(out, gamma, x.eval(), FistaMixing());
       else
-        return operator()(out, gamma, x, NoMixing());
+        return operator()(out, gamma, x.eval(), NoMixing());
     }
 
     //! Lazy version
