@@ -27,14 +27,16 @@ sopt::algorithm::PADMM<Scalar> create_padmm(
 
   using namespace sopt;
   return algorithm::PADMM<Scalar>()
-    .itermax(params.max_iter)
+    .itermax(params.max_iter + 1)
     .gamma(params.gamma)
     .relative_variation(params.rel_obj)
     .weighted_l2ball_proximal_epsilon(params.epsilon)
-    .tight_frame(params.paraml1.tight)
+    .tight_frame(params.paraml1.tight == 1)
+    .l1_proximal_tolerance(params.paraml1.rel_obj)
     .l1_proximal_nu(params.paraml1.nu)
     .l1_proximal_itermax(params.paraml1.max_iter)
-    .l1_proximal_positivity_constraint(params.paraml1.pos)
+    .l1_proximal_positivity_constraint(params.paraml1.pos == 1)
+    .l1_proximal_real_constraint(params.real_out)
     .residual_convergence(params.epsilon * params.epsilon_tol_scale)
     .lagrange_update_scale(params.lagrange_update_scale)
     .nu(params.nu)
@@ -64,8 +66,8 @@ TEST_CASE("Compare PADMM C++ and C", "") {
     1, // real out
     1, // real meas
     {
-      1,    // verbose = 1;
-      50,   // max_iter = 50;
+      2,    // verbose = 1;
+      8,   // max_iter = 50;
       0.01, // rel_obj = 0.01;
       1,    // nu = 1;
       0,    // tight = 0;
@@ -85,7 +87,7 @@ TEST_CASE("Compare PADMM C++ and C", "") {
   CData<Scalar> const psi_data{image.size(), image.size(), psi};
 
   // Try increasing number of iterations and check output of c and c++ algorithms are the same
-  for(t_uint i: {1, 2, 5, 10}) {
+  for(t_uint i: {1, 5, 10}) {
     SECTION(fmt::format("With {} iterations", i)) {
       sopt_l1_param_padmm c_params = params;
       c_params.max_iter = i;

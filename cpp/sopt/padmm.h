@@ -211,7 +211,6 @@ template<class SCALAR> class PADMM {
         residual.stableNorm() * std::abs(weights(0)):
         (residual.array() * weights.array()).matrix().stableNorm();
     }
-
 };
 
 template<class SCALAR>
@@ -226,7 +225,7 @@ template<class SCALAR>
     SOPT_NOTICE("- Initialization");
     out = Phi().adjoint() * target() / nu();
     t_Vector residual = Phi() * out - target();
-    Real objective = sopt::l1_norm(Psi().adjoint() * out);
+    Real objective = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
     typename proximal::L1<Scalar>::Diagnostic l1_diag{0, 0, 0, false};
 
     t_Vector lambda = t_Vector::Zero(target().size());
@@ -242,23 +241,24 @@ template<class SCALAR>
 
       // Print-out stuff
       auto const previous_objective = objective;
-      objective = sopt::l1_norm(Psi().adjoint() * out);
+      objective = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
       t_real const relative_objective = std::abs(previous_objective - objective) / objective;
       auto const norm_residuals = weighted_norm(residual, weighted_l2ball_proximal_weights());
       SOPT_NOTICE(
-          "    - objective: obj value = {}, rel obj = {}\n"
+          "    - objective: obj value = {}, rel obj = {}", objective, relative_objective);
+      SOPT_NOTICE(
           "    - Residuals: epsilon = {}, residual norm = {}",
-          objective, relative_objective, weighted_l2ball_proximal_epsilon(), norm_residuals
+          weighted_l2ball_proximal_epsilon(), norm_residuals
       );
 
       // Convergence checking
       if(is_converged(out, previous_objective, objective, norm_residuals)) {
-        SOPT_INFO("Approximate PADDM converged in {} of {} iterations", niters, itermax());
+        SOPT_INFO("Approximate PADMM converged in {} of {} iterations", niters, itermax());
         return {niters, true, l1_diag};
       }
     }
 
-    SOPT_WARN("Approximate PADDM did not converge within {} iterations", itermax());
+    SOPT_WARN("Approximate PADMM did not converge within {} iterations", itermax());
     return {itermax(), false, l1_diag};
   }
 
