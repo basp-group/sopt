@@ -119,8 +119,10 @@ template<class T0, class T1>
 //! Computes weighted L1 norm
 template<class T0, class T1>
   typename real_type<typename T0::Scalar>::type l1_norm(
-    Eigen::ArrayBase<T0> const& input, Eigen::ArrayBase<T1> const &weight) {
-      return (input.cwiseAbs() * weight).real().sum();
+    Eigen::ArrayBase<T0> const& input, Eigen::ArrayBase<T1> const &weights) {
+      if(weights.size() == 1)
+        return input.cwiseAbs().sum() * std::abs(weights(0));
+      return (input.cwiseAbs() * weights).real().sum();
     }
 //! Computes weighted L1 norm
 template<class T0, class T1>

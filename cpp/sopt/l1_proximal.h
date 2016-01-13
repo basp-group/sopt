@@ -118,12 +118,8 @@ typename std::enable_if<
   typename real_type<SCALAR>::type
 > :: type L1TightFrame<SCALAR>::objective(
     Eigen::MatrixBase<T0> const &x, Eigen::MatrixBase<T1> const &z, Real const &gamma) const {
-  if(weights().size() == 1)
-    return 0.5 * (x - z).squaredNorm() + gamma * sopt::l1_norm(Psi().adjoint() * z) * weights()(0);
-  else {
-    return 0.5 * (x - z).squaredNorm()
-      + gamma * sopt::l1_norm(Psi().adjoint() * z, weights());
-  }
+  t_real const obj = 0.5 * (x - z).squaredNorm();
+  return 0.5 * (x - z).squaredNorm() + gamma * sopt::l1_norm(Psi().adjoint() * z, weights());
 }
 
 //! \brief L1 proximal, including linear transform
