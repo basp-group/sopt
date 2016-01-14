@@ -139,6 +139,22 @@ template<class T0>
   typename real_type<typename T0::Scalar>::type l1_norm(
     Eigen::MatrixBase<T0> const& input) { return l1_norm(input.array()); }
 
+//! Computes weighted L2 norm
+template<class T0, class T1>
+  typename real_type<typename T0::Scalar>::type l2_norm(
+    Eigen::ArrayBase<T0> const& input, Eigen::ArrayBase<T1> const &weights) {
+      if(weights.size() == 1)
+        return input.matrix().stableNorm() * std::abs(weights(0));
+      return (input * weights).matrix().stableNorm();
+    }
+//! Computes weighted L2 norm
+template<class T0, class T1>
+  typename real_type<typename T0::Scalar>::type l2_norm(
+    Eigen::MatrixBase<T0> const& input, Eigen::MatrixBase<T1> const &weights) {
+      return l2_norm(input.derived().array(), weights.derived().array());
+    }
+
+
 namespace details {
   //! Greatest common divisor
   inline t_int gcd(t_int a, t_int b) { return b == 0 ? a : gcd(b, a % b); }
