@@ -164,7 +164,7 @@ template<class SCALAR> class SDMM {
     virtual void initialization(t_Vectors &y, t_Vectors& z, t_Vector const &x) const;
 
     //! Checks that the input make sense
-    virtual void sanity_check(t_Vector const&input) const;
+    virtual void sanity_check(t_Vector const& input) const;
 };
 
 template<class SCALAR>
