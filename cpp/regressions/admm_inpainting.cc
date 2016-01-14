@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <type_traits>
 
-#include "sopt/admm.h"
+#include "sopt/l1_admm.h"
 #include "sopt/logging.h"
 #include "sopt/sampling.h"
 #include "sopt/wavelets.h"
@@ -19,18 +19,17 @@ typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
-sopt::algorithm::ADMM<Scalar> create_admm(
+sopt::algorithm::L1_ADMM<Scalar> create_admm(
     sopt::LinearTransform<t_Vector> const &phi,
     sopt::LinearTransform<t_Vector> const &psi,
-    t_Vector const &y,
     sopt_l1_param_padmm const &params) {
 
   using namespace sopt;
-  return algorithm::ADMM<Scalar>()
+  return algorithm::L1_ADMM<Scalar>()
     .itermax(params.max_iter + 1)
     .gamma(params.gamma)
     .relative_variation(params.rel_obj)
-    .weighted_l2ball_proximal_epsilon(params.epsilon)
+    .l2ball_proximal_epsilon(params.epsilon)
     .tight_frame(params.paraml1.tight == 1)
     .l1_proximal_tolerance(params.paraml1.rel_obj)
     .l1_proximal_nu(params.paraml1.nu)
@@ -42,9 +41,8 @@ sopt::algorithm::ADMM<Scalar> create_admm(
     .nu(params.nu)
     .Psi(psi)
     .Phi(phi)
-    .target(y)
     // just for show, 1 is the default value, so these calls do not do anything
-    .weighted_l2ball_proximal_weights(Vector<t_real>::Ones(1))
+    .l2ball_proximal_weights(Vector<t_real>::Ones(1))
     .l1_proximal_weights(Vector<t_real>::Ones(1));
 }
 
@@ -91,9 +89,9 @@ TEST_CASE("Compare ADMM C++ and C", "") {
     SECTION(fmt::format("With {} iterations", i)) {
       sopt_l1_param_padmm c_params = params;
       c_params.max_iter = i;
-      auto admm = ::create_admm(sampling, psi, y, c_params);
+      auto admm = ::create_admm(sampling, psi, c_params);
       t_Vector cpp(image.size());
-      auto const diagnostic = admm(cpp, t_Vector::Zero(image.size()));
+      auto const diagnostic = admm(cpp, y);
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector l1_weights = t_Vector::Ones(image.size());

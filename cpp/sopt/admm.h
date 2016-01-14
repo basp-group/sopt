@@ -1,26 +1,19 @@
 #ifndef SOPT_ADMM_H
 #define SOPT_ADMM_H
 
-#include <vector>
 #include <limits>
-#include <numeric>
+#include <functional>
 
 #include "sopt/types.h"
 #include "sopt/linear_transform.h"
-#include "sopt/proximal.h"
-#include "sopt/wrapper.h"
 #include "sopt/exception.h"
 #include "sopt/logging.h"
-#include "sopt/L1_proximal.h"
-#include "sopt/relative_variation.h"
 
 namespace sopt { namespace algorithm {
 
 
-//! \brief Inexact ADMM-based approach
-//! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$, where \f$f(x) =
-//! ||Ψ^Hx||_1 + i_C(x)\f$ and \f$h(x) = i_B(z)\f$ with \f$C = R^N_{+}\f$ and \f$B = {z \in R^M:
-//! ||z||_2 \leq \epsilon}\f$.
+//! \brief Alternate Direction method of mutltipliers
+//! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$.
 template<class SCALAR> class ADMM {
   public:
     //! Scalar type
@@ -30,11 +23,13 @@ template<class SCALAR> class ADMM {
     //! Real type
     typedef typename real_type<Scalar>::type Real;
     //! Type of then underlying vectors
-    typedef Vector<SCALAR> t_Vector;
+    typedef Vector<Scalar> t_Vector;
     //! Type of the Ψ and Ψ^H operations, as well as Φ and Φ^H
     typedef LinearTransform<t_Vector> t_LinearTransform;
     //! Type of the convergence function
-    typedef ConvergenceFunction<SCALAR> t_IsConverged;
+    typedef ConvergenceFunction<Scalar> t_IsConverged;
+    //! Type of the convergence function
+    typedef ProximalFunction<Scalar> t_Proximal;
 
     //! Values indicating how the algorithm ran
     struct Diagnostic {
@@ -42,16 +37,17 @@ template<class SCALAR> class ADMM {
       t_uint niters;
       //! Wether convergence was achieved
       bool good;
-      //! Diagnostic from calling L1 proximal
-      typename proximal::L1<Scalar>::Diagnostic l1_diag;
+      Diagnostic(t_uint niters, bool good) : niters(niters), good(good) {}
     };
 
-    ADMM() : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
-      lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
-      is_converged_([](t_Vector const&) { return false; }),
-      Phi_(linear_transform_identity<Scalar>()),
-      target_(t_Vector::Zero(0)), tight_frame_(false),
-      l1_proximal_(), weighted_l2ball_proximal_(1e0) {}
+    //! Setups ADMM
+    //! \param[in] f_proximal: proximal operator of the \f$f\f$ function.
+    //! \param[in] g_proximal: proximal operator of the \f$g\f$ function
+    ADMM(t_Proximal const & f_proximal, t_Proximal const & g_proximal)
+      : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
+        lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
+        is_converged_(), Phi_(linear_transform_identity<Scalar>()),
+        f_proximal_(f_proximal), g_proximal_(g_proximal) {}
     virtual ~ADMM() {}
 
     // Macro helps define properties that can be initialized as in
@@ -81,92 +77,24 @@ template<class SCALAR> class ADMM {
     SOPT_MACRO(is_converged, t_IsConverged);
     //! Measurement operator
     SOPT_MACRO(Phi, t_LinearTransform);
-    //! Target of the measurements
-    SOPT_MACRO(target, t_Vector);
-    //! Whether Ψ is a tight-frame or not
-    SOPT_MACRO(tight_frame, bool);
-    //! L1 proximal
-    SOPT_MACRO(l1_proximal, proximal::L1<Scalar>);
-    //! Proximal of the L2 ball
-    SOPT_MACRO(weighted_l2ball_proximal, proximal::WeightedL2Ball<Scalar>);
+    //! First proximal
+    SOPT_MACRO(f_proximal, t_Proximal);
+    //! Second proximal
+    SOPT_MACRO(g_proximal, t_Proximal);
 #   undef SOPT_MACRO
-    //! Analysis operator Ψ
-    ADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
-    //! \brief Analysis operator Ψ
-    //! \details Under-the-hood, the object is actually owned by the L1 proximal.
-    t_LinearTransform const & Psi() const { return l1_proximal().Psi(); }
-    //! Setup Ψ both here
-    //! Ψ initialized via some call to \ref linear_transform
-    template<class T0, class ... T>
-      typename std::enable_if<
-        not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        ADMM<SCALAR> &
-      >::type Psi(T0 &&t0, T &&... args) {
-        l1_proximal().Psi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
-        return *this;
-      }
-    //! Φ initialized via some call to \ref linear_transform
-    template<class T0, class ... T>
-      typename std::enable_if<
-        not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        ADMM<SCALAR> &
-      >::type Phi(T0 &&t0, T &&... args) {
-        return Phi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
-      }
-
-    //! \brief L1 proximal used during calculation
-    //! \details Non-const version to setup the object.
-    proximal::L1<Scalar> & l1_proximal() { return l1_proximal_; }
-    //! \brief Proximal of the L2 ball
-    //! \details Non-const version to setup the object.
-    proximal::WeightedL2Ball<Scalar> & weighted_l2ball_proximal() {
-      return weighted_l2ball_proximal_;
+    //! \brief Simplifies calling the proximal of f.
+    void f_proximal(t_Vector & out, Real gamma, t_Vector const &x) const {
+      f_proximal()(out, gamma, x);
+    }
+    //! \brief Simplifies calling the proximal of f.
+    void g_proximal(t_Vector & out, Real gamma, t_Vector const &x) const {
+      g_proximal()(out, gamma, x);
     }
 
-    // Forwards get/setters to L1 and L2Ball proximals
-    // In practice, we end up with a bunch of functions that make it simpler to set or get values
-    // associated with the two proximal operators.
-    // E.g.: `paddm.l1_proximal_itermax(100).l2ball_epsilon(1e-2).l1_proximal_tolerance(1e-4)`.
-    // ~~~
-#   define SOPT_MACRO(VAR, NAME, PROXIMAL)                                                  \
-        /** \brief Forwards to l1_proximal **/                                              \
-        decltype(std::declval<proximal::PROXIMAL<Scalar> const>().VAR())                    \
-        NAME ## _proximal_ ## VAR() const {                                                 \
-          return NAME ## _proximal().VAR();                                                 \
-        }                                                                                   \
-        /** \brief Forwards to l1_proximal **/                                              \
-        ADMM<Scalar> & NAME ## _proximal_ ## VAR(                                          \
-            decltype(std::declval<proximal::PROXIMAL<Scalar> const>().VAR()) VAR)        {  \
-          NAME ## _proximal().VAR(VAR);                                                     \
-          return *this;                                                                     \
-        }
-    SOPT_MACRO(itermax, l1, L1);
-    SOPT_MACRO(tolerance, l1, L1);
-    SOPT_MACRO(positivity_constraint, l1, L1);
-    SOPT_MACRO(real_constraint, l1, L1);
-    SOPT_MACRO(fista_mixing, l1, L1);
-    SOPT_MACRO(nu, l1, L1);
-    SOPT_MACRO(weights, l1, L1);
-    SOPT_MACRO(epsilon, weighted_l2ball, WeightedL2Ball);
-    SOPT_MACRO(weights, weighted_l2ball, WeightedL2Ball);
-#   undef SOPT_MACRO
-
-    //! Calls l1 proximal operator, checking for real constraints and tight frame
-    template<class T0, class T1>
-    typename proximal::L1<Scalar>::Diagnostic l1_proximal(
-        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
-      return l1_proximal_real_constraint() ?
-        call_l1_proximal(out, gamma, x.real()):
-        call_l1_proximal(out, gamma, x);
+    //! Facilitates call to user-provided convergence function
+    bool is_converged(t_Vector const &x) const {
+      return is_converged() and is_converged()(x);
     }
-
-    //! Forwards call to weighted L2 ball proximal
-    template<class T>
-      auto weighted_l2ball_proximal(Eigen::MatrixBase<T> const& x) const
-      -> decltype(std::declval<proximal::WeightedL2Ball<Scalar> const>()(Real(0), x)) {
-        return weighted_l2ball_proximal()(Real(0), x);
-      }
-
 
     //! \brief Implements ADMM
     //! \details Follows Combettes and Pesquet "Proximal Splitting Methods in Signal Processing",
@@ -174,92 +102,66 @@ template<class SCALAR> class ADMM {
     //! See therein for notation
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
 
-    bool relative_variation_convergence(Real previous, Real current) const {
-      return relative_variation() > 0e0
-        and std::abs(previous - current) > std::abs(current) * relative_variation();
-    }
-    bool residual_norm_convergence(Real residual) const {
-      return residual_convergence() > 0e0 and residual < residual_convergence();
-    }
-
   protected:
-    //! Checks convergence
-    //! \param[in] x: current solution
-    //! \param[in] previous: previous objective function
-    //! \param[in] current: current objective function
-    //! \param[in] residual: norm of the residuals
-    bool is_converged(t_Vector const &x, Real previous, Real current, Real residual) const {
-      return relative_variation_convergence(previous, current)
-        and residual_norm_convergence(residual)
-        and is_converged()(x);
-    }
+    void initialization_step(t_Vector const& input, t_Vector &out, t_Vector &residual) const;
+    void iteration_step(
+        t_Vector const &input, t_Vector &out,
+        t_Vector &residual, t_Vector &lambda, t_Vector &z) const;
 
-    //! Calls l1 proximal operator, checking for thight frame
-    template<class T0, class T1>
-    typename proximal::L1<Scalar>::Diagnostic call_l1_proximal(
-        Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
-      if(tight_frame()) {
-        l1_proximal().tight_frame(out, gamma, x);
-        return {0, 0, l1_proximal().objective(x, out, gamma), true};
-      }
-      return l1_proximal()(out, gamma, x);
-    }
-
-    //! Helper function to computed weighted norm of residuals
-    static Real weighted_norm(Vector<Scalar> const &residual, Vector<Real> const &weights) {
-      return weights.size() == 1 ?
-        residual.stableNorm() * std::abs(weights(0)):
-        (residual.array() * weights.array()).matrix().stableNorm();
+    //! Checks input makes sense
+    void sanity_check(t_Vector const&) const {
+      // if((Phi().adjoint() * target()).size() != input.size())
+      //   SOPT_THROW("target, measurement operator and input vector have inconsistent sizes");
+      if(not static_cast<bool>(is_converged()))
+        SOPT_WARN(
+            "No convergence function was provided: algorithm will run for {} steps", itermax());
     }
 };
+
+template<class SCALAR>
+  void ADMM<SCALAR>::initialization_step(
+      t_Vector const & input, t_Vector& out, t_Vector & residual) const {
+    out = Phi().adjoint() * input / nu();
+    residual = Phi() * out - input;
+  }
+template<class SCALAR>
+  void ADMM<SCALAR>::iteration_step(
+      t_Vector const &input, t_Vector &out, t_Vector &residual,
+      t_Vector &lambda, t_Vector &z) const
+{
+    g_proximal(z, gamma(), -lambda - residual);
+    f_proximal(out, gamma() / nu(), out - Phi().adjoint() * (residual + lambda + z) / nu());
+    residual = Phi() * out - input;
+    lambda += lagrange_update_scale() * (residual + z);
+  }
 
 template<class SCALAR>
   typename ADMM<SCALAR>::Diagnostic
   ADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
 
-    if((Phi().adjoint() * target()).size() != input.size()) {
-      SOPT_THROW("target, measurement operator and input vector have inconsistent sizes");
-    }
+    SOPT_INFO("Performing approximate Proximal ADMM");
+    sanity_check(input);
 
-    SOPT_INFO("Performing approximate ADMM ");
-    SOPT_NOTICE("- Initialization");
-    out = Phi().adjoint() * target() / nu();
-    t_Vector residual = Phi() * out - target();
-    Real objective = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
-    typename proximal::L1<Scalar>::Diagnostic l1_diag{0, 0, 0, false};
+    t_Vector lambda = t_Vector::Zero(input.size()),
+             z = t_Vector::Zero(input.size()),
+             residual = t_Vector::Zero(input.size());
 
-    t_Vector lambda = t_Vector::Zero(target().size());
+    SOPT_NOTICE("    - Initialization");
+    initialization_step(out, residual);
+
     for(t_uint niters(0); niters < itermax(); ++niters) {
-      SOPT_NOTICE("Iteration {}/{}. ", niters, itermax());
+      SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
+      iteration_step(input, out, residual, lambda, z);
 
-      // Iteration code
-      t_Vector const z = weighted_l2ball_proximal(-lambda - residual);
-      l1_diag = l1_proximal(
-          out, gamma() / nu(), out - Phi().adjoint() * (residual + lambda + z) / nu());
-      residual = Phi() * out - target();
-      lambda += lagrange_update_scale() * (residual + z);
-
-      // Print-out stuff
-      auto const previous_objective = objective;
-      objective = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
-      t_real const relative_objective = std::abs(previous_objective - objective) / objective;
-      auto const norm_residuals = weighted_norm(residual, weighted_l2ball_proximal_weights());
-      SOPT_NOTICE(
-          "    - objective: obj value = {}, rel obj = {}", objective, relative_objective);
-      SOPT_NOTICE(
-          "    - Residuals: epsilon = {}, residual norm = {}",
-          weighted_l2ball_proximal_epsilon(), norm_residuals
-      );
-
-      // Convergence checking
-      if(is_converged(out, previous_objective, objective, norm_residuals)) {
-        SOPT_INFO("Approximate ADMM converged in {} of {} iterations", niters, itermax());
-        return {niters, true, l1_diag};
+      if(static_cast<bool>(is_converged()) and is_converged(out)) {
+        SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
+        return {niters, true};
       }
     }
-
-    SOPT_WARN("Approximate ADMM did not converge within {} iterations", itermax());
-    return {itermax(), false, l1_diag};
+    // check function exists, otherwise, don't know if convergence is meaningfull
+    if(static_cast<bool>(is_converged()))
+      SOPT_WARN("    - did not converge within {} iterations", itermax());
+    return {itermax(), not is_converged()};
   }
 
 }} /* sopt::algorithm */
