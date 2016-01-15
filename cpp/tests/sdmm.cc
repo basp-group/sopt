@@ -4,12 +4,12 @@
 #include <Eigen/Dense>
 #include "sopt/proximal.h"
 #include "sopt/sdmm.h"
+#include "sopt/types.h"
 
-std::random_device rd;
-std::default_random_engine rengine(rd());
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-  return uniform_dist(rengine);
+  return uniform_dist(*mersenne);
 };
 
 typedef sopt::t_real Scalar;

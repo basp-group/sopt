@@ -6,14 +6,13 @@
 
 #include "sopt/proximal.h"
 #include "sopt/l1_proximal.h"
-
-std::random_device rd;
-std::default_random_engine rengine(rd());
+#include "sopt/types.h"
 
 template<class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   std::vector<size_t> cols(j);
   std::iota(cols.begin(), cols.end(), 0);
-  std::shuffle(cols.begin(), cols.end(), rengine);
+  std::shuffle(cols.begin(), cols.end(), *mersenne);
 
   assert(j % i == 0);
   auto const N = j / i;

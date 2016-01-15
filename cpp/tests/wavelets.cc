@@ -5,6 +5,7 @@
 #include "wavelets/wavelet_data.h"
 #include "wavelets/indirect.h"
 #include "wavelets/direct.h"
+#include "sopt/types.h"
 
 typedef sopt::Array<sopt::t_uint> t_iVector;
 t_iVector even(t_iVector const & x) {
@@ -31,17 +32,17 @@ upsample(Eigen::ArrayBase<T> const & input) {
   return result;
 };
 
-std::random_device rd;
-std::default_random_engine rengine(rd());
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-  return uniform_dist(rengine);
+  return uniform_dist(*mersenne);
 };
 t_iVector random_ivector(sopt::t_int size, sopt::t_int min, sopt::t_int max) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   t_iVector result(size);
   std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
   for(t_iVector::Index i(0); i < result.size(); ++i)
-    result(i) = uniform_dist(rengine);
+    result(i) = uniform_dist(*mersenne);
   return result;
 };
 
