@@ -1,5 +1,5 @@
-#ifndef SOPT_L1_ADMM_H
-#define SOPT_L1_ADMM_H
+#ifndef SOPT_L1_PROXIMAL_ADMM_H
+#define SOPT_L1_PROXIMAL_ADMM_H
 
 #include <numeric>
 #include <utility>
@@ -10,49 +10,49 @@
 #include "sopt/exception.h"
 #include "sopt/logging.h"
 #include "sopt/L1_proximal.h"
-#include "sopt/admm.h"
+#include "sopt/padmm.h"
 
 namespace sopt { namespace algorithm {
 
 
-//! \brief Specialization of ADMM for Purify
+//! \brief Specialization of Proximal ADMM for Purify
 //! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$, where \f$f(x) =
 //! ||Ψ^Hx||_1 + i_C(x)\f$ and \f$h(x) = i_B(z)\f$ with \f$C = R^N_{+}\f$ and \f$B = {z \in R^M:
-//! ||z||_2 \leq \epsilon}\f$.
-template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
+//! ||z||_2 \leq \epsilon}\f$
+template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     //! Defines convergence behaviour
     struct Breaker;
   public:
     //! Scalar type
-    typedef typename ADMM<SCALAR>::value_type value_type;
-    typedef typename ADMM<SCALAR>::Scalar Scalar;
-    typedef typename ADMM<SCALAR>::Real Real;
-    typedef typename ADMM<SCALAR>::t_Vector t_Vector;
-    typedef typename ADMM<SCALAR>::t_LinearTransform t_LinearTransform;
-    typedef typename ADMM<SCALAR>::t_Proximal t_Proximal;
+    typedef typename ProximalADMM<SCALAR>::value_type value_type;
+    typedef typename ProximalADMM<SCALAR>::Scalar Scalar;
+    typedef typename ProximalADMM<SCALAR>::Real Real;
+    typedef typename ProximalADMM<SCALAR>::t_Vector t_Vector;
+    typedef typename ProximalADMM<SCALAR>::t_LinearTransform t_LinearTransform;
+    typedef typename ProximalADMM<SCALAR>::t_Proximal t_Proximal;
 
     //! Values indicating how the algorithm ran
-    struct Diagnostic : public ADMM<Scalar>::Diagnostic {
+    struct Diagnostic : public ProximalADMM<Scalar>::Diagnostic {
       //! Diagnostic from calling L1 proximal
       typename proximal::L1<Scalar>::Diagnostic l1_diag;
       Diagnostic(t_uint niters, bool good, typename proximal::L1<Scalar>::Diagnostic const & l1diag)
-        : ADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
+        : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
     };
 
-    L1_ADMM()
-      : ADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0), tight_frame_(false) {
+    L1ProximalADMM()
+      : ProximalADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0), tight_frame_(false) {
       using namespace std::placeholders;
-      ADMM<Scalar>::f_proximal(std::bind(&L1_ADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
-      ADMM<Scalar>::g_proximal(l2ball_proximal());
+      ProximalADMM<Scalar>::f_proximal(std::bind(&L1ProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
+      ProximalADMM<Scalar>::g_proximal(l2ball_proximal());
     }
 
-    virtual ~L1_ADMM() {}
+    virtual ~L1ProximalADMM() {}
 
     // Macro helps define properties that can be initialized as in
-    // auto sdmm  = ADMM<float>().prop0(value).prop1(value);
+    // auto sdmm  = ProximalADMM<float>().prop0(value).prop1(value);
 #   define SOPT_MACRO(NAME, TYPE)                                                     \
         TYPE const& NAME() const { return NAME ## _; }                                \
-        L1_ADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
+        L1ProximalADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
       protected:                                                                      \
         TYPE NAME ## _;                                                               \
       public:
@@ -66,7 +66,7 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
 #   undef SOPT_MACRO
 
     //! Analysis operator Ψ
-    L1_ADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
+    L1ProximalADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
     //! \brief Analysis operator Ψ
     //! \details Under-the-hood, the object is actually owned by the L1 proximal.
     t_LinearTransform const & Psi() const { return l1_proximal().Psi(); }
@@ -75,7 +75,7 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
     template<class T0, class ... T>
       typename std::enable_if<
         not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        L1_ADMM<SCALAR> &
+        L1ProximalADMM<SCALAR> &
       >::type Psi(T0 &&t0, T &&... args) {
         l1_proximal().Psi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
         return *this;
@@ -84,9 +84,9 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
     template<class T0, class ... T>
       typename std::enable_if<
         not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        L1_ADMM<SCALAR> &
+        L1ProximalADMM<SCALAR> &
       >::type Phi(T0 &&t0, T &&... args) {
-        ADMM<Scalar>::Phi(std::forward<T0>(t0), std::forward<T>(args)...);
+        ProximalADMM<Scalar>::Phi(std::forward<T0>(t0), std::forward<T>(args)...);
         return *this;
       }
 
@@ -100,9 +100,9 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
     }
 
     //! Type-erased version of the l1 proximal
-    t_Proximal const & f_proximal() { return ADMM<Scalar>::f_proximal(); }
+    t_Proximal const & f_proximal() { return ProximalADMM<Scalar>::f_proximal(); }
     //! Type-erased version of the l2 proximal
-    t_Proximal const & g_proximal() { return ADMM<Scalar>::g_proximal(); }
+    t_Proximal const & g_proximal() { return ProximalADMM<Scalar>::g_proximal(); }
 
     // Forwards get/setters to L1 and L2Ball proximals
     // In practice, we end up with a bunch of functions that make it simpler to set or get values
@@ -116,7 +116,7 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
           return NAME ## _proximal().VAR();                                                 \
         }                                                                                   \
         /** \brief Forwards to l1_proximal **/                                              \
-        L1_ADMM<Scalar> & NAME ## _proximal_ ## VAR(                                        \
+        L1ProximalADMM<Scalar> & NAME ## _proximal_ ## VAR(                                 \
             decltype(std::declval<proximal::PROXIMAL<Scalar> const>().VAR()) VAR)        {  \
           NAME ## _proximal().VAR(VAR);                                                     \
           return *this;                                                                     \
@@ -133,13 +133,13 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
 #   undef SOPT_MACRO
 
     // Includes getters and redefines setters to return this object
-#   define SOPT_MACRO(NAME)                                                                 \
-        using ADMM<Scalar>::NAME;                                                           \
-        /** \brief Forwards to ADMM base class **/                                          \
-        L1_ADMM<Scalar> & NAME(decltype(std::declval<ADMM<Scalar>>().NAME()) NAME) {        \
-          ADMM<Scalar>::NAME(NAME);                                                         \
-          return *this;                                                                     \
-        }
+#   define SOPT_MACRO(NAME)                                                                       \
+      using ProximalADMM<Scalar>::NAME;                                                           \
+      /** \brief Forwards to ProximalADMM base class **/                                          \
+      L1ProximalADMM<Scalar> & NAME(decltype(std::declval<ProximalADMM<Scalar>>().NAME()) NAME) { \
+        ProximalADMM<Scalar>::NAME(NAME);                                                         \
+        return *this;                                                                             \
+      }
     SOPT_MACRO(itermax);
     SOPT_MACRO(gamma);
     SOPT_MACRO(nu);
@@ -168,10 +168,9 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
       }
 
 
-    //! \brief Implements ADMM
-    //! \details Follows Combettes and Pesquet "Proximal Splitting Methods in Signal Processing",
-    //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
-    //! See therein for notation
+    //! \brief Call Proximal ADMM for L1 and L2 ball
+    //! \param[out] out: Output x vector
+    //! \param[in] input: Target measurements
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
 
   protected:
@@ -195,11 +194,11 @@ template<class SCALAR> class L1_ADMM : private ADMM<SCALAR> {
 };
 
 template<class SCALAR>
-  typename L1_ADMM<SCALAR>::Diagnostic
-  L1_ADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
+  typename L1ProximalADMM<SCALAR>::Diagnostic
+  L1ProximalADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
 
     SOPT_INFO("Performing Proximal ADMM with L1 and L2 operators");
-    ADMM<Scalar>::sanity_check(input);
+    ProximalADMM<Scalar>::sanity_check(input);
 
     t_Vector lambda = t_Vector::Zero(input.size()),
              z = t_Vector::Zero(input.size()),
@@ -208,12 +207,12 @@ template<class SCALAR>
     l1_diagnostic = {0, 0, 0, false};
 
     SOPT_NOTICE("    - Initialization");
-    ADMM<Scalar>::initialization_step(input, out, residual);
+    ProximalADMM<Scalar>::initialization_step(input, out, residual);
     std::pair<Real, Real> objectives{sopt::l1_norm(residual, l1_proximal_weights()), 0};
 
     for(t_uint niters(0); niters < itermax(); ++niters) {
       SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
-      ADMM<Scalar>::iteration_step(input, out, residual, lambda, z);
+      ProximalADMM<Scalar>::iteration_step(input, out, residual, lambda, z);
 
       // print-out stuff
       objectives.second = objectives.first;

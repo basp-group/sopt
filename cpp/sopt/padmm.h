@@ -1,5 +1,5 @@
-#ifndef SOPT_ADMM_H
-#define SOPT_ADMM_H
+#ifndef SOPT_PROXIMAL_ADMM_H
+#define SOPT_PROXIMAL_ADMM_H
 
 #include <limits>
 #include <functional>
@@ -12,9 +12,9 @@
 namespace sopt { namespace algorithm {
 
 
-//! \brief Alternate Direction method of mutltipliers
+//! \brief Proximal Alternate Direction method of mutltipliers
 //! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$.
-template<class SCALAR> class ADMM {
+template<class SCALAR> class ProximalADMM {
   public:
     //! Scalar type
     typedef SCALAR value_type;
@@ -40,23 +40,23 @@ template<class SCALAR> class ADMM {
       Diagnostic(t_uint niters, bool good) : niters(niters), good(good) {}
     };
 
-    //! Setups ADMM
+    //! Setups ProximalADMM
     //! \param[in] f_proximal: proximal operator of the \f$f\f$ function.
     //! \param[in] g_proximal: proximal operator of the \f$g\f$ function
-    ADMM(t_Proximal const & f_proximal, t_Proximal const & g_proximal)
+    ProximalADMM(t_Proximal const & f_proximal, t_Proximal const & g_proximal)
       : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
         lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
         is_converged_(), Phi_(linear_transform_identity<Scalar>()),
         f_proximal_(f_proximal), g_proximal_(g_proximal) {}
-    virtual ~ADMM() {}
+    virtual ~ProximalADMM() {}
 
     // Macro helps define properties that can be initialized as in
-    // auto sdmm  = ADMM<float>().prop0(value).prop1(value);
-#   define SOPT_MACRO(NAME, TYPE)                                                   \
-        TYPE const& NAME() const { return NAME ## _; }                              \
-        ADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
-      protected:                                                                    \
-        TYPE NAME ## _;                                                             \
+    // auto sdmm  = ProximalADMM<float>().prop0(value).prop1(value);
+#   define SOPT_MACRO(NAME, TYPE)                                                          \
+        TYPE const& NAME() const { return NAME ## _; }                                     \
+        ProximalADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
+      protected:                                                                           \
+        TYPE NAME ## _;                                                                    \
       public:
     //! Maximum number of iterations
     SOPT_MACRO(itermax, t_uint);
@@ -96,10 +96,9 @@ template<class SCALAR> class ADMM {
       return is_converged() and is_converged()(x);
     }
 
-    //! \brief Implements ADMM
-    //! \details Follows Combettes and Pesquet "Proximal Splitting Methods in Signal Processing",
-    //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
-    //! See therein for notation
+    //! \brief Calls Proximal ADMM
+    //! \param[out] out: Output vector x
+    //! \param[in] input: Target measurement vector y
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
 
   protected:
@@ -119,13 +118,13 @@ template<class SCALAR> class ADMM {
 };
 
 template<class SCALAR>
-  void ADMM<SCALAR>::initialization_step(
+  void ProximalADMM<SCALAR>::initialization_step(
       t_Vector const & input, t_Vector& out, t_Vector & residual) const {
     out = Phi().adjoint() * input / nu();
     residual = Phi() * out - input;
   }
 template<class SCALAR>
-  void ADMM<SCALAR>::iteration_step(
+  void ProximalADMM<SCALAR>::iteration_step(
       t_Vector const &input, t_Vector &out, t_Vector &residual,
       t_Vector &lambda, t_Vector &z) const
 {
@@ -136,10 +135,10 @@ template<class SCALAR>
   }
 
 template<class SCALAR>
-  typename ADMM<SCALAR>::Diagnostic
-  ADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
+  typename ProximalADMM<SCALAR>::Diagnostic
+  ProximalADMM<SCALAR>::operator()(t_Vector& out, t_Vector const& input) const {
 
-    SOPT_INFO("Performing approximate Proximal ADMM");
+    SOPT_INFO("Performing Proximal ADMM");
     sanity_check(input);
 
     t_Vector lambda = t_Vector::Zero(input.size()),

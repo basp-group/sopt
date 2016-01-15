@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <type_traits>
 
-#include "sopt/l1_admm.h"
+#include "sopt/l1_padmm.h"
 #include "sopt/logging.h"
 #include "sopt/sampling.h"
 #include "sopt/wavelets.h"
@@ -19,13 +19,13 @@ typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
-sopt::algorithm::L1_ADMM<Scalar> create_admm(
+sopt::algorithm::L1ProximalADMM<Scalar> create_admm(
     sopt::LinearTransform<t_Vector> const &phi,
     sopt::LinearTransform<t_Vector> const &psi,
     sopt_l1_param_padmm const &params) {
 
   using namespace sopt;
-  return algorithm::L1_ADMM<Scalar>()
+  return algorithm::L1ProximalADMM<Scalar>()
     .itermax(params.max_iter + 1)
     .gamma(params.gamma)
     .relative_variation(params.rel_obj)
