@@ -214,7 +214,7 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
       return l1_proximal()(out, gamma, x);
     }
 
-    //! This will be the proximal operator passed to the base class
+    //! Sets the result from this call to L1 proximal so it can be used later
     void erased_f_proximal(t_Vector &out, Real gamma, t_Vector const &x) const {
       l1_diagnostic = l1_proximal(out, gamma, x);
     }
