@@ -65,28 +65,23 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     SOPT_MACRO(tight_frame, bool);
 #   undef SOPT_MACRO
 
-    //! Analysis operator Ψ
-    L1ProximalADMM<Scalar> & Psi(t_LinearTransform const &l) { l1_proximal().Psi(l); return *this; }
     //! \brief Analysis operator Ψ
     //! \details Under-the-hood, the object is actually owned by the L1 proximal.
     t_LinearTransform const & Psi() const { return l1_proximal().Psi(); }
-    //! Setup Ψ both here
-    //! Ψ initialized via some call to \ref linear_transform
-    template<class T0, class ... T>
+    //! Analysis operator Ψ
+    template<class ... ARGS>
       typename std::enable_if<
-        not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        L1ProximalADMM<SCALAR> &
-      >::type Psi(T0 &&t0, T &&... args) {
-        l1_proximal().Psi(linear_transform(std::forward<T0>(t0), std::forward<T>(args)...));
+        sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar>&
+      >::type Psi(ARGS && ... args) {
+        l1_proximal().Psi(std::forward<ARGS>(args)...);
         return *this;
       }
     //! Φ initialized via some call to \ref linear_transform
-    template<class T0, class ... T>
+    template<class ... ARGS>
       typename std::enable_if<
-        not std::is_same<typename std::remove_all_extents<T0>::type, t_LinearTransform>::value,
-        L1ProximalADMM<SCALAR> &
-      >::type Phi(T0 &&t0, T &&... args) {
-        ProximalADMM<Scalar>::Phi(std::forward<T0>(t0), std::forward<T>(args)...);
+        sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar>&
+      >::type Phi(ARGS && ... args) {
+        ProximalADMM<Scalar>::Phi(std::forward<ARGS>(args)...);
         return *this;
       }
 

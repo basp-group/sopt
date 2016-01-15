@@ -61,9 +61,10 @@ template<class SCALAR> class L1TightFrame
     }
 
     //! Set Ψ and Ψ^† using a matrix
-    template<class T>
-      L1TightFrame& Psi(Eigen::MatrixBase<T> const &psi) {
-        return Psi(linear_transform(psi));
+    template<class ... ARGS>
+      typename std::enable_if<sizeof...(ARGS) >= 1, L1TightFrame&>::type Psi(ARGS && ... args) {
+        Psi_ = linear_transform(std::forward<ARGS>(args)...);
+        return *this;
       }
 
     //! Computes proximal for given γ
@@ -136,6 +137,8 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     //! Functor to check convergence and cycling
     class Breaker;
 
+    using L1TightFrame<SCALAR>::objective;
+
     //! Underlying scalar type
     typedef typename L1TightFrame<SCALAR>::Scalar Scalar;
     //! Underlying real scalar type
@@ -200,31 +203,27 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
     SOPT_MACRO(fista_mixing, bool);
 #   undef SOPT_MACRO
 
-#   define SOPT_MACRO(NAME, TYPE)   \
-        TYPE const & NAME() const { return L1TightFrame<SCALAR>::NAME(); }                      \
-        L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; } \
-    //! Linear transform applied to input prior to L1 norm
-    SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
-    //! Bound on the squared norm of the operator Ψ
-    SOPT_MACRO(nu, Real);
-    //! Weights associated with the l1 proximal
-    SOPT_MACRO(weights, Vector<Real>);
-#   undef SOPT_MACRO
-
-#   define SOPT_MACRO(NAME, TYPE)   \
-        L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; }
-    //! Set weights to a single value
-    SOPT_MACRO(weights, Real);
-    //! Set Ψ and Ψ^† using a matrix
-    template<class T> SOPT_MACRO(Psi, Eigen::MatrixBase<T>);
-#   undef SOPT_MACRO
-
-    //! \f[ 0.5||x - z||_2^2 + γ||Ψ^† z||_w1 \f]
-    template<class T0, class T1>
-    Real objective(
-        Eigen::MatrixBase<T0> const &x, Eigen::MatrixBase<T1> const &z, Real const &gamma) const {
-      return L1TightFrame<SCALAR>::objective(x, z, gamma);
+    using L1TightFrame<Scalar>::weights;
+    //! Set weights to an array of values
+    template<class T> L1<Scalar> & weights(Eigen::MatrixBase<T> const &w) {
+      L1TightFrame<Scalar>::weights(w);
+      return *this;
     }
+    //! Set weights to a single value
+    L1<Scalar> & weights(Real const &w) { L1TightFrame<Scalar>::weights(w); return this; }
+
+    using L1TightFrame<Scalar>::nu;
+    //! Sets the bound on the squared norm of the operator Ψ
+    L1<Scalar> & nu(Real const &nu) { L1TightFrame<SCALAR>::nu(nu); return *this; }
+
+    //! Linear transform applied to input prior to L1 norm
+    using L1TightFrame<Scalar>::Psi;
+    //! Set Ψ and Ψ^† using a matrix
+    template<class ... ARGS>
+      typename std::enable_if<sizeof...(ARGS) >= 1, L1<Scalar>&>::type Psi(ARGS && ... args) {
+        L1TightFrame<Scalar>::Psi(std::forward<ARGS>(args)...);
+        return *this;
+      }
 
     //! \brief Special case if Ψ ia a tight frame.
     //! \see L1TightFrame
