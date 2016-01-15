@@ -40,29 +40,61 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     };
 
     L1ProximalADMM()
-      : ProximalADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0), tight_frame_(false) {
-      using namespace std::placeholders;
-      ProximalADMM<Scalar>::f_proximal(std::bind(&L1ProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
-      ProximalADMM<Scalar>::g_proximal(l2ball_proximal());
+      : ProximalADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0),
+        tight_frame_(false) {
+      set_f_and_g_proximal_to_members_of_this();
+    }
+    L1ProximalADMM(L1ProximalADMM<Scalar> const &c)
+      : ProximalADMM<Scalar>(c), l1_proximal_(c.l1_proximal_), l2ball_proximal_(c.l2ball_proximal_),
+        tight_frame_(c.tight_frame_) {
+      set_f_and_g_proximal_to_members_of_this();
+    }
+    L1ProximalADMM(L1ProximalADMM<Scalar> &&c)
+      : ProximalADMM<Scalar>(std::move(c)), l1_proximal_(std::move(c.l1_proximal_)),
+        l2ball_proximal_(std::move(c.l2ball_proximal_)), tight_frame_(c.tight_frame_) {
+      set_f_and_g_proximal_to_members_of_this();
+    }
+
+    void operator=(L1ProximalADMM<Scalar> const &c) {
+      ProximalADMM<Scalar>::operator=(c);
+      l1_proximal_ = c.l1_proximal_;
+      l2ball_proximal_ = c.l2ball_proximal_;
+      tight_frame_ = c.tight_frame_;
+      set_f_and_g_proximal_to_members_of_this();
+    }
+    void operator=(L1ProximalADMM<Scalar> &&c) {
+      ProximalADMM<Scalar>::operator=(std::move(c));
+      l1_proximal_ = std::move(c.l1_proximal_);
+      l2ball_proximal_ = std::move(c.l2ball_proximal_);
+      tight_frame_ = std::move(c.tight_frame_);
+      set_f_and_g_proximal_to_members_of_this();
     }
 
     virtual ~L1ProximalADMM() {}
 
     // Macro helps define properties that can be initialized as in
     // auto sdmm  = ProximalADMM<float>().prop0(value).prop1(value);
-#   define SOPT_MACRO(NAME, TYPE)                                                     \
-        TYPE const& NAME() const { return NAME ## _; }                                \
-        L1ProximalADMM<SCALAR> & NAME(TYPE const &NAME) { NAME ## _ = NAME; return *this; }  \
-      protected:                                                                      \
-        TYPE NAME ## _;                                                               \
+#   define SOPT_MACRO(NAME, TYPE, CODE)                                                      \
+        TYPE const& NAME() const { return NAME ## _; }                                       \
+        L1ProximalADMM<SCALAR> & NAME(TYPE const &NAME) {                                    \
+          NAME ## _ = NAME;                                                                  \
+          CODE;                                                                              \
+          return *this;                                                                      \
+        }                                                                                    \
+      protected:                                                                             \
+        TYPE NAME ## _;                                                                      \
       public:
 
     //! The L1 proximal functioning as f
-    SOPT_MACRO(l1_proximal, proximal::L1<Scalar>);
+    SOPT_MACRO(l1_proximal, proximal::L1<Scalar>, set_f_and_g_proximal_to_members_of_this());
     //! The weighted L2 proximal functioning as g
-    SOPT_MACRO(l2ball_proximal, proximal::WeightedL2Ball<Scalar>);
+    SOPT_MACRO(
+        l2ball_proximal,
+        proximal::WeightedL2Ball<Scalar>,
+        set_f_and_g_proximal_to_members_of_this()
+    );
     //! Whether Ψ is a tight-frame or not
-    SOPT_MACRO(tight_frame, bool);
+    SOPT_MACRO(tight_frame, bool,);
 #   undef SOPT_MACRO
 
     //! \brief Analysis operator Ψ
@@ -185,6 +217,14 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     //! This will be the proximal operator passed to the base class
     void erased_f_proximal(t_Vector &out, Real gamma, t_Vector const &x) const {
       l1_diagnostic = l1_proximal(out, gamma, x);
+    }
+
+    //! References
+    void set_f_and_g_proximal_to_members_of_this() {
+      using namespace std::placeholders;
+      ProximalADMM<Scalar>::f_proximal(
+          std::bind(&L1ProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
+      ProximalADMM<Scalar>::g_proximal(std::cref(l2ball_proximal()));
     }
 };
 
