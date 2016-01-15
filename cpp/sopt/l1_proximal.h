@@ -37,7 +37,7 @@ template<class SCALAR> class L1TightFrame
       public:
     //! Linear transform applied to input prior to L1 norm
     SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
-    //! Bound on the squared norm of the operator Psi
+    //! Bound on the squared norm of the operator Ψ
     SOPT_MACRO(nu, Real);
 #   undef SOPT_MACRO
     //! Weights of the l1 norm
@@ -60,7 +60,7 @@ template<class SCALAR> class L1TightFrame
       return *this;
     }
 
-    //! Set Psi and Psi^† using a matrix
+    //! Set Ψ and Ψ^† using a matrix
     template<class T>
       L1TightFrame& Psi(Eigen::MatrixBase<T> const &psi) {
         return Psi(linear_transform(psi));
@@ -205,7 +205,7 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
         L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; } \
     //! Linear transform applied to input prior to L1 norm
     SOPT_MACRO(Psi, LinearTransform< Vector<Scalar> >);
-    //! Bound on the squared norm of the operator Psi
+    //! Bound on the squared norm of the operator Ψ
     SOPT_MACRO(nu, Real);
     //! Weights associated with the l1 proximal
     SOPT_MACRO(weights, Vector<Real>);
@@ -215,7 +215,7 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
         L1<Scalar> & NAME(TYPE const &NAME) { L1TightFrame<SCALAR>::NAME(NAME); return *this; }
     //! Set weights to a single value
     SOPT_MACRO(weights, Real);
-    //! Set Psi and Psi^† using a matrix
+    //! Set Ψ and Ψ^† using a matrix
     template<class T> SOPT_MACRO(Psi, Eigen::MatrixBase<T>);
 #   undef SOPT_MACRO
 
@@ -226,7 +226,7 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
       return L1TightFrame<SCALAR>::objective(x, z, gamma);
     }
 
-    //! \brief Special case if Psi ia a tight frame.
+    //! \brief Special case if Ψ ia a tight frame.
     //! \see L1TightFrame
     template<class ... T>
     auto tight_frame(T &&... args) const
