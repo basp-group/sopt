@@ -175,7 +175,7 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
   // for(t_uint i(0); i < N; ++i) target1(i) = i + 1;
 
   auto sdmm = algorithm::SDMM<Scalar>()
-    .itermax(500)
+    .itermax(5000)
     .gamma(1)
     .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
     .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
@@ -186,10 +186,11 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
     auto const diagnostic = sdmm(result, t_Vector::Random(N));
     CHECK(not diagnostic.good);
     CHECK(diagnostic.niters == sdmm.itermax());
-    t_Vector const segment = (target1 - target0) / (target1 - target0).squaredNorm();
+    t_Vector const segment = (target1 - target0).normalized();
     t_real const alpha = (result - target0).transpose() * segment;
     CHECK(1e0 >= alpha);
     CHECK(alpha >= 0e0);
+    CHECK((result - target0 - alpha * segment).stableNorm() < 1e-8);
   }
 
   SECTION("Three operators") {
