@@ -37,7 +37,12 @@ template<class SCALAR> class ProximalADMM {
       t_uint niters;
       //! Wether convergence was achieved
       bool good;
-      Diagnostic(t_uint niters, bool good) : niters(niters), good(good) {}
+      Diagnostic(t_uint niters = 0u, bool good = false) : niters(niters), good(good) {}
+    };
+    //! Holds result vector as well
+    struct DiagnosticAndResult : public Diagnostic {
+      //! Output x
+      t_Vector x;
     };
 
     //! Setups ProximalADMM
@@ -100,6 +105,13 @@ template<class SCALAR> class ProximalADMM {
     //! \param[out] out: Output vector x
     //! \param[in] input: Target measurement vector y
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
+    //! \brief Calls Proximal ADMM
+    //! \param[in] input: Target measurement vector y
+    DiagnosticAndResult operator()(t_Vector const& input) const {
+      DiagnosticAndResult result;
+      static_cast<Diagnostic&>(result) = operator()(result.x, input);
+      return result;
+    }
 
   protected:
     void initialization_step(t_Vector const& input, t_Vector &out, t_Vector &residual) const;
@@ -146,7 +158,7 @@ template<class SCALAR>
              residual = t_Vector::Zero(input.size());
 
     SOPT_NOTICE("    - Initialization");
-    initialization_step(out, residual);
+    initialization_step(input, out, residual);
 
     for(t_uint niters(0); niters < itermax(); ++niters) {
       SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
@@ -157,10 +169,10 @@ template<class SCALAR>
         return {niters, true};
       }
     }
-    // check function exists, otherwise, don't know if convergence is meaningfull
+    // check function exists, otherwise, don't know if convergence is meaningful
     if(static_cast<bool>(is_converged()))
       SOPT_WARN("    - did not converge within {} iterations", itermax());
-    return {itermax(), not is_converged()};
+    return {itermax(), false};
   }
 
 }} /* sopt::algorithm */

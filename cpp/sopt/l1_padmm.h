@@ -35,8 +35,16 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     struct Diagnostic : public ProximalADMM<Scalar>::Diagnostic {
       //! Diagnostic from calling L1 proximal
       typename proximal::L1<Scalar>::Diagnostic l1_diag;
-      Diagnostic(t_uint niters, bool good, typename proximal::L1<Scalar>::Diagnostic const & l1diag)
-        : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
+      Diagnostic(
+          t_uint niters = 0u, bool good = false,
+          typename proximal::L1<Scalar>::Diagnostic const & l1diag
+             = proximal::L1<Scalar>::Diagnostic()
+      ) : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
+    };
+    //! Holds result vector as well
+    struct DiagnosticAndResult : public Diagnostic {
+      //! Output x
+      t_Vector x;
     };
 
     L1ProximalADMM()
@@ -199,6 +207,13 @@ template<class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
     //! \param[out] out: Output x vector
     //! \param[in] input: Target measurements
     Diagnostic operator()(t_Vector& out, t_Vector const& input) const;
+    //! \brief Calls Proximal ADMM for L1 and L2 ball
+    //! \param[in] input: Target measurement vector y
+    DiagnosticAndResult operator()(t_Vector const& input) const {
+      DiagnosticAndResult result;
+      static_cast<Diagnostic&>(result) = operator()(result.out, input);
+      return result;
+    }
 
   protected:
     //! Keeps track of the last call to the L1 proximal

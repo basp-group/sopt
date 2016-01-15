@@ -154,6 +154,10 @@ template<class SCALAR> class L1 : protected L1TightFrame<SCALAR> {
       Real objective;
       //! Wether convergence was achieved
       bool good;
+      Diagnostic(
+          t_uint niters = 0, Real relative_variation = 0, Real objective = 0, bool good = false)
+        : niters(niters), relative_variation(relative_variation),
+          objective(objective), good(good) {}
     };
 
     //! Result from calling L1
