@@ -12,7 +12,7 @@ sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
   return uniform_dist(rengine);
 };
 
-typedef double Scalar;
+typedef sopt::t_real Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
@@ -21,18 +21,11 @@ auto const N = 3;
 // Makes members public so we can test one at a time
 class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
   public:
-    void initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, z, x);
-    }
-    sopt::ConjugateGradient::Diagnostic solve_for_xn(
-        t_Vector &out, t_Vectors const &y, t_Vectors const &z) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::solve_for_xn(out, y, z);
-    }
-    void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
-    }
-    using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
-    using sopt::algorithm::SDMM<sopt::t_real>::t_Vector;
+    using sopt::algorithm::SDMM<Scalar>::initialization;
+    using sopt::algorithm::SDMM<Scalar>::solve_for_xn;
+    using sopt::algorithm::SDMM<Scalar>::update_directions;
+    using sopt::algorithm::SDMM<Scalar>::t_Vectors;
+    using sopt::algorithm::SDMM<Scalar>::t_Vector;
 };
 
 TEST_CASE("Proximal translation", "[proximal]") {
