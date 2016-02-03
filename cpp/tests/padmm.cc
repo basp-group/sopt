@@ -1,10 +1,10 @@
 #include <random>
 #include "catch.hpp"
 
-#include <Eigen/Dense>
-#include "sopt/proximal.h"
-#include "sopt/padmm.h"
 #include "sopt/types.h"
+#include "sopt/padmm.h"
+#include "sopt/proximal.h"
+#include <Eigen/Dense>
 
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
   extern std::unique_ptr<std::mt19937_64> mersenne;

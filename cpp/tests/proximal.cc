@@ -1,14 +1,14 @@
+#include <numeric>
 #include <random>
 #include <utility>
-#include <numeric>
 
 #include "catch.hpp"
 
-#include "sopt/proximal.h"
-#include "sopt/l1_proximal.h"
 #include "sopt/types.h"
+#include "sopt/l1_proximal.h"
+#include "sopt/proximal.h"
 
-template<class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
+template <class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
   extern std::unique_ptr<std::mt19937_64> mersenne;
   std::vector<size_t> cols(j);
   std::iota(cols.begin(), cols.end(), 0);
@@ -27,7 +27,8 @@ TEST_CASE("L2Ball", "[proximal]") {
   using namespace sopt;
   proximal::L2Ball<t_real> ball(0.5);
   Vector<t_real> out;
-  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  Vector<t_real> x(5);
+  x << 1, 2, 3, 4, 5;
 
   out = ball(0, x);
   CHECK(x.isApprox(out / 0.5 * x.stableNorm()));
@@ -39,12 +40,13 @@ TEST_CASE("L2Ball", "[proximal]") {
 TEST_CASE("WeightedL2Ball", "[proximal]") {
   using namespace sopt;
   Vector<t_real> const weights = 0.01 * Vector<t_real>::Random(5).array() + 1e0;
-  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  Vector<t_real> x(5);
+  x << 1, 2, 3, 4, 5;
   proximal::WeightedL2Ball<t_real> wball(0.5, weights);
   proximal::L2Ball<t_real> ball(0.5);
 
   Vector<t_real> const expected
-    = ball((x.array() * weights.array()).matrix()).array() / weights.array();
+      = ball((x.array() * weights.array()).matrix()).array() / weights.array();
   Vector<t_real> const actual = wball(x);
   CHECK(actual.isApprox(expected));
 
@@ -57,18 +59,20 @@ TEST_CASE("Euclidian norm", "[proximal]") {
   proximal::EuclidianNorm eucl;
 
   Vector<t_real> out(5);
-  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  Vector<t_real> x(5);
+  x << 1, 2, 3, 4, 5;
   eucl(out, x.stableNorm() * 1.001, x);
   CHECK(out.isApprox(Vector<t_real>::Zero(x.size())));
 
   out = eucl(0.1, x);
-  CHECK(out.isApprox(x * (1e0 - 0.1/x.stableNorm())));
+  CHECK(out.isApprox(x * (1e0 - 0.1 / x.stableNorm())));
 }
 
 TEST_CASE("Translation", "[proximal]") {
   using namespace sopt;
   Vector<t_real> out(5);
-  Vector<t_real> x(5); x << 1, 2, 3, 4, 5;
+  Vector<t_real> x(5);
+  x << 1, 2, 3, 4, 5;
   proximal::L2Ball<t_real> ball(5000);
   // Pass in a reference, so we can modify ball.epsilon later in the test.
   auto const translated = proximal::translate(std::ref(ball), -x * 0.5);
@@ -90,7 +94,7 @@ TEST_CASE("Tight-Frame L1 proximal", "[l1][proximal]") {
     auto const mini = l1.objective(x, p, gamma);
     auto const eps = 1e-4;
     for(Vector<t_complex>::Index i(0); i < p.size(); ++i) {
-      for(auto const dir: {Scalar(eps, 0), Scalar(0, eps), Scalar(-eps, 0), Scalar(0, -eps)}) {
+      for(auto const dir : {Scalar(eps, 0), Scalar(0, eps), Scalar(-eps, 0), Scalar(0, -eps)}) {
         Vector<t_complex> p_plus = p;
         p_plus[i] += dir;
         CHECK(l1.objective(x, p_plus, gamma) >= mini);
@@ -170,8 +174,8 @@ TEST_CASE("L1 proximal utilities", "[l1][utilities]") {
   SECTION("Breaker") {
     proximal::L1<Scalar>::Breaker breaker(2e0);
     SECTION("Finds convergence") {
-      std::vector<t_real> objectives = {
-        1.0, 0.9, 0.5, 0.6, 0.4, 0.4 + 0.41 * 1e-8, 0.3, 0.3 + 0.29 * 1e-8};
+      std::vector<t_real> objectives
+          = {1.0, 0.9, 0.5, 0.6, 0.4, 0.4 + 0.41 * 1e-8, 0.3, 0.3 + 0.29 * 1e-8};
       for(size_t i(0); i < objectives.size() - 1; ++i) {
         CHECK(not breaker(objectives[i]));
         CHECK(breaker.current() == Approx(objectives[i]).epsilon(1e-12));
@@ -233,7 +237,7 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
       auto const eps = 1e-4;
       // check alongst specific directions
       for(Vector<Scalar>::Index i(0); i < proximal.size(); ++i) {
-        for(auto const dir: {Scalar(eps, 0), Scalar(0, eps), Scalar(-eps, 0), Scalar(0, -eps)}) {
+        for(auto const dir : {Scalar(eps, 0), Scalar(0, eps), Scalar(-eps, 0), Scalar(0, -eps)}) {
           Vector<Scalar> p_plus = proximal;
           p_plus[i] += dir;
           if(l1.positivity_constraint())
@@ -246,8 +250,7 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
       }
       // check alongst non-specific directions
       for(size_t i(0); i < 10; ++i) {
-        Vector<Scalar> p_plus
-          = proximal + proximal.Random(proximal.size()) * eps;
+        Vector<Scalar> p_plus = proximal + proximal.Random(proximal.size()) * eps;
         if(l1.positivity_constraint())
           p_plus = sopt::positive_quadrant(p_plus);
         else if(l1.real_constraint())

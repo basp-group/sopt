@@ -19,9 +19,8 @@ int main(int, char const **) {
   // The same transform can be realised using a function, where out = A^h * A * input.
   // This will recompute AhA every time the function is applied by the conjugate gradient. It is not
   // optmial for this case. But the function interface means A could be an FFT.
-  auto aha_function = [&A](t_Vector& out, t_Vector const &input) {
-    out = A.conjugate().transpose() * A * input;
-  };
+  auto aha_function
+      = [&A](t_Vector &out, t_Vector const &input) { out = A.conjugate().transpose() * A * input; };
 
   // Conjugate gradient with unlimited iterations and a convergence criteria of 1e-12
   sopt::ConjugateGradient cg(std::numeric_limits<sopt::t_uint>::max(), 1e-12);
@@ -31,7 +30,7 @@ int main(int, char const **) {
   auto as_function = cg(aha_function, Ahb);
 
   // Check result
-  if(not (as_matrix.good and as_function.good))
+  if(not(as_matrix.good and as_function.good))
     throw std::runtime_error("Expected convergence");
   if(as_matrix.niters != as_function.niters)
     throw std::runtime_error("Expected same number of iterations");
@@ -39,7 +38,7 @@ int main(int, char const **) {
     throw std::runtime_error("Expected better convergence");
   if(not as_matrix.result.isApprox(as_function.result, 1e-6))
     throw std::runtime_error("Expected same result");
-  if(not (A * as_matrix.result).isApprox(b, 1e-6))
+  if(not(A * as_matrix.result).isApprox(b, 1e-6))
     throw std::runtime_error("Expected solution to Ax=b");
 
   return 0;

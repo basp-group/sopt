@@ -1,7 +1,7 @@
-#include <complex>
 #include <algorithm>
-#include <random>
+#include <complex>
 #include <numeric>
+#include <random>
 #include <type_traits>
 #include "catch.hpp"
 
@@ -14,7 +14,7 @@ extern "C" {
 std::random_device rd;
 std::default_random_engine rengine(rd());
 
-template<class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
+template <class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
   std::vector<size_t> cols(j);
   std::iota(cols.begin(), cols.end(), 0);
   std::shuffle(cols.begin(), cols.end(), rengine);
@@ -28,13 +28,10 @@ template<class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt
   return result;
 }
 
-template<class SCALAR>
-sopt::Vector<SCALAR> c_proximal(
-      sopt::proximal::L1<SCALAR> const &l1,
-      typename sopt::real_type<SCALAR>::type gamma,
-      sopt::Vector<SCALAR> const &x,
-      bool pos=false, bool tf=false
-) {
+template <class SCALAR>
+sopt::Vector<SCALAR>
+c_proximal(sopt::proximal::L1<SCALAR> const &l1, typename sopt::real_type<SCALAR>::type gamma,
+           sopt::Vector<SCALAR> const &x, bool pos = false, bool tf = false) {
   using namespace sopt;
   typedef typename sopt::real_type<SCALAR>::type Real;
   int const nr = (l1.Psi().adjoint() * x).size();
@@ -43,12 +40,12 @@ sopt::Vector<SCALAR> c_proximal(
     weights = l1.weights()(1) * Vector<Real>::Ones(nr);
   CData<SCALAR> const psi_data{nr, x.size(), l1.Psi()};
   sopt_prox_l1param params = {
-    2,    // verbosity
-    static_cast<int>(l1.itermax()),   // max iter
-    l1.tolerance(), // relative change
-    l1.nu(),  // nu
-    tf ? 1: 0,    // tight frame
-    pos ? 1: 0   // Positivity constraints
+      2,                              // verbosity
+      static_cast<int>(l1.itermax()), // max iter
+      l1.tolerance(),                 // relative change
+      l1.nu(),                        // nu
+      tf ? 1 : 0,                     // tight frame
+      pos ? 1 : 0                     // Positivity constraints
   };
   Vector<SCALAR> xin = x;
   Vector<SCALAR> result = Vector<SCALAR>::Zero(x.size());
@@ -56,21 +53,11 @@ sopt::Vector<SCALAR> c_proximal(
   Vector<SCALAR> sol = Vector<SCALAR>::Zero(x.size());
   Vector<SCALAR> u = Vector<SCALAR>::Zero(nr);
   Vector<SCALAR> v = Vector<SCALAR>::Zero(nr);
-  sopt_prox_l1(
-      static_cast<void*>(result.data()),
-      static_cast<void*>(xin.data()),
-      x.size(), nr,
-      &direct_transform<SCALAR>, (void**)&psi_data,
-      &adjoint_transform<SCALAR>, (void**)&psi_data,
-      weights.data(),
-      gamma,
-      std::is_same<SCALAR, Real>::value ? 1: 0,
-      params,
-      static_cast<void*>(dummy.data()),
-      static_cast<void*>(sol.data()),
-      static_cast<void*>(u.data()),
-      static_cast<void*>(v.data())
-  );
+  sopt_prox_l1(static_cast<void *>(result.data()), static_cast<void *>(xin.data()), x.size(), nr,
+               &direct_transform<SCALAR>, (void **)&psi_data, &adjoint_transform<SCALAR>,
+               (void **)&psi_data, weights.data(), gamma, std::is_same<SCALAR, Real>::value ? 1 : 0,
+               params, static_cast<void *>(dummy.data()), static_cast<void *>(sol.data()),
+               static_cast<void *>(u.data()), static_cast<void *>(v.data()));
   return result;
 }
 
@@ -96,7 +83,7 @@ TEST_CASE("Compare L1 proximals", "") {
     auto const gamma = 1e0 / static_cast<t_real>(weights.size());
 
     SECTION("No constraints") {
-      for(auto i: {2, 10, 25, 500, 1000}) {
+      for(auto i : {2, 10, 25, 500, 1000}) {
         l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1);
         auto const c = c_proximal(l1, gamma, input, false, false);
         auto const cpp = l1.itermax(i)(gamma, input);
@@ -105,7 +92,7 @@ TEST_CASE("Compare L1 proximals", "") {
     }
 
     SECTION("Positivity constraints") {
-      for(auto i: {2, 10, 25, 500, 1000}) {
+      for(auto i : {2, 10, 25, 500, 1000}) {
         l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1).positivity_constraint(true);
         auto const c = c_proximal(l1, gamma, input, true, false);
         auto const cpp = l1.itermax(i)(gamma, input);

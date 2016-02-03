@@ -16,7 +16,8 @@ int main(int, char const **) {
     throw std::exception();
 
   // To save on memory allocation we could also use a pre-allocated matrix;
-  coefficients.fill(0); recover.fill(0);
+  coefficients.fill(0);
+  recover.fill(0);
   wavelets.direct(coefficients, input);
   wavelets.indirect(coefficients, recover);
   if(not input.isApprox(recover))

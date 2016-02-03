@@ -1,5 +1,5 @@
-#include <sopt/logging.h>
 #include <sopt/l1_proximal.h>
+#include <sopt/logging.h>
 #include <sopt/types.h>
 
 int main(int, char const **) {
@@ -11,16 +11,16 @@ int main(int, char const **) {
   auto const input = sopt::Vector<Scalar>::Random(10).eval();
   auto const Psi = sopt::Matrix<Scalar>::Random(input.size(), input.size() * 10).eval();
   sopt::Vector<Real> const weights
-    = sopt::Vector<Scalar>::Random(Psi.cols()).normalized().array().abs();
+      = sopt::Vector<Scalar>::Random(Psi.cols()).normalized().array().abs();
 
   auto const l1 = sopt::proximal::L1<Scalar>()
-    .tolerance(1e-12)
-    .itermax(100)
-    .fista_mixing(true)
-    .positivity_constraint(true)
-    .nu(1)
-    .Psi(Psi)
-    .weights(weights);
+                      .tolerance(1e-12)
+                      .itermax(100)
+                      .fista_mixing(true)
+                      .positivity_constraint(true)
+                      .nu(1)
+                      .Psi(Psi)
+                      .weights(weights);
 
   // gamma should be sufficiently small. Or is it nu should not be 1?
   // In any case, this seems to work.
@@ -38,10 +38,9 @@ int main(int, char const **) {
     Real const dobj = l1.objective(input, position, gamma);
     // Fuzzy logic
     if(dobj < result.objective - 1e-8)
-      SOPT_THROW("This is not the minimum we are looking for: ")
-        << dobj << " <~ " << result.objective;
+      SOPT_THROW("This is not the minimum we are looking for: ") << dobj << " <~ "
+                                                                 << result.objective;
   }
-
 
   return 0;
 }

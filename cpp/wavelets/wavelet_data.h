@@ -4,7 +4,8 @@
 #include "sopt/types.h"
 #include "innards.impl.h"
 
-namespace sopt { namespace wavelets {
+namespace sopt {
+namespace wavelets {
 
 //! Holds wavelets coefficients
 struct WaveletData {
@@ -39,6 +40,7 @@ struct WaveletData {
 };
 
 //! Factory function returning specific daubechie wavelet data
-WaveletData const & daubechies_data(t_uint);
-}}
+WaveletData const &daubechies_data(t_uint);
+}
+}
 #endif
