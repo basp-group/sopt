@@ -1,8 +1,8 @@
 #ifndef SOPT_TOOLS_FOR_TESTS_INPAINTING
 #define SOPT_TOOLS_FOR_TESTS_INPAINTING
 
+#include "sopt/config.h"
 #include <random>
-
 #include <sopt/linear_transform.h>
 #include <sopt/types.h>
 

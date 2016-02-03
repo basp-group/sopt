@@ -3,6 +3,7 @@
 
 // Convenience header to include wavelets headers and additional utilities
 
+#include "sopt/config.h"
 #include "sopt/linear_transform.h"
 #include "wavelets/sara.h"
 #include "wavelets/wavelets.h"

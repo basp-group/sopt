@@ -1,6 +1,7 @@
 #ifndef SOPT_LOGGING_H
 #define SOPT_LOGGING_H
 
+#include "sopt/config.h"
 //! Macro to start logging or not
 #cmakedefine SOPT_DO_LOGGING
 

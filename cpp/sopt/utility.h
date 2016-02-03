@@ -1,13 +1,13 @@
 #ifndef SOPT_UTILITY_H
 #define SOPT_UTILITY_H
 
-#include <Eigen/Core>
+#include "sopt/config.h"
 #include <algorithm>
 #include <complex>
 #include <type_traits>
-
-#include "sopt/types.h"
+#include <Eigen/Core>
 #include "sopt/exception.h"
+#include "sopt/types.h"
 
 namespace sopt {
 

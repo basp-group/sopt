@@ -1,10 +1,10 @@
 #ifndef BICO_TRAITS_H
 #define BICO_TRAITS_H
 
-#include <Eigen/Core>
+#include "sopt/config.h"
 #include <complex>
 #include <functional>
-
+#include <Eigen/Core>
 #include "sopt/real_type.h"
 
 namespace sopt {

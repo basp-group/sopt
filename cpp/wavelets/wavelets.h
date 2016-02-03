@@ -1,8 +1,9 @@
 #ifndef SOPT_WAVELETS_WAVELETS_H
 #define SOPT_WAVELETS_WAVELETS_H
 
-#include "sopt/types.h"
+#include "sopt/config.h"
 #include <iostream>
+#include "sopt/types.h"
 #include "direct.h"
 #include "indirect.h"
 #include "wavelet_data.h"

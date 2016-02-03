@@ -1,6 +1,7 @@
 #ifndef SOPT_LOGGING_DISABLED_H
 #define SOPT_LOGGING_DISABLED_H
 
+#include "sopt/config.h"
 #include <memory>
 #include <string>
 

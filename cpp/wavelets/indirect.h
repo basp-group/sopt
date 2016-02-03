@@ -1,6 +1,7 @@
 #ifndef SOPT_WAVELET_INDIRECT_H
 #define SOPT_WAVELET_INDIRECT_H
 
+#include "sopt/config.h"
 #include "sopt/types.h"
 #include "innards.impl.h"
 #include "wavelet_data.h"

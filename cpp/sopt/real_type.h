@@ -1,6 +1,7 @@
 #ifndef SOPT_REAL_TYPE_H
 #define SOPT_REAL_TYPE_H
 
+#include "sopt/config.h"
 #include <complex>
 #include <type_traits>
 

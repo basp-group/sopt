@@ -1,15 +1,15 @@
 #ifndef SOPT_OPERATORS_H
 #define SOPT_OPERATORS_H
 
+#include "sopt/config.h"
 #include <array>
 #include <memory>
 #include <type_traits>
-
-#include "sopt/types.h"
+#include <Eigen/Core>
 #include "sopt/logging.h"
+#include "sopt/types.h"
 #include "sopt/utility.h"
 #include "sopt/wrapper.h"
-#include <Eigen/Core>
 
 namespace sopt {
 

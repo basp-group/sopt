@@ -1,6 +1,7 @@
 #ifndef SOPT_WAVELETS_SARA_H
 #define SOPT_WAVELETS_SARA_H
 
+#include "sopt/config.h"
 #include <cmath>
 #include <initializer_list>
 #include <tuple>
@@ -13,8 +14,10 @@ namespace wavelets {
 //! Sparsity Averaging Reweighted Analysis
 class SARA : public std::vector<Wavelet> {
 public:
+#ifndef SOPT_HAS_NOT_USING
   // Constructors
   using std::vector<Wavelet>::vector;
+#endif
   //! Easier constructor
   SARA(std::initializer_list<std::tuple<std::string, t_uint>> const &init);
   //! Destructor

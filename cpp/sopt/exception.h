@@ -1,6 +1,7 @@
 #ifndef SOPT_EXCEPTION
 #define SOPT_EXCEPTION
 
+#include "sopt/config.h"
 #include <exception>
 #include <sstream>
 #include <string>

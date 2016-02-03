@@ -1,17 +1,17 @@
 #ifndef SOPT_SDMM_H
 #define SOPT_SDMM_H
 
+#include "sopt/config.h"
 #include <limits>
 #include <numeric>
 #include <vector>
-
-#include "sopt/types.h"
 #include "sopt/conjugate_gradient.h"
 #include "sopt/exception.h"
 #include "sopt/linear_transform.h"
 #include "sopt/logging.h"
 #include "sopt/proximal.h"
 #include "sopt/proximal_expression.h"
+#include "sopt/types.h"
 #include "sopt/wrapper.h"
 
 namespace sopt {

@@ -31,6 +31,7 @@ include(AddCPP11Flags)
 include(CheckCXX11Features)
 include(AddPyTest)
 cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
+include(compilations)
 
 # search/install dependencies
 set(REGRESSION_ORACLE_ID "development"

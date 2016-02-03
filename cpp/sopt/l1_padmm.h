@@ -1,16 +1,16 @@
 #ifndef SOPT_L1_PROXIMAL_ADMM_H
 #define SOPT_L1_PROXIMAL_ADMM_H
 
+#include "sopt/config.h"
 #include <numeric>
 #include <utility>
-
-#include "sopt/types.h"
 #include "sopt/L1_proximal.h"
 #include "sopt/exception.h"
 #include "sopt/linear_transform.h"
 #include "sopt/logging.h"
 #include "sopt/padmm.h"
 #include "sopt/proximal.h"
+#include "sopt/types.h"
 
 namespace sopt {
 namespace algorithm {

@@ -1,8 +1,9 @@
 #ifndef SOPT_WAVELETS_INNARDS_H
 #define SOPT_WAVELETS_INNARDS_H
 
-#include <Eigen/Core>
+#include "sopt/config.h"
 #include <iostream>
+#include <Eigen/Core>
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt {

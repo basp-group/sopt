@@ -64,13 +64,15 @@ Standard:        Cpp11
 TabWidth:        8
 UseTab:          Never
 IncludeCategories:
-  - Regex:           '^"sopt/types.h"$'
-    Priority:        1
-  - Regex:           '^"sopt/'
-    Priority:        3
-  - Regex:           '^(<.*>)'
-    Priority:        4
-  - Regex:           '.\*'
+  - Regex:           '^"sopt/config.h"$'
     Priority:        2
+  - Regex:           '^"sopt/'
+    Priority:        9
+  - Regex:           '^(<.*/.*>)'
+    Priority:        7
+  - Regex:           '^(<.*>)'
+    Priority:        6
+  - Regex:           '".\*"'
+    Priority:        8
 ...
 

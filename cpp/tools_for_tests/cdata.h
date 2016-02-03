@@ -1,7 +1,9 @@
 #ifndef SOPT_TOOLS_FOR_TESTS_CDATA
 #define SOPT_TOOLS_FOR_TESTS_CDATA
-#include "sopt/linear_transform.h"
+
+#include "sopt/config.h"
 #include <Eigen/Core>
+#include "sopt/linear_transform.h"
 
 namespace sopt {
 // Wraps calls to sampling and wavelets to C style

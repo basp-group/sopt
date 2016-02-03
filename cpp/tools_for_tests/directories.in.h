@@ -1,6 +1,7 @@
 #ifndef SOPT_DATA_DIR_H
 #define SOPT_DATA_DIR_H
 
+#include "sopt/config.h"
 #include <string>
 
 namespace sopt {

@@ -1,7 +1,9 @@
 #ifndef SOPT_WAVELETS_DIRECT_H
 #define SOPT_WAVELETS_DIRECT_H
-#include "sopt/types.h"
+
+#include "sopt/config.h"
 #include <type_traits>
+#include "sopt/types.h"
 #include "wavelet_data.h"
 
 // Function inside anonymouns namespace won't appear in library

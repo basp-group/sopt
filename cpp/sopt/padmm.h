@@ -1,13 +1,13 @@
 #ifndef SOPT_PROXIMAL_ADMM_H
 #define SOPT_PROXIMAL_ADMM_H
 
+#include "sopt/config.h"
 #include <functional>
 #include <limits>
-
-#include "sopt/types.h"
 #include "sopt/exception.h"
 #include "sopt/linear_transform.h"
 #include "sopt/logging.h"
+#include "sopt/types.h"
 
 namespace sopt {
 namespace algorithm {

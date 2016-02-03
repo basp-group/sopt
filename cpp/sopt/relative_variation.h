@@ -1,8 +1,8 @@
 #ifndef SOPT_RELATIVE_VARIATION_H
 #define SOPT_RELATIVE_VARIATION_H
 
+#include "sopt/config.h"
 #include <Eigen/Core>
-
 #include "sopt/logging.h"
 #include "sopt/utility.h"
 

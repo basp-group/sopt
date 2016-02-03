@@ -4,8 +4,9 @@
 #include <array>
 #include <type_traits>
 
-#include "sopt/types.h"
+#include "sopt/config.h"
 #include "sopt/exception.h"
+#include "sopt/types.h"
 #include "sopt/utility.h"
 
 namespace sopt {

@@ -1,8 +1,8 @@
 #ifndef SOPT_TIFF_WRAPPER_H
 #define SOPT_TIFF_WRAPPER_H
 
+#include "sopt/config.h"
 #include <Eigen/Core>
-
 #include "sopt/types.h"
 
 namespace sopt {

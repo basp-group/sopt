@@ -1,10 +1,10 @@
 #ifndef SOPT_PROXIMAL_EXPRESSION_H
 #define SOPT_PROXIMAL_EXPRESSION_H
 
-#include <Eigen/Core>
+#include "sopt/config.h"
 #include <iostream>
 #include <type_traits>
-
+#include <Eigen/Core>
 #include "sopt/utility.h"
 
 namespace sopt {

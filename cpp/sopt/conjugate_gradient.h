@@ -1,13 +1,13 @@
 #ifndef SOPT_CONJUGATE_GRADIENT
 #define SOPT_CONJUGATE_GRADIENT
 
+#include "sopt/config.h"
 #include <limits>
 #include <type_traits>
-
 #include "sopt/logging.h"
-#include "types.h"
-#include "utility.h"
-#include "wrapper.h"
+#include "sopt/types.h"
+#include "sopt/utility.h"
+#include "sopt/wrapper.h"
 
 namespace sopt {
 //! Solves $Ax = b$ for $x$, given $A$ and $b$.

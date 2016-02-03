@@ -1,8 +1,9 @@
 #ifndef SOPT_LOGGING_ENABLED_H
 #define SOPT_LOGGING_ENABLED_H
 
-#include "sopt/exception.h"
+#include "sopt/config.h"
 #include <spdlog/spdlog.h>
+#include "sopt/exception.h"
 
 namespace sopt {
 namespace logging {

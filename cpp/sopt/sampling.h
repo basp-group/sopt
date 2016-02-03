@@ -1,14 +1,14 @@
 #ifndef SOPT_SAMPLING_H
 #define SOPT_SAMPLING_H
 
+#include "sopt/config.h"
+#include "sopt/config.h"
 #include <initializer_list>
 #include <memory>
 #include <random>
-
 #include <Eigen/Core>
-
-#include "sopt/types.h"
 #include "sopt/linear_transform.h"
+#include "sopt/types.h"
 
 namespace sopt {
 
