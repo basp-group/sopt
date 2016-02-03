@@ -90,7 +90,7 @@ TEST_CASE("Compare ADMM C++ and C", "") {
       c_params.max_iter = i;
       auto admm = ::create_admm(sampling, psi, c_params);
       t_Vector cpp(image.size());
-      auto const diagnostic = admm(cpp, y);
+      admm(cpp, y);
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector l1_weights = t_Vector::Ones(image.size());

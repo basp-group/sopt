@@ -71,7 +71,7 @@ TEST_CASE("Compare SDMMS", "") {
       c_params.max_iter = i;
       auto sdmm = ::create_sdmm(sampling, psi, y, c_params);
       t_Vector cpp(image.size());
-      auto const diagnostic = sdmm(cpp, t_Vector::Zero(image.size()));
+      sdmm(cpp, t_Vector::Zero(image.size()));
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector weights = t_Vector::Ones(image.size());
