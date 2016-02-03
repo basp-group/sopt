@@ -1,7 +1,7 @@
+#include <catch.hpp>
 #include <random>
 #include <string>
 #include <tuple>
-#include "catch.hpp"
 
 #include "wavelets/sara.h"
 

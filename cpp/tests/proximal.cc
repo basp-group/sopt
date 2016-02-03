@@ -1,8 +1,7 @@
+#include <catch.hpp>
 #include <numeric>
 #include <random>
 #include <utility>
-
-#include "catch.hpp"
 
 #include "sopt/types.h"
 #include "sopt/l1_proximal.h"

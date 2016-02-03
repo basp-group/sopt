@@ -1,7 +1,7 @@
+#include <catch.hpp>
 #include <complex>
 #include <iomanip>
 #include <iostream>
-#include "catch.hpp"
 
 #include "sopt/linear_transform.h"
 

@@ -1,8 +1,8 @@
+#include <catch.hpp>
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <type_traits>
-#include "catch.hpp"
 
 #include "sopt/l1_padmm.h"
 #include "sopt/logging.h"

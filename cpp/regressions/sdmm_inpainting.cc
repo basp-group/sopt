@@ -1,9 +1,9 @@
+#include <catch.hpp>
 #include <complex>
 #include <iomanip>
 #include <iostream>
 #include <random>
 #include <type_traits>
-#include "catch.hpp"
 
 #include "sopt/logging.h"
 #include "sopt/proximal.h"

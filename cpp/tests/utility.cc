@@ -1,7 +1,7 @@
+#include <catch.hpp>
 #include <numeric>
 #include <random>
 #include <utility>
-#include "catch.hpp"
 
 #include "sopt/types.h"
 #include "sopt/relative_variation.h"

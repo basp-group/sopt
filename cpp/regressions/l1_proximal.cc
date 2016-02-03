@@ -1,9 +1,9 @@
 #include <algorithm>
+#include <catch.hpp>
 #include <complex>
 #include <numeric>
 #include <random>
 #include <type_traits>
-#include "catch.hpp"
 
 #include "sopt/l1_proximal.h"
 #include "tools_for_tests/cdata.h"
