@@ -217,7 +217,8 @@ public:
   SOPT_MACRO(fista_mixing, bool);
 #undef SOPT_MACRO
 
-  using L1TightFrame<Scalar>::weights;
+  //! Weights of the l1 norm
+  Vector<Real> const & weights() const { return L1TightFrame<Scalar>::weights(); }
   //! Set weights to an array of values
   template <class T> L1<Scalar> &weights(Eigen::MatrixBase<T> const &w) {
     L1TightFrame<Scalar>::weights(w);
@@ -229,7 +230,8 @@ public:
     return this;
   }
 
-  using L1TightFrame<Scalar>::nu;
+  //! Bounds on the squared norm of the operator Ψ
+  Real nu() const { return L1TightFrame<Scalar>::nu(); }
   //! Sets the bound on the squared norm of the operator Ψ
   L1<Scalar> &nu(Real const &nu) {
     L1TightFrame<SCALAR>::nu(nu);
@@ -237,7 +239,7 @@ public:
   }
 
   //! Linear transform applied to input prior to L1 norm
-  using L1TightFrame<Scalar>::Psi;
+  LinearTransform<Vector<Scalar>> const & Psi() const { return L1TightFrame<Scalar>::Psi(); }
   //! Set Ψ and Ψ^† using a matrix
   template <class... ARGS>
   typename std::enable_if<sizeof...(ARGS) >= 1, L1<Scalar> &>::type Psi(ARGS &&... args) {
