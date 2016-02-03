@@ -4,7 +4,7 @@
 #include "sopt/config.h"
 #include <numeric>
 #include <utility>
-#include "sopt/L1_proximal.h"
+#include "sopt/l1_proximal.h"
 #include "sopt/exception.h"
 #include "sopt/linear_transform.h"
 #include "sopt/logging.h"
