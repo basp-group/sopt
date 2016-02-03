@@ -182,7 +182,9 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
     CHECK(diagnostic.niters == sdmm.itermax());
     t_Vector const segment = (target1 - target0).normalized();
     t_real const alpha = (result - target0).transpose() * segment;
-    CHECK(1e0 >= alpha);
+    CAPTURE(target0.transpose());
+    CAPTURE(target1.transpose());
+    CHECK((target1 - target0).transpose() * segment >= alpha);
     CHECK(alpha >= 0e0);
     CHECK((result - target0 - alpha * segment).stableNorm() < 1e-8);
   }
