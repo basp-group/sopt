@@ -96,9 +96,9 @@ public:
 template <class T0, class T1>
 void SARA::direct(Eigen::ArrayBase<T1> &coeffs, Eigen::ArrayBase<T0> const &signal) const {
   SOPT_WAVELET_ERROR_MACRO(signal);
-  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     coeffs.derived().resize(signal.rows(), signal.cols() * size());
-  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     throw std::length_error("Incorrect size for output matrix(or could not resize)");
   auto const Ncols = signal.cols();
   auto colindex = Ncols;
@@ -115,9 +115,9 @@ void SARA::indirect(Eigen::ArrayBase<T1> const &coeffs, Eigen::ArrayBase<T0> &si
   if(coeffs.cols() % size() != 0)
     throw std::length_error(
         "Columns of coefficient matrix and number of wavelets are inconsistent");
-  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     signal.derived().resize(coeffs.rows(), coeffs.cols() / size());
-  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * size())
+  if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     throw std::length_error("Incorrect size for output matrix(or could not resize)");
   auto const Ncols = signal.cols();
   front().indirect(coeffs.leftCols(Ncols) / std::sqrt(size()), signal);

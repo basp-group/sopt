@@ -40,10 +40,10 @@ direct_transform_impl(Eigen::ArrayBase<T0> const &coeffs_, Eigen::ArrayBase<T1> 
   assert(coeffs.cols() == signal.cols());
   assert(wavelet.direct_filter.low.size() == wavelet.direct_filter.high.size());
 
-  for(t_uint i(0); i < coeffs.rows(); ++i)
+  for(t_uint i(0); i < static_cast<t_uint>(coeffs.rows()); ++i)
     direct_transform_impl(coeffs.row(i).transpose(), signal.row(i).transpose(), wavelet);
 
-  for(t_uint i(0); i < coeffs.cols(); ++i) {
+  for(t_uint i(0); i < static_cast<t_uint>(coeffs.cols()); ++i) {
     signal.col(i) = coeffs.col(i);
     direct_transform_impl(coeffs.col(i), signal.col(i), wavelet);
   }
