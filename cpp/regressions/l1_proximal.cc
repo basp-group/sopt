@@ -38,9 +38,9 @@ c_proximal(sopt::proximal::L1<SCALAR> const &l1, typename sopt::real_type<SCALAR
   Vector<Real> weights = l1.weights();
   if(l1.weights().size() == 1)
     weights = l1.weights()(1) * Vector<Real>::Ones(nr);
-  CData<SCALAR> const psi_data{nr, x.size(), l1.Psi()};
+  CData<SCALAR> const psi_data{nr, x.size(), l1.Psi(), 0, 0};
   sopt_prox_l1param params = {
-      2,                              // verbosity
+      0,                              // verbosity
       static_cast<int>(l1.itermax()), // max iter
       l1.tolerance(),                 // relative change
       l1.nu(),                        // nu
@@ -66,7 +66,7 @@ TEST_CASE("Compare L1 proximals", "") {
   typedef std::complex<double> Scalar;
 
   auto l1 = proximal::L1<Scalar>();
-  Vector<Scalar> const input = Vector<Scalar>::Random(4);
+  Vector<Scalar> const input = Vector<Scalar>::Random(15);
 
   SECTION("Check tight frame") {
     auto const Psi = concatenated_permutations<Scalar>(input.size(), input.size() * 10);
@@ -87,7 +87,7 @@ TEST_CASE("Compare L1 proximals", "") {
         l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1);
         auto const c = c_proximal(l1, gamma, input, false, false);
         auto const cpp = l1.itermax(i)(gamma, input);
-        CHECK(cpp.proximal.isApprox(c));
+        CHECK(cpp.proximal.isApprox(c, 1e-8 * c.array().abs().maxCoeff()));
       }
     }
 
@@ -96,7 +96,9 @@ TEST_CASE("Compare L1 proximals", "") {
         l1.Psi(Psi).weights(weights).tolerance(1e-12).itermax(i - 1).positivity_constraint(true);
         auto const c = c_proximal(l1, gamma, input, true, false);
         auto const cpp = l1.itermax(i)(gamma, input);
-        CHECK(cpp.proximal.isApprox(c));
+        CAPTURE(c.transpose());
+        CAPTURE(cpp.proximal.transpose());
+        CHECK(cpp.proximal.isApprox(c, 1e-8 * c.array().abs().maxCoeff()));
       }
     }
   }

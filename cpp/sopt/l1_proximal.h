@@ -280,7 +280,7 @@ operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &
   t_uint niters = 0;
   out = x;
 
-  Breaker breaker(objective(x, x, gamma), tolerance(), not fista_mixing());
+  Breaker breaker(objective(x, x, gamma), tolerance(), false); //not fista_mixing());
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));

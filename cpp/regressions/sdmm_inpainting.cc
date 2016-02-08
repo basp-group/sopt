@@ -61,8 +61,8 @@ TEST_CASE("Compare SDMMS", "") {
   auto const psi = linear_transform<Scalar>(wavelet, image.rows(), image.cols());
 
   // Create C bindings for C++ operators
-  CData<Scalar> const sampling_data{image.size(), y.size(), sampling};
-  CData<Scalar> const psi_data{image.size(), image.size(), psi};
+  CData<Scalar> const sampling_data{image.size(), y.size(), sampling, 0, 0};
+  CData<Scalar> const psi_data{image.size(), image.size(), psi, 0, 0};
 
   // Try increasing number of iterations and check output of c and c++ algorithms are the same
   for(t_uint i : {1, 2, 5, 10}) {
