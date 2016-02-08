@@ -7,3 +7,4 @@ add_example(conjugate_gradient LIBRARIES sopt)
 add_example(l1_proximal LIBRARIES sopt)
 
 add_subdirectory(sdmm)
+add_subdirectory(proximal_admm)
