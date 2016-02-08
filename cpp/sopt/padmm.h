@@ -50,9 +50,8 @@ public:
   //! \param[in] g_proximal: proximal operator of the \f$g\f$ function
   ProximalADMM(t_Proximal const &f_proximal, t_Proximal const &g_proximal)
       : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
-        lagrange_update_scale_(0.9), relative_variation_(1e-4), residual_convergence_(1e-4),
-        is_converged_(), Phi_(linear_transform_identity<Scalar>()), f_proximal_(f_proximal),
-        g_proximal_(g_proximal) {}
+        lagrange_update_scale_(0.9), is_converged_(), Phi_(linear_transform_identity<Scalar>()),
+        f_proximal_(f_proximal), g_proximal_(g_proximal) {}
   virtual ~ProximalADMM() {}
 
 // Macro helps define properties that can be initialized as in
@@ -77,12 +76,6 @@ public:
   SOPT_MACRO(nu, Real);
   //! Lagrange update scale β
   SOPT_MACRO(lagrange_update_scale, Real);
-  //! \brief Convergence of the relative variation of the objective functions
-  //! \details If negative, this convergence criteria is disabled.
-  SOPT_MACRO(relative_variation, Real);
-  //! \brief Convergence of the residuals
-  //! \details If negative, this convergence criteria is disabled.
-  SOPT_MACRO(residual_convergence, Real);
   //! A function verifying convergence
   SOPT_MACRO(is_converged, t_IsConverged);
   //! Measurement operator
@@ -114,6 +107,13 @@ public:
     DiagnosticAndResult result;
     static_cast<Diagnostic &>(result) = operator()(result.x, input);
     return result;
+  }
+
+  //! Set Φ and Φ^† using arguments that sopt::linear_transform understands
+  template <class... ARGS>
+  typename std::enable_if<sizeof...(ARGS) >= 1, ProximalADMM &>::type Phi(ARGS &&... args) {
+    Phi_ = linear_transform(std::forward<ARGS>(args)...);
+    return *this;
   }
 
 protected:

@@ -49,7 +49,7 @@ public:
 
   L1ProximalADMM()
       : ProximalADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0),
-        tight_frame_(false) {
+        tight_frame_(false), relative_variation_(1e-4), residual_convergence_(1e-4) {
     set_f_and_g_proximal_to_members_of_this();
   }
   L1ProximalADMM(L1ProximalADMM<Scalar> const &c)
@@ -102,6 +102,12 @@ public:
              set_f_and_g_proximal_to_members_of_this());
   //! Whether Ψ is a tight-frame or not
   SOPT_MACRO(tight_frame, bool, );
+  //! \brief Convergence of the relative variation of the objective functions
+  //! \details If negative, this convergence criteria is disabled.
+  SOPT_MACRO(relative_variation, Real, );
+  //! \brief Convergence of the residuals
+  //! \details If negative, this convergence criteria is disabled.
+  SOPT_MACRO(residual_convergence, Real, );
 #undef SOPT_MACRO
 
   //! \brief Analysis operator Ψ
@@ -173,8 +179,6 @@ public:
   SOPT_MACRO(gamma);
   SOPT_MACRO(nu);
   SOPT_MACRO(lagrange_update_scale);
-  SOPT_MACRO(relative_variation);
-  SOPT_MACRO(residual_convergence);
   SOPT_MACRO(Phi);
   SOPT_MACRO(is_converged);
 #undef SOPT_MACRO
