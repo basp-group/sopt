@@ -65,7 +65,7 @@ public:
     return *this;
   }
 
-  //! Set Ψ and Ψ^† using a matrix
+  //! Set Ψ and Ψ^† using arguments that sopt::linear_transform understands
   template <class... ARGS>
   typename std::enable_if<sizeof...(ARGS) >= 1, L1TightFrame &>::type Psi(ARGS &&... args) {
     Psi_ = linear_transform(std::forward<ARGS>(args)...);
