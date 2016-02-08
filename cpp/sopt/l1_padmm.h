@@ -4,8 +4,8 @@
 #include "sopt/config.h"
 #include <numeric>
 #include <utility>
-#include "sopt/l1_proximal.h"
 #include "sopt/exception.h"
+#include "sopt/l1_proximal.h"
 #include "sopt/linear_transform.h"
 #include "sopt/logging.h"
 #include "sopt/padmm.h"
@@ -38,7 +38,7 @@ public:
     typename proximal::L1<Scalar>::Diagnostic l1_diag;
     Diagnostic(t_uint niters = 0u, bool good = false,
                typename proximal::L1<Scalar>::Diagnostic const &l1diag
-               = proximal::L1<Scalar>::Diagnostic())
+               = typename proximal::L1<Scalar>::Diagnostic())
         : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
   };
   //! Holds result vector as well
@@ -54,12 +54,14 @@ public:
   }
   L1ProximalADMM(L1ProximalADMM<Scalar> const &c)
       : ProximalADMM<Scalar>(c), l1_proximal_(c.l1_proximal_), l2ball_proximal_(c.l2ball_proximal_),
-        tight_frame_(c.tight_frame_) {
+        tight_frame_(c.tight_frame_), relative_variation_(c.relative_variation_),
+        residual_convergence_(c.residual_convergence_) {
     set_f_and_g_proximal_to_members_of_this();
   }
   L1ProximalADMM(L1ProximalADMM<Scalar> &&c)
       : ProximalADMM<Scalar>(std::move(c)), l1_proximal_(std::move(c.l1_proximal_)),
-        l2ball_proximal_(std::move(c.l2ball_proximal_)), tight_frame_(c.tight_frame_) {
+        l2ball_proximal_(std::move(c.l2ball_proximal_)), tight_frame_(c.tight_frame_),
+        relative_variation_(c.relative_variation_), residual_convergence_(c.residual_convergence_) {
     set_f_and_g_proximal_to_members_of_this();
   }
 
@@ -206,7 +208,7 @@ public:
   //! \param[in] input: Target measurement vector y
   DiagnosticAndResult operator()(t_Vector const &input) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.out, input);
+    static_cast<Diagnostic &>(result) = operator()(result.x, input);
     return result;
   }
 
@@ -272,8 +274,8 @@ operator()(t_Vector &out, t_Vector const &input) const {
 
     // convergence stuff
     auto const user = (not has_user_convergence) or is_converged(out);
-    auto const res = residual_convergence() > 0e0 and residual_norm < residual_convergence();
-    auto const rel = relative_variation() > 0e0 and relative_objective < relative_variation();
+    auto const res = residual_convergence() <= 0e0 or residual_norm < residual_convergence();
+    auto const rel = relative_variation() <= 0e0 or relative_objective < relative_variation();
     if(user and res and rel) {
       SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
       return Diagnostic{niters, true, l1_diagnostic};
