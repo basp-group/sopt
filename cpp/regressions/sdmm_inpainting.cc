@@ -45,7 +45,7 @@ TEST_CASE("Compare SDMMS", "") {
   auto const y = dirty(sampling, image, *mersenne);
 
   sopt_l1_sdmmparam params = {
-      4,                        // verbosity
+      0,                        // verbosity
       50,                       // max iter
       0.1,                      // gamma
       0.01,                     // relative change

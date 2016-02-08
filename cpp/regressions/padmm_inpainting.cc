@@ -55,7 +55,7 @@ TEST_CASE("Compare ADMM C++ and C", "") {
   auto const y = dirty(sampling, image, *mersenne);
 
   sopt_l1_param_padmm params{
-      2,                        // verbosity
+      0,                        // verbosity
       200,                      // max iter
       0.1,                      // gamma
       0.0005,                   // relative change
@@ -63,7 +63,7 @@ TEST_CASE("Compare ADMM C++ and C", "") {
       1,                        // real out
       1,                        // real meas
       {
-          2,    // verbose = 1;
+          0,    // verbose = 1;
           8,    // max_iter = 50;
           0.01, // rel_obj = 0.01;
           1,    // nu = 1;
