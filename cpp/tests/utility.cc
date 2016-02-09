@@ -3,9 +3,9 @@
 #include <random>
 #include <utility>
 
-#include "sopt/types.h"
 #include "sopt/relative_variation.h"
 #include "sopt/sampling.h"
+#include "sopt/types.h"
 #include "sopt/utility.h"
 
 TEST_CASE("Projector on positive quadrant", "[utility][project]") {

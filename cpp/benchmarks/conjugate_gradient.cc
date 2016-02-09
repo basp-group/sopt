@@ -1,6 +1,6 @@
 #include "sopt/conjugate_gradient.h"
-#include <benchmark/benchmark.h>
 #include <sstream>
+#include <benchmark/benchmark.h>
 
 template <class TYPE> void matrix_cg(benchmark::State &state) {
   auto const N = state.range_x();

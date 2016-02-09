@@ -12,5 +12,4 @@
 #define SOPT_TEST_DEBUG_LEVEL "debug"
 #endif
 
-
 #endif

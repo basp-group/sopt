@@ -218,7 +218,7 @@ public:
 #undef SOPT_MACRO
 
   //! Weights of the l1 norm
-  Vector<Real> const & weights() const { return L1TightFrame<Scalar>::weights(); }
+  Vector<Real> const &weights() const { return L1TightFrame<Scalar>::weights(); }
   //! Set weights to an array of values
   template <class T> L1<Scalar> &weights(Eigen::MatrixBase<T> const &w) {
     L1TightFrame<Scalar>::weights(w);
@@ -239,7 +239,7 @@ public:
   }
 
   //! Linear transform applied to input prior to L1 norm
-  LinearTransform<Vector<Scalar>> const & Psi() const { return L1TightFrame<Scalar>::Psi(); }
+  LinearTransform<Vector<Scalar>> const &Psi() const { return L1TightFrame<Scalar>::Psi(); }
   //! Set Ψ and Ψ^† using a matrix
   template <class... ARGS>
   typename std::enable_if<sizeof...(ARGS) >= 1, L1<Scalar> &>::type Psi(ARGS &&... args) {
@@ -280,7 +280,7 @@ operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &
   t_uint niters = 0;
   out = x;
 
-  Breaker breaker(objective(x, x, gamma), tolerance(), false); //not fista_mixing());
+  Breaker breaker(objective(x, x, gamma), tolerance(), false); // not fista_mixing());
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));

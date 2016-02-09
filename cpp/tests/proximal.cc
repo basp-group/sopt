@@ -3,9 +3,9 @@
 #include <random>
 #include <utility>
 
-#include "sopt/types.h"
 #include "sopt/l1_proximal.h"
 #include "sopt/proximal.h"
+#include "sopt/types.h"
 
 template <class T> sopt::Matrix<T> concatenated_permutations(sopt::t_uint i, sopt::t_uint j) {
   extern std::unique_ptr<std::mt19937_64> mersenne;
