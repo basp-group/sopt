@@ -1,0 +1,46 @@
+# some common compilation flags
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+if(EIGEN3_INCLUDE_DIR)
+  include_directories(SYSTEM "${EIGEN3_INCLUDE_DIR}")
+endif()
+
+# Setup logging
+if(logging)
+  if(SPDLOG_INCLUDE_DIR)
+    include_directories(SYSTEM "${SPDLOG_INCLUDE_DIR}")
+  endif()
+  set(SOPT_DO_LOGGING 1)
+  set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
+  set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS
+    emerg off trace debug info notice warn err critical alert)
+else()
+  unset(SOPT_DO_LOGGING)
+  set(SOPT_TEST_LOG_LEVEL off)
+endif()
+
+set(version ${Sopt_VERSION})
+string(REGEX REPLACE "\\." ";" version "${Sopt_VERSION}")
+list(GET version 0 Sopt_VERSION_MAJOR)
+list(GET version 1 Sopt_VERSION_MINOR)
+list(GET version 2 Sopt_VERSION_PATCH)
+
+configure_file(sopt/config.in.h "${EXTERNAL_ROOT}/include/sopt/config.h")
+include_directories("${EXTERNAL_ROOT}/include/")
+
+add_subdirectory(sopt)
+if(regressions OR examples)
+  # Tiff wrappers and whatnot
+  add_subdirectory(tools_for_tests)
+endif()
+if(tests)
+  add_subdirectory(tests)
+endif()
+if(examples)
+  add_subdirectory(examples)
+endif()
+if(benchmarks)
+  add_subdirectory(benchmarks)
+endif()
+if(regressions)
+  add_subdirectory(regressions)
+endif()
