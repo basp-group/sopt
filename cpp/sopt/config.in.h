@@ -1,4 +1,5 @@
 #ifndef SOPT_CPP_CONFIG_H
+#define SOPT_CPP_CONFIG_H
 
 //! Problems with using and constructors
 #cmakedefine SOPT_HAS_USING
@@ -8,8 +9,22 @@
 
 //! Macro to start logging or not
 #cmakedefine SOPT_DO_LOGGING
-#ifndef SOPT_TEST_DEBUG_LEVEL
-#define SOPT_TEST_DEBUG_LEVEL "debug"
-#endif
+
+#include <string>
+#include <tuple>
+
+namespace sopt {
+//! Returns library version
+inline std::string version() { return "@Sopt_VERSION@"; }
+//! Returns library version
+inline std::tuple<uint8_t, uint8_t, uint8_t> version_tuple() {
+  return std::tuple<uint8_t, uint8_t, uint8_t>(
+      @Sopt_VERSION_MAJOR@, @Sopt_VERSION_MINOR@, @Sopt_VERSION_PATCH@);
+}
+//! Returns library git reference, if known
+inline std::string gitref() { return "@Sopt_GITREF@"; }
+//! Default logging level
+inline std::string default_logging_level() { return "@SOPT_TEST_LOG_LEVEL@"; }
+}
 
 #endif

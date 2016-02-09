@@ -10,10 +10,14 @@ namespace logging {
 //! Name of the sopt logger
 const std::string name_prefix = "sopt";
 
+void set_level(std::string const &level, std::string const &name = "");
+
 //! \brief Initializes a logger.
 //! \details Logger only exists as long as return is kept alive.
 inline std::shared_ptr<spdlog::logger> initialize(std::string const &name = "") {
-  return spdlog::stdout_logger_mt(name_prefix + name);
+  auto const result = spdlog::stdout_logger_mt(name_prefix + name);
+  set_level(default_logging_level(), name);
+  return result;
 }
 
 //! Returns shared pointer to logger or null if it does not exist
@@ -33,7 +37,7 @@ inline std::shared_ptr<spdlog::logger> get(std::string const &name = "") {
 //!     - "alert"
 //!     - "emerg"
 //!     - "off"
-inline void set_level(std::string const &level, std::string const &name = "") {
+inline void set_level(std::string const &level, std::string const &name) {
   auto const logger = get(name);
   if(not logger)
     SOPT_THROW("No logger by the name of ") << name << ".\n";

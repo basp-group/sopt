@@ -4,7 +4,6 @@
 
 int main(int, char const **) {
   sopt::logging::initialize();
-  sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   typedef sopt::t_complex Scalar;
   typedef sopt::real_type<Scalar>::type Real;

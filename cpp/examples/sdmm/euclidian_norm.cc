@@ -7,7 +7,6 @@ int main(int, char const **) {
   // Initializes and sets logger (if compiled with logging)
   // See set_level function for levels.
   sopt::logging::initialize();
-  sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   // Some typedefs for simplicity
   typedef sopt::t_complex t_Scalar;

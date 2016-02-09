@@ -22,7 +22,7 @@ configure_File(cmake_files/SoptConfigVersion.in.cmake
 # Then for installation tree
 file(RELATIVE_PATH REL_INCLUDE_DIR
     "${CMAKE_INSTALL_PREFIX}/share/cmake/sopt"
-    "${CMAKE_INSTALL_PREFIX}/include/sopt"
+    "${CMAKE_INSTALL_PREFIX}/include"
 )
 set(ALL_INCLUDE_DIRS "\${Sopt_CMAKE_DIR}/${REL_INCLUDE_DIR}")
 configure_file(cmake_files/SoptConfig.in.cmake

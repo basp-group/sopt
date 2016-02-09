@@ -48,7 +48,6 @@ int main(int argc, char const **argv) {
   // Initializes and sets logger (if compiled with logging)
   // See set_level function for levels.
   sopt::logging::initialize();
-  sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   SOPT_TRACE("Read input file {}", input);
   Image const image = sopt::notinstalled::read_standard_tiff(input);

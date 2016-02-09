@@ -17,7 +17,6 @@ int main(int argc, char *const argv[]) {
   mersenne.reset(new std::mt19937_64(session.configData().rngSeed));
 
   sopt::logging::initialize();
-  sopt::logging::set_level(SOPT_TEST_DEBUG_LEVEL);
 
   return session.run();
 }

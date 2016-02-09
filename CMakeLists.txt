@@ -9,7 +9,7 @@ include(LookUp-GreatCMakeCookOff)
 
 # Version and git hash id
 include(VersionAndGitRef)
-set_version(1.0)
+set_version(2.0.0)
 get_gitref()
 
 option(tests          "Enable testing"                         on)
@@ -18,8 +18,9 @@ option(benchmarks     "Enable benchmarking"                    on)
 option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 option(regressions    "Enable regressions"                     on)
+option(Csopt          "Enable C sopt"                          on)
 
-if(regressions)
+if(regressions OR Csopt)
   enable_language(C)
 endif()
 if(tests)
@@ -34,8 +35,10 @@ cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 include(compilations)
 
 # search/install dependencies
-set(REGRESSION_ORACLE_ID "development"
-  CACHE STRING "Commmit/tag/branch againts which to run regressions")
+if(regression AND NOT Csopt)
+  set(REGRESSION_ORACLE_ID "development"
+    CACHE STRING "Commmit/tag/branch againts which to run regressions")
+endif()
 include(dependencies)
 # sets rpath policy explicitly
 cmake_policy(SET CMP0042 NEW)
@@ -67,3 +70,10 @@ add_subdirectory(cpp)
 if(python)
   add_subdirectory(python)
 endif()
+if(Csopt)
+  add_subdirectory(src/c)
+  add_subdirectory(include)
+endif()
+
+# Exports all Sopt so other packages can access it
+include(export_sopt)

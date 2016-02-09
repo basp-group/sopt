@@ -5,7 +5,6 @@ if(EIGEN3_INCLUDE_DIR)
 endif()
 
 # Setup logging
-unset(SOPT_DO_LOGGING)
 if(logging)
   if(SPDLOG_INCLUDE_DIR)
     include_directories(SYSTEM "${SPDLOG_INCLUDE_DIR}")
@@ -13,9 +12,17 @@ if(logging)
   set(SOPT_DO_LOGGING 1)
   set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
   set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS
-    off trace debug info notice warn err critical alert emerg)
-  add_definitions(-DSOPT_TEST_DEBUG_LEVEL="${SOPT_TEST_LOG_LEVEL}")
+    emerg off trace debug info notice warn err critical alert)
+else()
+  unset(SOPT_DO_LOGGING)
+  set(SOPT_TEST_LOG_LEVEL off)
 endif()
+
+set(version ${Sopt_VERSION})
+string(REGEX REPLACE "\\." ";" version "${Sopt_VERSION}")
+list(GET version 0 Sopt_VERSION_MAJOR)
+list(GET version 1 Sopt_VERSION_MINOR)
+list(GET version 2 Sopt_VERSION_PATCH)
 
 configure_file(sopt/config.in.h "${EXTERNAL_ROOT}/include/sopt/config.h")
 include_directories("${EXTERNAL_ROOT}/include/")
