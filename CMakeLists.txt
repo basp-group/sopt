@@ -65,8 +65,6 @@ if(python)
   include(PythonModule)
 endif()
 
-add_subdirectory(cpp)
-
 if(python)
   add_subdirectory(python)
 endif()
@@ -74,6 +72,8 @@ if(Csopt)
   add_subdirectory(src/c)
   add_subdirectory(include)
 endif()
+
+add_subdirectory(cpp)
 
 # Exports all Sopt so other packages can access it
 include(export_sopt)
