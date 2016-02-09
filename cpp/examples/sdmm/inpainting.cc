@@ -1,20 +1,20 @@
-#include <exception>
 #include <algorithm>
-#include <vector>
-#include <random>
+#include <exception>
 #include <functional>
+#include <random>
+#include <vector>
 
 #include <sopt/logging.h>
+#include <sopt/relative_variation.h>
+#include <sopt/sampling.h>
+#include <sopt/sdmm.h>
 #include <sopt/types.h>
 #include <sopt/utility.h>
-#include <sopt/sampling.h>
-#include <sopt/relative_variation.h>
 #include <sopt/wavelets.h>
-#include <sopt/sdmm.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
-#include <tools_for_tests/tiffwrappers.h>
 #include <tools_for_tests/directories.h>
+#include <tools_for_tests/tiffwrappers.h>
 
 // \min_{x} ||\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
 int main(int argc, char const **argv) {
@@ -30,18 +30,19 @@ int main(int argc, char const **argv) {
   // Type expected by wavelets and image write/read functions
   typedef sopt::Image<Scalar> Image;
 
-  std::string const input = argc >= 2 ? argv[1]: "cameraman256";
-  std::string const output = argc == 3 ? argv[2]: "none";
+  std::string const input = argc >= 2 ? argv[1] : "cameraman256";
+  std::string const output = argc == 3 ? argv[2] : "none";
   if(argc > 3) {
     std::cout << "Usage:\n"
-                 "$ " << argv[0] << " [input [output]]\n\n"
-                 "- input: path to the image to clean (or name of standard SOPT image)\n"
-                 "- output: filename pattern for output image\n";
+                 "$ "
+              << argv[0] << " [input [output]]\n\n"
+                            "- input: path to the image to clean (or name of standard SOPT image)\n"
+                            "- output: filename pattern for output image\n";
     exit(0);
   }
   // Set up random numbers for C and C++
   auto const seed = std::time(0);
-  std::srand((unsigned int) seed);
+  std::srand((unsigned int)seed);
   std::mt19937 mersenne(std::time(0));
 
   // Initializes and sets logger (if compiled with logging)
@@ -54,9 +55,8 @@ int main(int argc, char const **argv) {
 
   SOPT_TRACE("Initializing sensing operator");
   sopt::t_uint nmeasure = 0.33 * image.size();
-  auto const sampling = sopt::linear_transform<Scalar>(
-      sopt::Sampling(image.size(), nmeasure, mersenne)
-  );
+  auto const sampling
+      = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
   SOPT_TRACE("Initializing wavelets");
   auto const wavelet = sopt::wavelets::factory("DB4", 4);
@@ -66,20 +66,18 @@ int main(int argc, char const **argv) {
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
   auto const snr = 30.0;
   auto const sigma = y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
-  auto const epsilon = std::sqrt(nmeasure + 2*std::sqrt(y0.size())) * sigma;
+  auto const epsilon = std::sqrt(nmeasure + 2 * std::sqrt(y0.size())) * sigma;
 
   SOPT_TRACE("Create dirty vector");
   std::normal_distribution<> gaussian_dist(0, sigma);
   Vector y(y0.size());
-  for (sopt::t_int i = 0; i < y0.size(); i++)
+  for(sopt::t_int i = 0; i < y0.size(); i++)
     y(i) = y0(i) + gaussian_dist(mersenne);
   // Write dirty imagte to file
   if(output != "none") {
     Vector const dirty = sampling.adjoint() * y;
-    sopt::notinstalled::write_tiff(
-        Matrix::Map(dirty.data(), image.rows(), image.cols()),
-        "dirty_" + output + ".tiff"
-    );
+    sopt::notinstalled::write_tiff(Matrix::Map(dirty.data(), image.rows(), image.cols()),
+                                   "dirty_" + output + ".tiff");
   }
 
   SOPT_TRACE("Initializing convergence function");
@@ -92,18 +90,20 @@ int main(int argc, char const **argv) {
   };
 
   SOPT_TRACE("Creating SDMM Functor");
-  auto const sdmm = sopt::algorithm::SDMM<Scalar>()
-    .itermax(3000)
-    .gamma(0.1)
-    .conjugate_gradient(200, 1e-8)
-    .is_converged(convergence)
-    // Any number of (proximal g_i, L_i) pairs can be added
-    // ||Psi^dagger x||_1
-    .append(sopt::proximal::l1_norm<Scalar>, psi.adjoint(), psi)
-    // ||y - A x|| < epsilon
-    .append(sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(epsilon), -y), sampling)
-    // x in positive quadrant
-    .append(sopt::proximal::positive_quadrant<Scalar>);
+  auto const sdmm
+      = sopt::algorithm::SDMM<Scalar>()
+            .itermax(3000)
+            .gamma(0.1)
+            .conjugate_gradient(200, 1e-8)
+            .is_converged(convergence)
+            // Any number of (proximal g_i, L_i) pairs can be added
+            // ||Psi^dagger x||_1
+            .append(sopt::proximal::l1_norm<Scalar>, psi.adjoint(), psi)
+            // ||y - A x|| < epsilon
+            .append(sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(epsilon), -y),
+                    sampling)
+            // x in positive quadrant
+            .append(sopt::proximal::positive_quadrant<Scalar>);
 
   SOPT_TRACE("Allocating result vector");
   Vector result(image.size());
@@ -119,8 +119,8 @@ int main(int argc, char const **argv) {
 
   SOPT_INFO("SOPT-SDMM converged in {} iterations", diagnostic.niters);
   if(output != "none")
-    sopt::notinstalled::write_tiff(
-        Matrix::Map(result.data(), image.rows(), image.cols()), output + ".tiff");
+    sopt::notinstalled::write_tiff(Matrix::Map(result.data(), image.rows(), image.cols()),
+                                   output + ".tiff");
 
   return 0;
 }

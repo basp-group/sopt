@@ -1,13 +1,14 @@
+#include <catch.hpp>
 #include <random>
-#include "catch.hpp"
+#include <string>
+#include <tuple>
 
 #include "wavelets/sara.h"
 
-std::random_device rd;
-std::default_random_engine rengine(rd());
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-  return uniform_dist(rengine);
+  return uniform_dist(*mersenne);
 };
 
 TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
@@ -15,7 +16,8 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
   using namespace sopt;
 
   typedef std::tuple<std::string, sopt::t_uint> t_i;
-  SARA const sara{t_i{"DB3", 1}, t_i{"DB1", 2}, t_i{"DB1", 3}};
+  SARA const sara{t_i{std::string{"DB3"}, 1u}, t_i{std::string{"DB1"}, 2u},
+                  t_i{std::string{"DB1"}, 3u}};
   SECTION("Construction and vector functionality") {
     CHECK(sara.size() == 3);
     CHECK(sara[0].levels() == 1);
@@ -40,7 +42,7 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
     CAPTURE(coeffs.leftCols(N));
     CAPTURE(first);
     CHECK(coeffs.leftCols(N).isApprox(first));
-    CHECK(coeffs.leftCols(2*N).rightCols(N).isApprox(second));
+    CHECK(coeffs.leftCols(2 * N).rightCols(N).isApprox(second));
     CHECK(coeffs.rightCols(N).isApprox(third));
   }
 

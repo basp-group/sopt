@@ -4,5 +4,7 @@ add_example(positive_quadrant_projection LIBRARIES sopt LABELS proximals)
 add_example(l1_norm LIBRARIES sopt LABELS proximals)
 add_example(soft_threshhold LIBRARIES sopt LABELS proximals)
 add_example(conjugate_gradient LIBRARIES sopt)
+add_example(l1_proximal LIBRARIES sopt)
 
 add_subdirectory(sdmm)
+add_subdirectory(proximal_admm)

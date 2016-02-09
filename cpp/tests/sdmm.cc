@@ -1,18 +1,18 @@
+#include <catch.hpp>
 #include <random>
-#include "catch.hpp"
 
-#include <Eigen/Dense>
+#include "sopt/types.h"
 #include "sopt/proximal.h"
 #include "sopt/sdmm.h"
+#include <Eigen/Dense>
 
-std::random_device rd;
-std::default_random_engine rengine(rd());
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
+  extern std::unique_ptr<std::mt19937_64> mersenne;
   std::uniform_int_distribution<sopt::t_int> uniform_dist(min, max);
-  return uniform_dist(rengine);
+  return uniform_dist(*mersenne);
 };
 
-typedef double Scalar;
+typedef sopt::t_real Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
@@ -20,36 +20,27 @@ auto const N = 3;
 
 // Makes members public so we can test one at a time
 class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
-  public:
-    void initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::initialization(y, z, x);
-    }
-    sopt::ConjugateGradient::Diagnostic solve_for_xn(
-        t_Vector &out, t_Vectors const &y, t_Vectors const &z) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::solve_for_xn(out, y, z);
-    }
-    void update_directions(t_Vectors& y, t_Vectors& z, t_Vector const& x) const override {
-      return sopt::algorithm::SDMM<sopt::t_real>::update_directions(y, z, x);
-    }
-    using sopt::algorithm::SDMM<sopt::t_real>::t_Vectors;
-    using sopt::algorithm::SDMM<sopt::t_real>::t_Vector;
+public:
+  using sopt::algorithm::SDMM<Scalar>::initialization;
+  using sopt::algorithm::SDMM<Scalar>::solve_for_xn;
+  using sopt::algorithm::SDMM<Scalar>::update_directions;
+  using sopt::algorithm::SDMM<Scalar>::t_Vectors;
+  using sopt::algorithm::SDMM<Scalar>::t_Vector;
 };
 
 TEST_CASE("Proximal translation", "[proximal]") {
   using namespace sopt;
   t_Vector const translation = t_Vector::Ones(N) * 5;
   auto const g = proximal::EuclidianNorm();
-  auto const gT= proximal::translate(g, -translation);
+  auto const gT = proximal::translate(g, -translation);
   t_Vector const input = t_Vector::Random(N).array() + 1e0;
-  CHECK(g(0.1, input).isApprox((1e0 - 0.1/input.stableNorm()) * input));
+  CHECK(g(0.1, input).isApprox((1e0 - 0.1 / input.stableNorm()) * input));
   auto const gamma = input.stableNorm() * 0.5;
-  CHECK(g(gamma, input).isApprox((1e0 - gamma/input.stableNorm()) * input));
+  CHECK(g(gamma, input).isApprox((1e0 - gamma / input.stableNorm()) * input));
   CHECK(g(gamma * 2 + 1, input).isApprox(input.Zero(N)));
-  CHECK(
-    gT(0.1, input).isApprox(
-      (1e0 - 0.1/(input - translation).stableNorm()) * (input - translation) + translation
-    )
-  );
+  CHECK(gT(0.1, input)
+            .isApprox((1e0 - 0.1 / (input - translation).stableNorm()) * (input - translation)
+                      + translation));
 }
 
 // Iterate through algorithm for special case where the L_i are identies and the objective functions
@@ -67,10 +58,10 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
 
   IntrospectSDMM sdmm = IntrospectSDMM();
   sdmm.itermax(10)
-    .gamma(0.01)
-    .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-    .append(g0, Id)
-    .append(g1, Id);
+      .gamma(0.01)
+      .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
+      .append(g0, Id)
+      .append(g1, Id);
 
   SECTION("Step by Step") {
     INFO("Initialization");
@@ -119,11 +110,9 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
     auto const diagnostic2 = sdmm.solve_for_xn(out, y, z);
     CHECK(diagnostic2.good);
     CHECK(out.isApprox(0.5 * (y[0] - z[0] + y[1] - z[1])));
-    t_Vector const x2 =
-      g0(sdmm.gamma(), g1(sdmm.gamma(), input))
-      + g1(sdmm.gamma(), g0(sdmm.gamma(), input))
-      - 0.5 * g1(sdmm.gamma(), input)
-      - 0.5 * g0(sdmm.gamma(), input);
+    t_Vector const x2 = g0(sdmm.gamma(), g1(sdmm.gamma(), input))
+                        + g1(sdmm.gamma(), g0(sdmm.gamma(), input)) - 0.5 * g1(sdmm.gamma(), input)
+                        - 0.5 * g0(sdmm.gamma(), input);
     CHECK(out.isApprox(x2));
   }
 
@@ -141,11 +130,9 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
       auto const diagnostic = sdmm(out, input);
       CHECK(not diagnostic.good);
       CHECK(diagnostic.niters == 2);
-      t_Vector const x2 =
-        g0(sdmm.gamma(), g1(sdmm.gamma(), input))
-        + g1(sdmm.gamma(), g0(sdmm.gamma(), input))
-        - 0.5 * g1(sdmm.gamma(), input)
-        - 0.5 * g0(sdmm.gamma(), input);
+      t_Vector const x2 = g0(sdmm.gamma(), g1(sdmm.gamma(), input))
+                          + g1(sdmm.gamma(), g0(sdmm.gamma(), input))
+                          - 0.5 * g1(sdmm.gamma(), input) - 0.5 * g0(sdmm.gamma(), input);
       CHECK(out.isApprox(x2));
     }
 
@@ -153,8 +140,8 @@ TEST_CASE("Introspect SDMM with L_i = Identity and Euclidian objectives", "[sdmm
       sdmm.gamma(1);
       for(t_uint itermax(0); itermax < 10; ++itermax) {
         t_Vector x = input;
-        t_Vector y[2] = { x, x };
-        t_Vector z[2] = { t_Vector::Zero(N).eval(), t_Vector::Zero(N).eval() };
+        t_Vector y[2] = {x, x};
+        t_Vector z[2] = {t_Vector::Zero(N).eval(), t_Vector::Zero(N).eval()};
         for(t_uint i(0); i < itermax; ++i) {
           y[0] = g0(sdmm.gamma(), x + z[0]);
           y[1] = g1(sdmm.gamma(), x + z[1]);
@@ -182,21 +169,24 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
   // for(t_uint i(0); i < N; ++i) target1(i) = i + 1;
 
   auto sdmm = algorithm::SDMM<Scalar>()
-    .itermax(500)
-    .gamma(1)
-    .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-    .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
-    .append(proximal::translate(proximal::EuclidianNorm(), -target1), Id);
+                  .itermax(5000)
+                  .gamma(1)
+                  .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
+                  .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
+                  .append(proximal::translate(proximal::EuclidianNorm(), -target1), Id);
 
   t_Vector result;
   SECTION("Just two operators") {
     auto const diagnostic = sdmm(result, t_Vector::Random(N));
     CHECK(not diagnostic.good);
     CHECK(diagnostic.niters == sdmm.itermax());
-    t_Vector const segment = (target1 - target0) / (target1 - target0).squaredNorm();
+    t_Vector const segment = (target1 - target0).normalized();
     t_real const alpha = (result - target0).transpose() * segment;
-    CHECK(1e0 >= alpha);
+    CAPTURE(target0.transpose());
+    CAPTURE(target1.transpose());
+    CHECK((target1 - target0).transpose() * segment >= alpha);
     CHECK(alpha >= 0e0);
+    CHECK((result - target0 - alpha * segment).stableNorm() < 1e-8);
   }
 
   SECTION("Three operators") {
@@ -206,7 +196,7 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
     CHECK(not diagnostic.good);
     CHECK(diagnostic.niters == sdmm.itermax());
     CAPTURE(result.transpose());
-    auto const func = [&target0, &target1, &target2](t_Vector const&x) {
+    auto const func = [&target0, &target1, &target2](t_Vector const &x) {
       return (x - target0).stableNorm() + (x - target1).stableNorm() + (x - target2).stableNorm();
     };
     for(int i(0); i < N; ++i) {
@@ -228,7 +218,7 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
     CHECK(not diagnostic.good);
     CHECK(diagnostic.niters == sdmm.itermax());
     CAPTURE(result.transpose());
-    auto const func = [&target0, &target1, &L0, &L1](t_Vector const&x) {
+    auto const func = [&target0, &target1, &L0, &L1](t_Vector const &x) {
       return (L0 * x - target0).stableNorm() + (L1 * x - target1).stableNorm();
     };
     for(int i(0); i < N; ++i) {

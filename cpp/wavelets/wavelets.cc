@@ -1,7 +1,8 @@
-#include <exception>
 #include "wavelets.h"
+#include <exception>
 
-namespace sopt { namespace wavelets {
+namespace sopt {
+namespace wavelets {
 
 Wavelet factory(std::string name, t_uint nlevels) {
   // Dirac not implemented yet
@@ -17,5 +18,5 @@ Wavelet factory(std::string name, t_uint nlevels) {
   // Unknown input wavelet
   throw std::exception();
 }
-
-}}
+}
+}
