@@ -1,4 +1,4 @@
-#include <wavelets/wavelets.h>
+#include <sopt/wavelets/wavelets.h>
 
 int main(int, char const **) {
 

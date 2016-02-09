@@ -60,7 +60,10 @@ endif()
 if(python)
   include(python_dependencies)
   include(PythonModule)
-  add_subdirectory(python)
 endif()
 
 add_subdirectory(cpp)
+
+if(python)
+  add_subdirectory(python)
+endif()

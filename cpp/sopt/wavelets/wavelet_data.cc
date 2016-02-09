@@ -1,7 +1,8 @@
-#include "wavelet_data.h"
-#include "sopt/types.h"
-#include <Eigen/Core>
+#include "sopt/wavelets/wavelet_data.h"
+#include "sopt/config.h"
 #include <initializer_list>
+#include <Eigen/Core>
+#include "sopt/types.h"
 
 namespace sopt {
 namespace wavelets {

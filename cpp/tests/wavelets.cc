@@ -2,10 +2,10 @@
 #include <random>
 
 #include "sopt/types.h"
-#include "wavelets/direct.h"
-#include "wavelets/indirect.h"
-#include "wavelets/wavelet_data.h"
-#include "wavelets/wavelets.h"
+#include "sopt/wavelets/direct.h"
+#include "sopt/wavelets/indirect.h"
+#include "sopt/wavelets/wavelet_data.h"
+#include "sopt/wavelets/wavelets.h"
 
 typedef sopt::Array<sopt::t_uint> t_iVector;
 t_iVector even(t_iVector const &x) {

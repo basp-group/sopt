@@ -1,4 +1,4 @@
-#include <wavelets/sara.h>
+#include <sopt/wavelets/sara.h>
 
 int main(int, char const **) {
 

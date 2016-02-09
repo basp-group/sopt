@@ -3,7 +3,7 @@
 
 #include "sopt/config.h"
 #include "sopt/types.h"
-#include "innards.impl.h"
+#include "sopt/wavelets/innards.impl.h"
 
 namespace sopt {
 namespace wavelets {

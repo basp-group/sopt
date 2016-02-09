@@ -4,7 +4,7 @@
 #include "sopt/config.h"
 #include <type_traits>
 #include "sopt/types.h"
-#include "wavelet_data.h"
+#include "sopt/wavelets/wavelet_data.h"
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt {

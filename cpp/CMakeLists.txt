@@ -20,7 +20,6 @@ endif()
 configure_file(sopt/config.in.h "${EXTERNAL_ROOT}/include/sopt/config.h")
 include_directories("${EXTERNAL_ROOT}/include/")
 
-add_subdirectory(wavelets)
 add_subdirectory(sopt)
 if(regressions OR examples)
   # Tiff wrappers and whatnot

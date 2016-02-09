@@ -2,11 +2,10 @@
 #define SOPT_WAVELETS_WAVELETS_H
 
 #include "sopt/config.h"
-#include <iostream>
 #include "sopt/types.h"
-#include "direct.h"
-#include "indirect.h"
-#include "wavelet_data.h"
+#include "sopt/wavelets/direct.h"
+#include "sopt/wavelets/indirect.h"
+#include "sopt/wavelets/wavelet_data.h"
 
 namespace sopt {
 namespace wavelets {

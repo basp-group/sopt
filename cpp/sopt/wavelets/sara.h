@@ -6,7 +6,7 @@
 #include <initializer_list>
 #include <tuple>
 #include <vector>
-#include "wavelets.h"
+#include "sopt/wavelets/wavelets.h"
 
 namespace sopt {
 namespace wavelets {

@@ -3,8 +3,8 @@
 
 #include "sopt/config.h"
 #include "sopt/types.h"
-#include "innards.impl.h"
-#include "wavelet_data.h"
+#include "sopt/wavelets/innards.impl.h"
+#include "sopt/wavelets/wavelet_data.h"
 
 // Function inside anonymouns namespace won't appear in library
 namespace sopt {

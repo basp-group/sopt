@@ -64,9 +64,11 @@ Standard:        Cpp11
 TabWidth:        8
 UseTab:          Never
 IncludeCategories:
-  - Regex:           '^"sopt/config.h"$'
+  - Regex:           '^(<|")sopt/config.h(>|")$'
     Priority:        2
-  - Regex:           '^"sopt/'
+  - Regex:           '^(<|")sopt/wavelets/'
+    Priority:        10
+  - Regex:           '^(<|")sopt/'
     Priority:        9
   - Regex:           '^(<.*/.*>)'
     Priority:        7

@@ -2,7 +2,6 @@
 #define SOPT_WAVELETS_INNARDS_H
 
 #include "sopt/config.h"
-#include <iostream>
 #include <Eigen/Core>
 
 // Function inside anonymouns namespace won't appear in library

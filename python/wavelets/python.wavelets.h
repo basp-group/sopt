@@ -1,9 +1,9 @@
 #ifndef SOPT_TESTME
 #define  SOPT_TESTME
+#include <sopt/config.h>
 #include <Eigen/Core>
-#include <iostream>
-#include <wavelets.h>
 #include <sopt/types.h>
+#include <sopt/wavelets/wavelets.h>
 
 namespace sopt { namespace pyWavelets{
   template<class T>

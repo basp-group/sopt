@@ -57,18 +57,18 @@ template <class T0, class T1>
 void Sampling::operator()(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
   out.resize(indices.size());
   for(decltype(indices.size()) i(0); i < indices.size(); ++i) {
-    assert(indices[i] < x.size());
+    assert(indices[i] < static_cast<t_uint>(x.size()));
     out[i] = x[indices[i]];
   }
 }
 
 template <class T0, class T1>
 void Sampling::adjoint(Eigen::DenseBase<T0> &out, Eigen::DenseBase<T1> const &x) const {
-  assert(x.size() == indices.size());
+  assert(static_cast<t_uint>(x.size()) == indices.size());
   out.resize(out.size());
   out.fill(0);
   for(decltype(indices.size()) i(0); i < indices.size(); ++i) {
-    assert(indices[i] < out.size());
+    assert(indices[i] < static_cast<t_uint>(out.size()));
     out[indices[i]] = x[i];
   }
 }

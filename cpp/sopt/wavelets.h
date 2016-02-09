@@ -5,8 +5,8 @@
 
 #include "sopt/config.h"
 #include "sopt/linear_transform.h"
-#include "wavelets/sara.h"
-#include "wavelets/wavelets.h"
+#include "sopt/wavelets/sara.h"
+#include "sopt/wavelets/wavelets.h"
 
 namespace sopt {
 //! Thin linear-transform wrapper around 1d wavelets
@@ -24,14 +24,14 @@ linear_transform(wavelets::Wavelet const &wavelet, t_uint rows, t_uint cols = 1)
     return linear_transform<T>(wavelet);
   return LinearTransform<Vector<T>>(
       [&wavelet, rows, cols](Vector<T> &out, Vector<T> const &x) {
-        assert(x.size() == rows * cols);
+        assert(static_cast<t_uint>(x.size()) == rows * cols);
         out.resize(x.size());
         auto const x_mat = Image<T>::Map(x.data(), rows, cols);
         auto out_mat = Image<T>::Map(out.data(), rows, cols);
         wavelet.indirect(x_mat, out_mat);
       },
       [&wavelet, rows, cols](Vector<T> &out, Vector<T> const &x) {
-        assert(x.size() == rows * cols);
+        assert(static_cast<t_uint>(x.size()) == rows * cols);
         out.resize(x.size());
         auto const x_mat = Image<T>::Map(x.data(), rows, cols);
         auto out_mat = Image<T>::Map(out.data(), rows, cols);

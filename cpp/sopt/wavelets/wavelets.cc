@@ -1,4 +1,4 @@
-#include "wavelets.h"
+#include "sopt/wavelets/wavelets.h"
 #include <exception>
 
 namespace sopt {

@@ -1,4 +1,4 @@
-#include "sara.h"
+#include "sopt/wavelets/sara.h"
 #include <exception>
 
 namespace sopt {
