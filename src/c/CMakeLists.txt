@@ -57,7 +57,7 @@ target_link_libraries(sopt_about libsopt)
 
 # install library and about
 install(TARGETS libsopt sopt_about
-    EXPORT SoptTargets
+    EXPORT SoptCTargets
     LIBRARY DESTINATION lib COMPONENT shlib
     ARCHIVE DESTINATION lib COMPONENT archive
     RUNTIME DESTINATION bin COMPONENT bin

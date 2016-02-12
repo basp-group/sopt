@@ -17,12 +17,18 @@ add_dependencies(sopt lookup_dependencies)
 set(version "${Sopt_VERSION_MAJOR}.${Sopt_VERSION_MINOR}.${Sopt_VERSION_PATCH}")
 set_target_properties(sopt PROPERTIES VERSION ${version} SOVERSION ${version})
 if(SPDLOG_INCLUDE_DIR)
-  set_target_properties(sopt PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${SPDLOG_INCLUDE_DIR})
+  target_include_directories(sopt SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
+endif()
+if(EIGEN3_INCLUDE_DIR)
+  target_include_directories(sopt SYSTEM INTERFACE ${EIGEN3_INCLUDE_DIR})
 endif()
 
 install(FILES ${headers} DESTINATION include/sopt)
 install(TARGETS sopt
+  EXPORT SoptCPPTargets
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   INCLUDES DESTINATION include/sopt
+  DESTINATION share/cmake/sopt
+  COMPONENT dev
 )
