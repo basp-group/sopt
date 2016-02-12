@@ -30,6 +30,10 @@ public:
     //! Conjugate gradient result
     ConjugateGradient::Diagnostic cg_diagnostic;
   };
+  struct DiagnosticAndResult : public Diagnostic {
+    //! Vector which minimizes the sum of functions.
+    Vector<SCALAR> out;
+  };
   //! Scalar type
   typedef SCALAR value_type;
   //! Scalar type
@@ -111,6 +115,11 @@ public:
   //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
   //! See therein for notation
   Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
+  DiagnosticAndResult operator()(t_Vector const& input) const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic&>(result) = operator()(result.out, input);
+    return result;
+  }
 
   //! Linear transforms associated with each objective function
   std::vector<t_LinearTransform> const &transforms() const { return transforms_; }
