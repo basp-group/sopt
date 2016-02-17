@@ -115,9 +115,9 @@ public:
   //! arXiv:0912.3522v4 [math.OC] (2010), equation 65.
   //! See therein for notation
   Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
-  DiagnosticAndResult operator()(t_Vector const& input) const {
+  DiagnosticAndResult operator()(t_Vector const &input) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic&>(result) = operator()(result.out, input);
+    static_cast<Diagnostic &>(result) = operator()(result.out, input);
     return result;
   }
 
@@ -191,7 +191,7 @@ operator()(t_Vector &out, t_Vector const &input) const {
     return niters >= itermax() or convergence;
   };
 
-  SOPT_INFO("Performing SDMM ");
+  SOPT_NOTICE("Performing SDMM ");
   out = input;
   t_Vectors y(transforms().size()), z(transforms().size());
 
@@ -201,16 +201,16 @@ operator()(t_Vector &out, t_Vector const &input) const {
   auto cg_diagnostic = solve_for_xn(out, y, z);
 
   while(not has_finished(out)) {
-    SOPT_INFO("Iteration {}/{}. ", niters, itermax());
+    SOPT_NOTICE("Iteration {}/{}. ", niters, itermax());
     // computes y and z from out and transforms
     update_directions(y, z, out);
-    SOPT_INFO("   - sum z_ij = {}",
-              std::accumulate(z.begin(), z.end(), Scalar(0e0),
-                              [](Scalar const &a, t_Vector const &z) { return a + z.sum(); }));
+    SOPT_NOTICE("   - sum z_ij = {}",
+                std::accumulate(z.begin(), z.end(), Scalar(0e0),
+                                [](Scalar const &a, t_Vector const &z) { return a + z.sum(); }));
     // computes x = L^-1 y
     cg_diagnostic = solve_for_xn(out, y, z);
-    SOPT_INFO("   - CG Residual = {} in {}/{} iterations", cg_diagnostic.residual,
-              cg_diagnostic.niters, conjugate_gradient().itermax());
+    SOPT_NOTICE("   - CG Residual = {} in {}/{} iterations", cg_diagnostic.residual,
+                cg_diagnostic.niters, conjugate_gradient().itermax());
     SOPT_TRACE("  - x {}", out.transpose());
 
     ++niters;
@@ -224,7 +224,7 @@ SDMM<SCALAR>::solve_for_xn(t_Vector &out, t_Vectors const &y, t_Vectors const &z
 
   assert(z.size() == transforms().size());
   assert(y.size() == transforms().size());
-  SOPT_TRACE("Solving for x_n");
+  SOPT_INFO("Solving for x_n");
 
   // Initialize b of A x = b = sum_i L_i^H(z_i - y_i)
   t_Vector b = out.Zero(out.size());
@@ -255,7 +255,7 @@ SDMM<SCALAR>::solve_for_xn(t_Vector &out, t_Vectors const &y, t_Vectors const &z
 
 template <class SCALAR>
 void SDMM<SCALAR>::update_directions(t_Vectors &y, t_Vectors &z, t_Vector const &x) const {
-  SOPT_TRACE("Updating directions");
+  SOPT_INFO("Updating directions");
   for(t_uint i(0); i < transforms().size(); ++i) {
     z[i] += transforms(i) * x;
     y[i] = proximals(i, z[i]);
@@ -265,7 +265,7 @@ void SDMM<SCALAR>::update_directions(t_Vectors &y, t_Vectors &z, t_Vector const 
 
 template <class SCALAR>
 void SDMM<SCALAR>::initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const {
-  SOPT_TRACE("Initializing SDMM");
+  SOPT_INFO("Initializing SDMM");
   for(t_uint i(0); i < transforms().size(); i++) {
     y[i] = transforms(i) * x;
     z[i].resize(y[i].size());
@@ -294,7 +294,7 @@ template <class SCALAR> void SDMM<SCALAR>::sanity_check(t_Vector const &x) const
     }
   }
   if(doexit)
-    SOPT_THROW("Internal error: number of proximals and transforms do not match");
+    SOPT_THROW("Input to SDMM is inconsistent");
 }
 }
 } /* sopt::algorithm */
