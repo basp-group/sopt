@@ -1,5 +1,4 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-add_example(padmm_euclidian_norm euclidian_norm.cc DEPENDS lookup_dependencies LABELS padmm)
+add_example(padmm_euclidian_norm euclidian_norm.cc LIBRARIES sopt LABELS padmm)
 set_target_properties(example_padmm_euclidian_norm PROPERTIES OUTPUT_NAME euclidian_norm)
 add_example(padmm_inpainting inpainting.cc LIBRARIES sopt tools_for_tests)
 set_target_properties(example_padmm_inpainting PROPERTIES OUTPUT_NAME inpainting)

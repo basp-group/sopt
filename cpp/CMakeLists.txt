@@ -1,14 +1,5 @@
-# some common compilation flags
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-if(EIGEN3_INCLUDE_DIR)
-  include_directories(SYSTEM "${EIGEN3_INCLUDE_DIR}")
-endif()
-
 # Setup logging
 if(logging)
-  if(SPDLOG_INCLUDE_DIR)
-    include_directories(SYSTEM "${SPDLOG_INCLUDE_DIR}")
-  endif()
   set(SOPT_DO_LOGGING 1)
   set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
   set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS

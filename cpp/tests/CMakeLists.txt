@@ -1,11 +1,15 @@
 if(logging)
   add_library(common_catch_main_object OBJECT "common_catch_main.cc")
   if(SPDLOG_INCLUDE_DIR)
-    include_directories(SYSTEM ${SPDLOG_INCLUDE_DIR})
+    target_include_directories(common_catch_main_object SYSTEM PUBLIC ${SPDLOG_INCLUDE_DIR})
   endif()
   if(CATCH_INCLUDE_DIR)
-    include_directories(SYSTEM ${CATCH_INCLUDE_DIR})
+    target_include_directories(common_catch_main_object SYSTEM PUBLIC ${CATCH_INCLUDE_DIR})
   endif()
+  target_include_directories(common_catch_main_object PUBLIC
+    "${PROJECT_BINARY_DIR}/include/"
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+  )
   add_dependencies(common_catch_main_object lookup_dependencies)
 endif()
 

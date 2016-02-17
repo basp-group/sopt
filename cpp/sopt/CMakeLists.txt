@@ -17,11 +17,16 @@ add_dependencies(sopt lookup_dependencies)
 set(version "${Sopt_VERSION_MAJOR}.${Sopt_VERSION_MINOR}.${Sopt_VERSION_PATCH}")
 set_target_properties(sopt PROPERTIES VERSION ${version} SOVERSION ${version})
 if(SPDLOG_INCLUDE_DIR)
-  target_include_directories(sopt SYSTEM INTERFACE ${SPDLOG_INCLUDE_DIR})
+  target_include_directories(sopt SYSTEM PUBLIC ${SPDLOG_INCLUDE_DIR})
 endif()
 if(EIGEN3_INCLUDE_DIR)
-  target_include_directories(sopt SYSTEM INTERFACE ${EIGEN3_INCLUDE_DIR})
+  target_include_directories(sopt SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 endif()
+target_include_directories(sopt PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include/sopt>
+)
 
 install(FILES ${headers} DESTINATION include/sopt)
 install(TARGETS sopt

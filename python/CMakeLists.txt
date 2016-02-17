@@ -1,4 +1,3 @@
-include_directories("${PROJECT_BINARY_DIR}/include/sopt")
 add_subdirectory(wavelets)
 if(tests)
   add_subdirectory(tests)

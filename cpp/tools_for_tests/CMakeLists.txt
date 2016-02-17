@@ -1,8 +1,15 @@
 add_library(tools_for_tests STATIC tiffwrappers.cc tiffwrappers.h)
 target_link_libraries(tools_for_tests ${TIFF_LIBRARY})
-target_include_directories(tools_for_tests PUBLIC ${TIFF_INCLUDE_DIR})
+target_include_directories(tools_for_tests PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}/.."
+  "${PROJECT_BINARY_DIR}/include/"
+)
+target_include_directories(tools_for_tests SYSTEM PUBLIC ${TIFF_INCLUDE_DIR})
 if(SPDLOG_INCLUDE_DIR)
-  target_include_directories(tools_for_tests PUBLIC ${SPDLOG_INCLUDE_DIR})
+  target_include_directories(tools_for_tests SYSTEM PUBLIC ${SPDLOG_INCLUDE_DIR})
+endif()
+if(EIGEN3_INCLUDE_DIR)
+  target_include_directories(tools_for_tests SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
 endif()
 add_dependencies(tools_for_tests lookup_dependencies)
 

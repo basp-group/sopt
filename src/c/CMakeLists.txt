@@ -10,8 +10,6 @@ set(Sopt_SOURCES
 set(ABOUT_SOURCE sopt_about.c)
 set(TEST_SOURCE sopt_test.c)
 
-include_directories("${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include")
-include_directories(SYSTEM ${BLAS_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${TIFF_INCLUDE_DIR})
 set(DEPENDENCY_LIBRARIES ${FFTW3_DOUBLE_LIBRARY} ${BLAS_LIBRARIES} ${TIFF_LIBRARY})
 
 if(M_LIBRARY)
@@ -25,6 +23,13 @@ endif()
 add_library(libsopt SHARED ${Sopt_SOURCES})
 set_target_properties(libsopt PROPERTIES OUTPUT_NAME "sopt")
 target_link_libraries(libsopt ${DEPENDENCY_LIBRARIES})
+target_include_directories(libsopt SYSTEM PUBLIC
+  ${BLAS_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${TIFF_INCLUDE_DIR})
+target_include_directories(libsopt PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/sopt>
+  $<INSTALL_INTERFACE:include/sopt>
+)
 set_target_properties(libsopt PROPERTIES VERSION 1.0.0 SOVERSION 1.0.0)
 
 # Add each demo
