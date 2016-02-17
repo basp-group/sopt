@@ -8,6 +8,8 @@ function(add_regression targetname)
   add_catch_test(${targetname} ${regr_UNPARSED_ARGUMENTS}
     LIBRARIES ${Sopt_LIBRARIES} ${regr_LIBRARIES}
     LABELS ${regr_LABELS} "regression"
-    INCLUDES ${regr_INCLUDE} ${TIFF_INCLUDE_DIR} ${Sopt_INCLUDE_DIRS}
+    INCLUDES ${regr_INCLUDE}
   )
+  target_include_directories(test_${targetname} SYSTEM PUBLIC ${TIFF_INCLUDE_DIR}
+    ${Sopt_INCLUDE_DIRS})
 endfunction()
