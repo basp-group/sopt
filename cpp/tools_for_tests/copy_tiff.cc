@@ -11,7 +11,7 @@
 #include <sopt/sampling.h>
 #include <sopt/sdmm.h>
 #include <sopt/types.h>
-#include <sopt/utility.h>
+#include <sopt/maths.h>
 #include <sopt/wavelets/sara.h>
 
 // \min_{x} ||\Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - x||_2 < \epsilon and x \geq 0

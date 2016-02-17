@@ -5,7 +5,7 @@
 #include <iostream>
 #include <type_traits>
 #include <Eigen/Core>
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 namespace sopt {
 //! Holds some standard proximals

@@ -6,7 +6,7 @@
 #include <type_traits>
 #include "sopt/logging.h"
 #include "sopt/types.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 #include "sopt/wrapper.h"
 
 namespace sopt {

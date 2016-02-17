@@ -7,7 +7,7 @@
 #include "sopt/config.h"
 #include "sopt/exception.h"
 #include "sopt/types.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 namespace sopt {
 namespace details {

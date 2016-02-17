@@ -15,7 +15,7 @@ endif()
 
 add_catch_test(wavelets LIBRARIES sopt)
 add_catch_test(sara LIBRARIES sopt)
-add_catch_test(utility LIBRARIES sopt)
+add_catch_test(maths LIBRARIES sopt)
 add_catch_test(wrapper LIBRARIES sopt)
 add_catch_test(conjugate_gradient LIBRARIES sopt)
 add_catch_test(linear_transform LIBRARIES sopt)

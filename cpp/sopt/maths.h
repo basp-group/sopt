@@ -1,5 +1,5 @@
-#ifndef SOPT_UTILITY_H
-#define SOPT_UTILITY_H
+#ifndef SOPT_MATHS_H
+#define SOPT_MATHS_H
 
 #include "sopt/config.h"
 #include <algorithm>

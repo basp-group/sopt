@@ -8,7 +8,7 @@
 #include <Eigen/Core>
 #include "sopt/linear_transform.h"
 #include "sopt/proximal_expression.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 namespace sopt {
 namespace proximal {

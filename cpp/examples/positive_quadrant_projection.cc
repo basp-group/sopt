@@ -1,5 +1,5 @@
 #include <sopt/types.h>
-#include <sopt/utility.h>
+#include <sopt/maths.h>
 
 int main(int, char const **) {
 

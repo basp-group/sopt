@@ -6,7 +6,7 @@
 #include "sopt/relative_variation.h"
 #include "sopt/sampling.h"
 #include "sopt/types.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 TEST_CASE("Projector on positive quadrant", "[utility][project]") {
   using namespace sopt;

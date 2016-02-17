@@ -4,7 +4,7 @@
 #include "sopt/config.h"
 #include <Eigen/Core>
 #include "sopt/logging.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 namespace sopt {
 
