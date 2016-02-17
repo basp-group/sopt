@@ -7,6 +7,6 @@ set(HEADER_FILES
 
 # Creates an overall configuration file
 set(SOPT_BLAS_H "${BLAS_INCLUDE_FILENAME}")
-configure_file(sopt_config.in.h "${PROJECT_BINARY_DIR}/include/sopt_config.h")
+configure_file(sopt_config.in.h "${PROJECT_BINARY_DIR}/include/sopt/sopt_config.h")
 
 install(FILES ${HEADER_FILES} DESTINATION include/sopt COMPONENT dev)

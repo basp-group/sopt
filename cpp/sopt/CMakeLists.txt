@@ -3,7 +3,7 @@ set(headers
   # sopt headers proper
   conjugate_gradient.h logging.disabled.h proximal.h types.h exception.h logging.enabled.h
   sampling.h utility.h linear_transform.h sdmm.h wrapper.h logging.h
-  relative_variation.h padmm.h l1_padmm.h ${EXTERNAL_ROOT}/include/sopt/config.h
+  relative_variation.h padmm.h l1_padmm.h ${PROJECT_BINARY_DIR}/include/sopt/config.h
 
   # wavelet headers
   wavelets/direct.h wavelets/innards.impl.h wavelets/wavelet_data.h

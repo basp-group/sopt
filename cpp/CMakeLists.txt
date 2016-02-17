@@ -24,8 +24,7 @@ list(GET version 0 Sopt_VERSION_MAJOR)
 list(GET version 1 Sopt_VERSION_MINOR)
 list(GET version 2 Sopt_VERSION_PATCH)
 
-configure_file(sopt/config.in.h "${EXTERNAL_ROOT}/include/sopt/config.h")
-include_directories("${EXTERNAL_ROOT}/include/")
+configure_file(sopt/config.in.h "${PROJECT_BINARY_DIR}/include/sopt/config.h")
 
 add_subdirectory(sopt)
 if(regressions OR examples)
