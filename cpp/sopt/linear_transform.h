@@ -72,7 +72,9 @@ public:
   }
 
   //! Indirect transform
-  details::WrapFunction<VECTOR> adjoint() const { return indirect_; }
+  LinearTransform<VECTOR> adjoint() const {
+    return {indirect_, static_cast<details::WrapFunction<VECTOR> const &>(*this)};
+  }
 
   using details::WrapFunction<VECTOR>::operator*;
   using details::WrapFunction<VECTOR>::sizes;
