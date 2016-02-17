@@ -10,8 +10,11 @@
 #ifndef SOPT_UTILITY
 #define SOPT_UTILITY
 #include "sopt_config.h"
-
 #include <complex.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 complex double sopt_utility_softthc(complex double x, double T);
 
@@ -120,4 +123,7 @@ double sopt_utility_btrackr(double *v,
 
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif

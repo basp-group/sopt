@@ -1,10 +1,11 @@
-
-
 #ifndef SOPT_TV
 #define SOPT_TV
 #include "sopt_config.h"
-
 #include "sopt_prox.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!  
  * Data structure containing the parameters for solving the tv
@@ -130,4 +131,7 @@ void sopt_tv_rwsdmm(void *xsol,
                     sopt_tv_sdmmparam paramtv,
                     sopt_tv_rwparam paramrwtv);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

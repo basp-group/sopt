@@ -10,8 +10,11 @@
 #ifndef SOPT_PROX
 #define SOPT_PROX
 #include "sopt_config.h"
-
 #include <complex.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!  
  * Parameters for the L1 prox.
@@ -193,4 +196,7 @@ void sopt_prox_wl2(void *xout,
                    void *sol,
                    void *u);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

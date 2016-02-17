@@ -9,8 +9,11 @@
 #ifndef SOPT_MEAS
 #define SOPT_MEAS
 #include "sopt_config.h"
-
 #include <complex.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*!
  * Parameters for the uniform random sampling operator.
  */
@@ -74,4 +77,7 @@ void sopt_meas_fftw_c2c(void *out, void *in, void **data);
 
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif

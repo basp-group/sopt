@@ -10,6 +10,10 @@
 #define sopt_wavelet
 #include "sopt_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!  
  * Options for the basis to be included in the
  * SARA operator.
@@ -71,4 +75,7 @@ void sopt_wavelet_gdiwtc(complex double *x, complex double *w, sopt_wavelet_para
 void sopt_wavelet_initwav(sopt_wavelet_param *param);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif

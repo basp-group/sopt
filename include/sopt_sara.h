@@ -10,6 +10,10 @@
 #define sopt_sara
 #include "sopt_config.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*!  
  * Data structure containing the parameters for the
  * SARA dictionary.
@@ -31,4 +35,7 @@ void sopt_sara_analysisop(void *out, void *in, void **data);
 void sopt_sara_synthesisop(void *out, void *in, void **data);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif

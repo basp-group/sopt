@@ -1,5 +1,8 @@
 #ifndef SOPT_CONFIG_IN_H
 #define SOPT_CONFIG_IN_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Deal with the different ways to include blas
 #cmakedefine SOPT_BLAS_H <@SOPT_BLAS_H@>
@@ -8,4 +11,8 @@
 static const char sopt_version[] = "@Sopt_VERSION@";
 //! Hash of the current git reference
 static const char sopt_gitref[] = "@Sopt_GITREF@";
+
+#ifdef __cplusplus
+}
+#endif
 #endif

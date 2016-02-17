@@ -1,10 +1,11 @@
-
 #ifndef SOPT_SPARSEMAT
 #define SOPT_SPARSEMAT
 #include "sopt_config.h"
-
 #include <complex.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!  
  * Definition of a sparse matrix stored in compressed column storage
@@ -43,4 +44,7 @@ void sopt_sparsemat_adj_complex(complex double *y, complex double *x,
 				  sopt_sparsemat *A);
 
 
+#ifdef __cplusplus
+}
+#endif
 #endif
