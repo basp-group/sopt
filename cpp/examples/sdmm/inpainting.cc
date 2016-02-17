@@ -5,12 +5,13 @@
 #include <vector>
 
 #include <sopt/logging.h>
+#include <sopt/maths.h>
 #include <sopt/relative_variation.h>
 #include <sopt/sampling.h>
 #include <sopt/sdmm.h>
 #include <sopt/types.h>
-#include <sopt/maths.h>
 #include <sopt/wavelets.h>
+#include <sopt/utilities.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
 #include <tools_for_tests/directories.h>
@@ -75,8 +76,8 @@ int main(int argc, char const **argv) {
   // Write dirty imagte to file
   if(output != "none") {
     Vector const dirty = sampling.adjoint() * y;
-    sopt::notinstalled::write_tiff(Matrix::Map(dirty.data(), image.rows(), image.cols()),
-                                   "dirty_" + output + ".tiff");
+    sopt::utilities::write_tiff(Matrix::Map(dirty.data(), image.rows(), image.cols()),
+                                "dirty_" + output + ".tiff");
   }
 
   SOPT_TRACE("Initializing convergence function");
@@ -118,8 +119,8 @@ int main(int argc, char const **argv) {
 
   SOPT_INFO("SOPT-SDMM converged in {} iterations", diagnostic.niters);
   if(output != "none")
-    sopt::notinstalled::write_tiff(Matrix::Map(result.data(), image.rows(), image.cols()),
-                                   output + ".tiff");
+    sopt::utilities::write_tiff(Matrix::Map(result.data(), image.rows(), image.cols()),
+                                output + ".tiff");
 
   return 0;
 }

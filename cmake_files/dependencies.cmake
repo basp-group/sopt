@@ -5,8 +5,11 @@ if(logging)
   lookup_package(spdlog REQUIRED)
 endif()
 
+find_package(TIFF)
 if(examples OR regression OR Csopt)
-  find_package(TIFF REQUIRED)
+  if(NOT TIFF_FOUND)
+    message(FATAL_ERROR "Examples, regression, and C library all require TIFF")
+  endif()
 endif()
 
 if(regressions OR Csopt)

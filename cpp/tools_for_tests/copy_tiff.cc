@@ -3,16 +3,12 @@
 #include <functional>
 #include <random>
 #include <vector>
+#include <iostream>
 
 #include <tools_for_tests/directories.h>
 #include <tools_for_tests/tiffwrappers.h>
 #include <sopt/logging.h>
-#include <sopt/relative_variation.h>
-#include <sopt/sampling.h>
-#include <sopt/sdmm.h>
-#include <sopt/types.h>
-#include <sopt/maths.h>
-#include <sopt/wavelets/sara.h>
+#include <sopt/utilities.h>
 
 // \min_{x} ||\Psi^\dagger x||_1 \quad \mbox{s.t.} \quad ||y - x||_2 < \epsilon and x \geq 0
 int main(int argc, char const **argv) {
@@ -29,9 +25,9 @@ int main(int argc, char const **argv) {
 
   // Read input file
   auto const image = sopt::notinstalled::read_standard_tiff(argv[1]);
-  sopt::notinstalled::write_tiff(image, argv[2]);
+  sopt::utilities::write_tiff(image, argv[2]);
 
-  auto const reread = sopt::notinstalled::read_tiff(argv[2]);
+  auto const reread = sopt::utilities::read_tiff(argv[2]);
 
   return 0;
 }

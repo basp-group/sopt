@@ -10,12 +10,16 @@ set(headers
   wavelets/indirect.h wavelets/sara.h wavelets/wavelets.h
 )
 
-set(sources wavelets/wavelets.cc wavelets/wavelet_data.cc)
+set(sources wavelets/wavelets.cc wavelets/wavelet_data.cc utilities.cc)
 
 add_library(sopt SHARED ${sources})
 add_dependencies(sopt lookup_dependencies)
 set(version "${Sopt_VERSION_MAJOR}.${Sopt_VERSION_MINOR}.${Sopt_VERSION_PATCH}")
 set_target_properties(sopt PROPERTIES VERSION ${version} SOVERSION ${version})
+if(TIFF_FOUND)
+  target_include_directories(sopt SYSTEM PUBLIC ${TIFF_INCLUDE_DIR})
+  target_link_libraries(sopt ${TIFF_LIBRARY})
+endif()
 if(SPDLOG_INCLUDE_DIR)
   target_include_directories(sopt SYSTEM PUBLIC ${SPDLOG_INCLUDE_DIR})
 endif()
