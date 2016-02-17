@@ -94,7 +94,7 @@ public:
 
   //! Adds a wavelet of specific type
   void emplace_back(std::string const &name, t_uint nlevels) {
-    std::vector<Wavelet>::emplace_back(std::move(factory(name, nlevels)));
+    std::vector<Wavelet>::emplace_back(factory(name, nlevels));
   }
 };
 
