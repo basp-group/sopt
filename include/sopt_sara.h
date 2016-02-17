@@ -9,6 +9,7 @@
 #ifndef sopt_sara
 #define sopt_sara
 #include "sopt_config.h"
+#include "sopt_wavelet.h"
 
 #ifdef __cplusplus
 extern "C" {

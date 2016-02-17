@@ -9,6 +9,7 @@
 #ifndef sopt_wavelet
 #define sopt_wavelet
 #include "sopt_config.h"
+#include "sopt_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,9 +69,9 @@ void sopt_wavelet_gdfwtr(double *w, double *x, sopt_wavelet_param param_wav);
 
 void sopt_wavelet_gdiwtr(double *x, double *w, sopt_wavelet_param param_wav);
 
-void sopt_wavelet_gdfwtc(complex double *w, complex double *x, sopt_wavelet_param param_wav);
+void sopt_wavelet_gdfwtc(sopt_complex_double *w, sopt_complex_double *x, sopt_wavelet_param param_wav);
 
-void sopt_wavelet_gdiwtc(complex double *x, complex double *w, sopt_wavelet_param param_wav);
+void sopt_wavelet_gdiwtc(sopt_complex_double *x, sopt_complex_double *w, sopt_wavelet_param param_wav);
 
 void sopt_wavelet_initwav(sopt_wavelet_param *param);
 

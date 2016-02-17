@@ -1,7 +1,7 @@
 #ifndef SOPT_SPARSEMAT
 #define SOPT_SPARSEMAT
 #include "sopt_config.h"
-#include <complex.h>
+#include "sopt_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +24,7 @@ typedef struct {
   /*! Non-zero elements traversed column by column. Real case. */
   double *vals;
   /*! Non-zero elements traversed column by column. Complex case. */
-  complex double *cvals;
+  sopt_complex_double *cvals;
   /*! Row index of each non-zero entry. */
   int *rowind;
   /*! Locations in \ref vals and \ref rowind of each new column. */
@@ -38,9 +38,9 @@ void sopt_sparsemat_free(sopt_sparsemat *mat);
 void sopt_sparsemat_explictmat(double **A, sopt_sparsemat *S);
 void sopt_sparsemat_fwd_real(double *y, double *x, sopt_sparsemat *A);
 void sopt_sparsemat_adj_real(double *y, double *x, sopt_sparsemat *A);
-void sopt_sparsemat_fwd_complex(complex double *y, complex double *x,
+void sopt_sparsemat_fwd_complex(sopt_complex_double *y, sopt_complex_double *x,
 				  sopt_sparsemat *A);
-void sopt_sparsemat_adj_complex(complex double *y, complex double *x,
+void sopt_sparsemat_adj_complex(sopt_complex_double *y, sopt_complex_double *x,
 				  sopt_sparsemat *A);
 
 

@@ -9,7 +9,7 @@
 #ifndef SOPT_MEAS
 #define SOPT_MEAS
 #include "sopt_config.h"
-#include <complex.h>
+#include "sopt_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +38,7 @@ typedef struct {
     int nx;
     /*! Pointer to the Gaussian sampling matrix stored in 
     vector form (columnwise). */
-    complex double *mat;
+    sopt_complex_double *mat;
 } sopt_meas_dcmatparam;
 
 /*!
