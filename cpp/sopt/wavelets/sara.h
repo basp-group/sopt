@@ -18,8 +18,14 @@ public:
   // Constructors
   using std::vector<Wavelet>::vector;
 #endif
-  //! Easier constructor
-  SARA(std::initializer_list<std::tuple<std::string, t_uint>> const &init);
+  //! Easy constructor
+  SARA(std::initializer_list<std::tuple<std::string, t_uint>> const &init)
+      : SARA(init.begin(), init.end()) {}
+  //! Construct from any iterator
+  template <class ITERATOR> SARA(ITERATOR first, ITERATOR last) {
+    for(;first != last; ++first)
+      emplace_back(std::get<0>(*first), std::get<1>(*first));
+  }
   //! Destructor
   virtual ~SARA() {}
 
@@ -87,7 +93,9 @@ public:
   }
 
   //! Adds a wavelet of specific type
-  void emplace_back(std::string const &name, t_uint levels);
+  void emplace_back(std::string const &name, t_uint nlevels) {
+    std::vector<Wavelet>::emplace_back(std::move(factory(name, nlevels)));
+  }
 };
 
 #define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                            \

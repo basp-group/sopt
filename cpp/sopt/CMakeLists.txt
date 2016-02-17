@@ -10,7 +10,7 @@ set(headers
   wavelets/indirect.h wavelets/sara.h wavelets/wavelets.h
 )
 
-set(sources wavelets/wavelets.cc wavelets/wavelet_data.cc wavelets/sara.cc)
+set(sources wavelets/wavelets.cc wavelets/wavelet_data.cc)
 
 add_library(sopt SHARED ${sources})
 add_dependencies(sopt lookup_dependencies)
