@@ -10,6 +10,4 @@ function(add_regression targetname)
     LABELS ${regr_LABELS} "regression"
     INCLUDES ${regr_INCLUDE}
   )
-  target_include_directories(test_${targetname} SYSTEM PUBLIC ${TIFF_INCLUDE_DIR}
-    ${Sopt_INCLUDE_DIRS})
 endfunction()
