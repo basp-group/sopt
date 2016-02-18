@@ -43,4 +43,4 @@ install(FILES
 
 install(EXPORT SoptCTargets DESTINATION share/cmake/sopt COMPONENT dev)
 install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)
-
+install(FILES LookUp-GreatCMakeCookOff.cmake DESTINATION share/cmake/sopt COMPONENT dev)

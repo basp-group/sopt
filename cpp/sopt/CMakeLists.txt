@@ -20,11 +20,17 @@ if(TIFF_FOUND)
   target_include_directories(sopt SYSTEM PUBLIC ${TIFF_INCLUDE_DIR})
   target_link_libraries(sopt ${TIFF_LIBRARY})
 endif()
-if(SPDLOG_INCLUDE_DIR)
+# Add spdlog as direct dependency if not downloaded
+if(SPDLOG_INCLUDE_DIR AND NOT spdlog_BUILT_AS_EXTERNAL_PROJECT)
   target_include_directories(sopt SYSTEM PUBLIC ${SPDLOG_INCLUDE_DIR})
+elseif(SPDLOG_INCLUDE_DIR AND spdlog_BUILT_AS_EXTERNAL_PROJECT)
+  target_include_directories(sopt SYSTEM PUBLIC $<BUILD_INTERFACE:${SPDLOG_INCLUDE_DIR}>)
 endif()
-if(EIGEN3_INCLUDE_DIR)
+# Add eigen as direct dependency if not downloaded
+if(EIGEN3_INCLUDE_DIR AND NOT Eigen3_BUILT_AS_EXTERNAL_PROJECT)
   target_include_directories(sopt SYSTEM PUBLIC ${EIGEN3_INCLUDE_DIR})
+elseif(EIGEN3_INCLUDE_DIR AND Eigen3_BUILT_AS_EXTERNAL_PROJECT)
+  target_include_directories(sopt SYSTEM PUBLIC $<BUILD_INTERFACE:${EIGEN3_INCLUDE_DIR}>)
 endif()
 target_include_directories(sopt PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
