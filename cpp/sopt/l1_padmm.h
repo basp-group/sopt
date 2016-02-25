@@ -189,8 +189,9 @@ public:
   template <class T0, class T1>
   typename proximal::L1<Scalar>::Diagnostic
   l1_proximal(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
-    return l1_proximal_real_constraint() ? call_l1_proximal(out, gamma, x.real()) :
-                                           call_l1_proximal(out, gamma, x);
+    return l1_proximal_real_constraint() ?
+               call_l1_proximal(out, gamma, x.real().template cast<typename T1::Scalar>()) :
+               call_l1_proximal(out, gamma, x);
   }
 
   //! Forwards call to weighted L2 ball proximal
