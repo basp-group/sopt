@@ -58,7 +58,7 @@ set_target_properties(sopt_about PROPERTIES
   COMPILE_DEFINITIONS
      "SOPT_VERSION=\"${Sopt_VERSION}\";SOPT_BUILD=\"${Sopt_GITREF}\""
 )
-target_link_libraries(sopt_about libsopt)
+target_link_libraries(sopt_about libsopt ${DEPENDENCY_LIBRARIES})
 
 # install library and about
 install(TARGETS libsopt sopt_about
