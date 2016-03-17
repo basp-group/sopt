@@ -124,7 +124,7 @@ public:
   }
   //! Φ initialized via some call to \ref linear_transform
   template <class... ARGS>
-  typename std::enable_if<sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar> &>::type
+  typename std::enable_if<sizeof...(ARGS) >= 2, L1ProximalADMM<Scalar> &>::type
   Phi(ARGS &&... args) {
     ProximalADMM<Scalar>::Phi(std::forward<ARGS>(args)...);
     return *this;
