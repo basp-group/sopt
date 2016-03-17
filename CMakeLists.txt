@@ -41,7 +41,11 @@ if(regression AND NOT Csopt)
 endif()
 include(dependencies)
 # sets rpath policy explicitly
-cmake_policy(SET CMP0042 NEW)
+if(CMAKE_VERSION VERSION_LESS 3.0)
+    set_property(GLOBAL PROPERTY MACOSX_RPATH ON)
+else()
+    cmake_policy(SET CMP0042 NEW)
+endif()
 
 if(tests OR examples)
   enable_testing()
