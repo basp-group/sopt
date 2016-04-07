@@ -82,13 +82,15 @@ template <class T0, class T1>
 typename std::enable_if<not T1::IsVectorAtCompileTime, void>::type
 indirect_transform(Eigen::ArrayBase<T0> const &coeffs_, Eigen::ArrayBase<T1> const &signal_,
                    t_uint levels, WaveletData const &wavelet) {
-  if(levels == 0)
-    return;
   Eigen::ArrayBase<T0> &coeffs = const_cast<Eigen::ArrayBase<T0> &>(coeffs_);
   Eigen::ArrayBase<T1> &signal = const_cast<Eigen::ArrayBase<T1> &>(signal_);
   assert(coeffs.rows() == signal.rows());
   assert(coeffs.cols() == signal.cols());
   assert(coeffs.size() % (1u << levels) == 0);
+  if(levels == 0) {
+    signal = coeffs_;
+    return;
+  }
 
   auto input = copy(coeffs);
   for(t_uint level(levels - 1); level > 0; --level) {

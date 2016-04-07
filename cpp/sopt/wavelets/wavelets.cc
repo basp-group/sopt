@@ -5,9 +5,8 @@ namespace sopt {
 namespace wavelets {
 
 Wavelet factory(std::string name, t_uint nlevels) {
-  // Dirac not implemented yet
   if(name == "dirac" or name == "Dirac")
-    throw std::exception();
+    return Wavelet(daubechies_data(1), 0);
 
   if(name.substr(0, 2) == "DB" or name.substr(0, 2) == "db") {
     std::istringstream sstr(name.substr(2, name.size() - 2));

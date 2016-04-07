@@ -144,7 +144,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   SECTION("Convolve output to expression") {
     t_iVector actual(large.size() * 2);
     t_iVector expected(large.size());
-    convolve(std::move(actual.head(large.size())), large, small);
+    convolve(actual.head(large.size()), large, small);
     convolve(expected, large, small);
     CHECK((actual.head(large.size()) == expected).all());
   }
@@ -297,4 +297,18 @@ TEST_CASE("Automatic input resizing", "[wavelet]") {
   wavelet.indirect(input, output);
   CHECK(output.rows() == input.rows());
   CHECK(output.cols() == input.cols());
+}
+
+TEST_CASE("Dirac wavelets") {
+  using namespace sopt;
+  auto const wavelet = wavelets::factory("Dirac");
+  Image<t_complex> const input = Image<t_complex>::Random(256, 128);
+  Image<t_complex> output(1, 1);
+
+  wavelet.direct(output, input);
+  CHECK(output.isApprox(input));
+
+  output = Image<t_complex>::Zero(1, 1);
+  wavelet.indirect(input, output);
+  CHECK(output.isApprox(input));
 }

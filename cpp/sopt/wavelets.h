@@ -37,7 +37,7 @@ linear_transform(OP const &op, t_uint rows, t_uint cols, t_uint factor = 1) {
         auto const coeffs = Image<T>::Map(x.data(), rows, cols * factor);
         op.indirect(coeffs, signal);
       },
-      {0, 1, static_cast<t_int>(rows * cols)},
+      {{0, 1, static_cast<t_int>(rows * cols)}},
       [&op, rows, cols, factor](Vector<T> &out, Vector<T> const &x) {
         assert(static_cast<t_uint>(x.size()) == rows * cols);
         out.resize(rows * cols * factor);
@@ -45,7 +45,7 @@ linear_transform(OP const &op, t_uint rows, t_uint cols, t_uint factor = 1) {
         auto coeffs = Image<T>::Map(out.data(), rows, cols * factor);
         op.direct(coeffs, signal);
       },
-      {0, 1, static_cast<t_int>(factor * rows * cols)});
+      {{0, 1, static_cast<t_int>(factor * rows * cols)}});
 }
 } // anonymous
 } // details
