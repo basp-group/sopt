@@ -87,9 +87,13 @@ direct_transform(Eigen::ArrayBase<T0> const &coeffs_, Eigen::ArrayBase<T1> const
   assert(coeffs_.cols() == signal.cols());
   Eigen::ArrayBase<T0> &coeffs = const_cast<Eigen::ArrayBase<T0> &>(coeffs_);
 
+  if(levels == 0) {
+    coeffs = signal;
+    return;
+  }
+
   auto input = copy(signal);
-  if(levels > 0)
-    direct_transform_impl(coeffs, input, wavelet);
+  direct_transform_impl(coeffs, input, wavelet);
   for(t_uint level(1); level < levels; ++level) {
     auto const Nx = static_cast<t_uint>(signal.rows()) >> level;
     auto const Ny = static_cast<t_uint>(signal.cols()) >> level;

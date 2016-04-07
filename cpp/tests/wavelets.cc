@@ -298,3 +298,17 @@ TEST_CASE("Automatic input resizing", "[wavelet]") {
   CHECK(output.rows() == input.rows());
   CHECK(output.cols() == input.cols());
 }
+
+TEST_CASE("Dirac wavelets") {
+  using namespace sopt;
+  auto const wavelet = wavelets::factory("Dirac");
+  Image<t_complex> const input = Image<t_complex>::Random(256, 128);
+  Image<t_complex> output(1, 1);
+
+  wavelet.direct(output, input);
+  CHECK(output.isApprox(input));
+
+  output = Image<t_complex>::Zero(1, 1);
+  wavelet.indirect(input, output);
+  CHECK(output.isApprox(input));
+}
