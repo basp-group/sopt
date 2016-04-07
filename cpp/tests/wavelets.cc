@@ -144,7 +144,7 @@ TEST_CASE("Wavelet transform innards with integer data", "[wavelet]") {
   SECTION("Convolve output to expression") {
     t_iVector actual(large.size() * 2);
     t_iVector expected(large.size());
-    convolve(std::move(actual.head(large.size())), large, small);
+    convolve(actual.head(large.size()), large, small);
     convolve(expected, large, small);
     CHECK((actual.head(large.size()) == expected).all());
   }
