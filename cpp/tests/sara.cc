@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "sopt/wavelets/sara.h"
+#include "sopt/wavelets.h"
 
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
   extern std::unique_ptr<std::mt19937_64> mersenne;
@@ -49,5 +50,42 @@ TEST_CASE("Check SARA implementation mechanically", "[wavelet]") {
   SECTION("Indirect transform") {
     auto const output = sara.indirect(coeffs);
     CHECK(output.isApprox(input));
+  }
+}
+
+TEST_CASE("Linear-transform wrapper", "[wavelet]") {
+  using namespace sopt::wavelets;
+  using namespace sopt;
+  SARA const sara{std::make_tuple(std::string{"DB3"}, 1u), std::make_tuple(std::string{"DB1"}, 2u),
+                  std::make_tuple(std::string{"DB1"}, 3u)};
+
+  auto const rows = 256, cols = 256;
+  auto const Psi = linear_transform<t_real>(sara, rows, cols);
+  SECTION("Indirect transform") {
+    Image<> const image = Image<>::Random(rows, cols);
+    Image<> const expected = sara.direct(image);
+    // The linear transform expects a column vector as input
+    auto const as_vector = Vector<>::Map(image.data(), image.size());
+    // And it returns a column vector as well
+    Vector<> const actual = Psi.adjoint() * as_vector;
+    CHECK(actual.size() == expected.size());
+    auto const coeffs = Image<>::Map(actual.data(), image.rows(), image.cols() * sara.size());
+    CHECK(expected.rows() == coeffs.rows());
+    CHECK(expected.cols() == coeffs.cols());
+    CHECK(coeffs.isApprox(expected, 1e-8));
+  }
+  SECTION("direct transform") {
+    Image<> const coeffs = Image<>::Random(rows, cols * sara.size());
+    Image<> const expected = sara.indirect(coeffs);
+    // The linear transform expects a column vector as input
+    auto const as_vector = Vector<>::Map(coeffs.data(), coeffs.size());
+    // And it returns a column vector as well
+    Vector<> const actual = Psi * as_vector;
+    CHECK(actual.size() == expected.size());
+    CHECK(coeffs.cols() % sara.size() == 0);
+    auto const image = Image<>::Map(actual.data(), coeffs.rows(), coeffs.cols() / sara.size());
+    CHECK(expected.rows() == image.rows());
+    CHECK(expected.cols() == image.cols());
+    CHECK(image.isApprox(expected, 1e-8));
   }
 }
