@@ -122,9 +122,11 @@ public:
     l1_proximal().Psi(std::forward<ARGS>(args)...);
     return *this;
   }
+  //! \brief Analysis operator Φ
+  t_LinearTransform const &Phi() const { return ProximalADMM<Scalar>::Phi(); }
   //! Φ initialized via some call to \ref linear_transform
   template <class... ARGS>
-  typename std::enable_if<sizeof...(ARGS) >= 2, L1ProximalADMM<Scalar> &>::type
+  typename std::enable_if<sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar> &>::type
   Phi(ARGS &&... args) {
     ProximalADMM<Scalar>::Phi(std::forward<ARGS>(args)...);
     return *this;
@@ -181,7 +183,6 @@ public:
   SOPT_MACRO(gamma);
   SOPT_MACRO(nu);
   SOPT_MACRO(lagrange_update_scale);
-  SOPT_MACRO(Phi);
   SOPT_MACRO(is_converged);
 #undef SOPT_MACRO
 

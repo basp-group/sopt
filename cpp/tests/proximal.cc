@@ -242,7 +242,7 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
           if(l1.positivity_constraint())
             p_plus = sopt::positive_quadrant(p_plus);
           else if(l1.real_constraint())
-            p_plus = p_plus.real().template cast<Scalar>();
+            p_plus = p_plus.real().cast<Scalar>();
           auto const rel_var = std::abs((l1.objective(input, p_plus, gamma) - mini) / mini);
           CHECK((l1.objective(input, p_plus, gamma) > mini or rel_var < l1.tolerance() * 10));
         }
@@ -253,7 +253,7 @@ TEST_CASE("L1 proximal", "[l1][proximal]") {
         if(l1.positivity_constraint())
           p_plus = sopt::positive_quadrant(p_plus);
         else if(l1.real_constraint())
-          p_plus = p_plus.real().template cast<Scalar>();
+          p_plus = p_plus.real().cast<Scalar>();
         auto const rel_var = std::abs((l1.objective(input, p_plus, gamma) - mini) / mini);
         CHECK((l1.objective(input, p_plus, gamma) > mini or rel_var < l1.tolerance() * 10));
       }
