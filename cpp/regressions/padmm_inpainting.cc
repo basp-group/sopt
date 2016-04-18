@@ -21,10 +21,11 @@ typedef sopt::Matrix<Scalar> t_Matrix;
 
 sopt::algorithm::L1ProximalADMM<Scalar> create_admm(sopt::LinearTransform<t_Vector> const &phi,
                                                     sopt::LinearTransform<t_Vector> const &psi,
-                                                    sopt_l1_param_padmm const &params) {
+                                                    sopt_l1_param_padmm const &params,
+                                                    t_Vector const &target) {
 
   using namespace sopt;
-  return algorithm::L1ProximalADMM<Scalar>()
+  return algorithm::L1ProximalADMM<Scalar>(target)
       .itermax(params.max_iter + 1)
       .gamma(params.gamma)
       .relative_variation(params.rel_obj)
@@ -88,9 +89,9 @@ TEST_CASE("Compare ADMM C++ and C", "") {
     SECTION(fmt::format("With {} iterations", i)) {
       sopt_l1_param_padmm c_params = params;
       c_params.max_iter = i;
-      auto admm = ::create_admm(sampling, psi, c_params);
+      auto admm = ::create_admm(sampling, psi, c_params, y);
       t_Vector cpp(image.size());
-      admm(cpp, y);
+      admm(cpp, t_Vector::Zero(image.size()));
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector l1_weights = t_Vector::Ones(image.size());
