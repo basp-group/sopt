@@ -27,7 +27,7 @@ int main(int, char const **) {
   auto prox_g0 = sopt::proximal::translate(sopt::proximal::EuclidianNorm(), -target0);
   auto prox_g1 = sopt::proximal::translate(sopt::proximal::EuclidianNorm(), -target1);
 
-  auto padmm = sopt::algorithm::ProximalADMM<t_Scalar>(prox_g0, prox_g1)
+  auto padmm = sopt::algorithm::ProximalADMM<t_Scalar>(prox_g0, prox_g1, t_Vector::Zero(N))
                    .itermax(5000)
                    .is_converged(sopt::RelativeVariation<t_Scalar>(1e-12))
                    .gamma(0.01)

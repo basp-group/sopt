@@ -81,7 +81,7 @@ int main(int argc, char const **argv) {
   }
 
   SOPT_TRACE("Creating proximal-ADMM Functor");
-  auto const padmm = sopt::algorithm::L1ProximalADMM<Scalar>()
+  auto const padmm = sopt::algorithm::L1ProximalADMM<Scalar>(y)
                          .itermax(500)
                          .gamma(1e-1)
                          .relative_variation(5e-4)
@@ -99,7 +99,7 @@ int main(int argc, char const **argv) {
                          .Phi(sampling);
 
   SOPT_TRACE("Starting proximal-ADMM");
-  auto const diagnostic = padmm(Vector::Map(y.data(), y.size()));
+  auto const diagnostic = padmm(Vector::Zero(image.size()));
   SOPT_TRACE("proximal-ADMM returned {}", diagnostic.good);
 
   // diagnostic should tell us the function converged

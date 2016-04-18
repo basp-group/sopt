@@ -47,8 +47,9 @@ public:
     t_Vector x;
   };
 
-  L1ProximalADMM()
-      : ProximalADMM<SCALAR>(nullptr, nullptr), l1_proximal_(), l2ball_proximal_(1e0),
+  template<class DERIVED>
+  L1ProximalADMM(Eigen::MatrixBase<DERIVED> const &target)
+      : ProximalADMM<SCALAR>(nullptr, nullptr, target), l1_proximal_(), l2ball_proximal_(1e0),
         tight_frame_(false), relative_variation_(1e-4), residual_convergence_(1e-4) {
     set_f_and_g_proximal_to_members_of_this();
   }
@@ -132,6 +133,15 @@ public:
     return *this;
   }
 
+  //! target measurements
+  t_Vector const & target() const { return ProximalADMM<Scalar>::target(); }
+  //! target measurements
+  template<class DERIVED>
+  L1ProximalADMM<Scalar> & target(Eigen::MatrixBase<DERIVED> const &target) const {
+    ProximalADMM<Scalar>::target(target);
+    return *this;
+  }
+
   //! \brief L1 proximal used during calculation
   //! \details Non-const version to setup the object.
   proximal::L1<Scalar> &l1_proximal() { return l1_proximal_; }
@@ -204,13 +214,13 @@ public:
 
   //! \brief Call Proximal ADMM for L1 and L2 ball
   //! \param[out] out: Output x vector
-  //! \param[in] input: Target measurements
-  Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
+  //! \param[in] guess: initial guess for the image
+  Diagnostic operator()(t_Vector &out, t_Vector const &guess) const;
   //! \brief Calls Proximal ADMM for L1 and L2 ball
-  //! \param[in] input: Target measurement vector y
-  DiagnosticAndResult operator()(t_Vector const &input) const {
+  //! \param[in] guess: initial guess for the image
+  DiagnosticAndResult operator()(t_Vector const &guess) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.x, input);
+    static_cast<Diagnostic &>(result) = operator()(result.x, guess);
     return result;
   }
 
@@ -244,23 +254,23 @@ protected:
 
 template <class SCALAR>
 typename L1ProximalADMM<SCALAR>::Diagnostic L1ProximalADMM<SCALAR>::
-operator()(t_Vector &out, t_Vector const &input) const {
+operator()(t_Vector &out, t_Vector const &guess) const {
 
   SOPT_INFO("Performing Proximal ADMM with L1 and L2 operators");
-  ProximalADMM<Scalar>::sanity_check(input);
+  ProximalADMM<Scalar>::sanity_check(guess);
 
-  t_Vector lambda = t_Vector::Zero(input.size()), z = t_Vector::Zero(input.size()),
-           residual = t_Vector::Zero(input.size());
+  t_Vector lambda = t_Vector::Zero(target().size()), z = t_Vector::Zero(target().size()),
+           residual = t_Vector::Zero(target().size());
   bool const has_user_convergence = static_cast<bool>(is_converged());
   l1_diagnostic = {0, 0, 0, false};
 
   SOPT_NOTICE("    - Initialization");
-  ProximalADMM<Scalar>::initialization_step(input, out, residual);
+  ProximalADMM<Scalar>::initialization_step(out, residual);
   std::pair<Real, Real> objectives{sopt::l1_norm(residual, l1_proximal_weights()), 0};
 
   for(t_uint niters(0); niters < itermax(); ++niters) {
     SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
-    ProximalADMM<Scalar>::iteration_step(input, out, residual, lambda, z);
+    ProximalADMM<Scalar>::iteration_step(out, residual, lambda, z);
 
     // print-out stuff
     objectives.second = objectives.first;
