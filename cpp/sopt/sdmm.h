@@ -120,6 +120,12 @@ public:
     static_cast<Diagnostic &>(result) = operator()(result.out, input);
     return result;
   }
+  //! Makes it simple to chain different calls to SDMM
+  DiagnosticAndResult operator()(DiagnosticAndResult const &warmstart) const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic &>(result) = operator()(result.out, warmstart.out);
+    return result;
+  }
 
   //! Linear transforms associated with each objective function
   std::vector<t_LinearTransform> const &transforms() const { return transforms_; }
