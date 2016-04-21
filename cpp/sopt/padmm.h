@@ -37,7 +37,11 @@ public:
     t_uint niters;
     //! Wether convergence was achieved
     bool good;
-    Diagnostic(t_uint niters = 0u, bool good = false) : niters(niters), good(good) {}
+    //! the residuals from the last iteration
+    t_Vector residuals;
+
+    Diagnostic(t_uint niters = 0u, bool good = false)
+        : niters(niters), good(good), residuals(t_Vector::Zero(0)) {}
   };
   //! Holds result vector as well
   struct DiagnosticAndResult : public Diagnostic {
@@ -110,7 +114,9 @@ public:
   //! \brief Calls Proximal ADMM
   //! \param[out] out: Output vector x
   //! \param[in] guess: initial guess
-  Diagnostic operator()(t_Vector &out, t_Vector const &guess) const;
+  Diagnostic operator()(t_Vector &out, t_Vector const &guess) const {
+    return operator()(out, guess, t_Vector::Zero(target().size()));
+  }
   //! \brief Calls Proximal ADMM
   //! \param[in] guess: initial guess
   DiagnosticAndResult operator()(t_Vector const &guess) const {
@@ -118,6 +124,17 @@ public:
     static_cast<Diagnostic &>(result) = operator()(result.x, guess);
     return result;
   }
+  //! Makes it simple to chain different calls to PADMM
+  DiagnosticAndResult operator()(DiagnosticAndResult const &warmstart) const {
+    DiagnosticAndResult result = warmstart;
+    static_cast<Diagnostic &>(result) = operator()(result.x, warmstart.x, warmstart.residuals);
+    return result;
+  }
+  //! \brief Calls Proximal ADMM
+  //! \param[out] out: Output vector x
+  //! \param[in] guess: initial guess
+  //! \param[in] residuals: initial residuals
+  Diagnostic operator()(t_Vector &out, t_Vector const &guess, t_Vector const &res) const;
 
   //! Set Φ and Φ^† using arguments that sopt::linear_transform understands
   template <class... ARGS>
@@ -158,16 +175,15 @@ void ProximalADMM<SCALAR>::iteration_step(t_Vector &out, t_Vector &residual, t_V
 
 template <class SCALAR>
 typename ProximalADMM<SCALAR>::Diagnostic ProximalADMM<SCALAR>::
-operator()(t_Vector &out, t_Vector const &guess) const {
+operator()(t_Vector &out, t_Vector const &guess, t_Vector const &res) const {
 
   SOPT_INFO("Performing Proximal ADMM");
   sanity_check(guess);
 
-  t_Vector lambda = t_Vector::Zero(target().size()), z = t_Vector::Zero(target().size()),
-           residual = t_Vector::Zero(target().size());
-
-  SOPT_NOTICE("    - Initialization");
-  initialization_step(out, residual);
+  t_Vector lambda = t_Vector::Zero(target().size());
+  t_Vector z = t_Vector::Zero(target().size());
+  t_Vector residual = res;
+  out = guess;
 
   for(t_uint niters(0); niters < itermax(); ++niters) {
     SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
