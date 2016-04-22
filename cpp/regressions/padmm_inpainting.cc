@@ -90,8 +90,7 @@ TEST_CASE("Compare ADMM C++ and C", "") {
       sopt_l1_param_padmm c_params = params;
       c_params.max_iter = i;
       auto admm = ::create_admm(sampling, psi, c_params, y);
-      t_Vector cpp(image.size());
-      admm(cpp, t_Vector::Zero(image.size()));
+      auto const cpp = admm();
 
       t_Vector c = t_Vector::Zero(image.size());
       t_Vector l1_weights = t_Vector::Ones(image.size());
@@ -103,7 +102,9 @@ TEST_CASE("Compare ADMM C++ and C", "") {
           (void **)&psi_data, // synthesis
           c.size(), (void *)y.data(), y.size(), l1_weights.data(), l2_weights.data(), c_params);
 
-      CHECK(cpp.isApprox(c));
+      CAPTURE(cpp.x.head(5).transpose());
+      CAPTURE(c.head(5).transpose());
+      CHECK(cpp.x.isApprox(c));
     }
   };
 }

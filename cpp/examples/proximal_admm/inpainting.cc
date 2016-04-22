@@ -99,7 +99,9 @@ int main(int argc, char const **argv) {
                          .Phi(sampling);
 
   SOPT_TRACE("Starting proximal-ADMM");
-  auto const diagnostic = padmm(Vector::Zero(image.size()));
+  // Alternatively, padmm can be called with a tuple (x, residual) as argument
+  // Here, we default to (Φ^Ty/ν, ΦΦ^Ty/ν - y)
+  auto const diagnostic = padmm();
   SOPT_TRACE("proximal-ADMM returned {}", diagnostic.good);
 
   // diagnostic should tell us the function converged

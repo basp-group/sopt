@@ -32,7 +32,7 @@ TEST_CASE("Proximal ADMM with ||x - x0||_2 functions", "[padmm][integration]") {
   t_Vector const translation = t_Vector::Ones(N) * 5;
   auto const padmm = algorithm::ProximalADMM<Scalar>(g0, g1, t_Vector::Zero(N))
     .Phi(mId).itermax(3000).gamma(0.01);
-  auto const result = padmm(t_Vector::Zero(N));
+  auto const result = padmm();
 
   t_Vector const segment = (target1 - target0).normalized();
   t_real const alpha = (result.x - target0).transpose() * segment;

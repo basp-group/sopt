@@ -4,6 +4,7 @@
 #include "sopt/config.h"
 #include <numeric>
 #include <utility>
+#include <tuple>
 #include "sopt/exception.h"
 #include "sopt/l1_proximal.h"
 #include "sopt/linear_transform.h"
@@ -31,6 +32,7 @@ public:
   typedef typename ProximalADMM<SCALAR>::t_Vector t_Vector;
   typedef typename ProximalADMM<SCALAR>::t_LinearTransform t_LinearTransform;
   typedef typename ProximalADMM<SCALAR>::t_Proximal t_Proximal;
+  using ProximalADMM<SCALAR>::initial_guess;
 
   //! Values indicating how the algorithm ran
   struct Diagnostic : public ProximalADMM<Scalar>::Diagnostic {
@@ -40,6 +42,10 @@ public:
                typename proximal::L1<Scalar>::Diagnostic const &l1diag
                = typename proximal::L1<Scalar>::Diagnostic())
         : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
+    Diagnostic(t_uint niters, bool good,
+               typename proximal::L1<Scalar>::Diagnostic const &l1diag,
+               t_Vector &&residual)
+        : ProximalADMM<Scalar>::Diagnostic(niters, good, std::move(residual)), l1_diag(l1diag) {}
   };
   //! Holds result vector as well
   struct DiagnosticAndResult : public Diagnostic {
@@ -47,7 +53,7 @@ public:
     t_Vector x;
   };
 
-  template<class DERIVED>
+  template <class DERIVED>
   L1ProximalADMM(Eigen::MatrixBase<DERIVED> const &target)
       : ProximalADMM<SCALAR>(nullptr, nullptr, target), l1_proximal_(), l2ball_proximal_(1e0),
         tight_frame_(false), relative_variation_(1e-4), residual_convergence_(1e-4) {
@@ -97,7 +103,6 @@ protected:                                                                      
   TYPE NAME##_;                                                                                    \
                                                                                                    \
 public:
-
   //! The L1 proximal functioning as f
   SOPT_MACRO(l1_proximal, proximal::L1<Scalar>, set_f_and_g_proximal_to_members_of_this());
   //! The weighted L2 proximal functioning as g
@@ -134,10 +139,10 @@ public:
   }
 
   //! target measurements
-  t_Vector const & target() const { return ProximalADMM<Scalar>::target(); }
+  t_Vector const &target() const { return ProximalADMM<Scalar>::target(); }
   //! target measurements
-  template<class DERIVED>
-  L1ProximalADMM<Scalar> & target(Eigen::MatrixBase<DERIVED> const &target) const {
+  template <class DERIVED>
+  L1ProximalADMM<Scalar> &target(Eigen::MatrixBase<DERIVED> const &target) const {
     ProximalADMM<Scalar>::target(target);
     return *this;
   }
@@ -214,13 +219,32 @@ public:
 
   //! \brief Call Proximal ADMM for L1 and L2 ball
   //! \param[out] out: Output x vector
-  //! \param[in] guess: initial guess for the image
-  Diagnostic operator()(t_Vector &out, t_Vector const &guess) const;
+  //! \param[in] guess: for both x and the residuals
+  Diagnostic operator()(t_Vector &out, std::tuple<t_Vector, t_Vector> const &guess) const {
+    return operator()(out, std::get<0>(guess), std::get<1>(guess));
+  }
+  //! \brief Call Proximal ADMM for L1 and L2 ball
+  //! \param[out] out: Output x vector
+  Diagnostic operator()(t_Vector &out) const { return operator()(out, initial_guess()); }
   //! \brief Calls Proximal ADMM for L1 and L2 ball
-  //! \param[in] guess: initial guess for the image
-  DiagnosticAndResult operator()(t_Vector const &guess) const {
+  //! \param[in] guess: for both x and the residuals
+  DiagnosticAndResult operator()(std::tuple<t_Vector, t_Vector> const &guess) const {
     DiagnosticAndResult result;
     static_cast<Diagnostic &>(result) = operator()(result.x, guess);
+    return result;
+  }
+  //! \brief Calls Proximal ADMM for L1 and L2 ball
+  //! \param[in] warm_start: uses result from previous run to restart the calculations
+  DiagnosticAndResult operator()(DiagnosticAndResult const &warm_start) const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic &>(result) = operator()(result.x, {warm_start.x, warm_start.residual});
+    return result;
+  }
+  //! \brief Calls Proximal ADMM for L1 and L2 ball
+  //! \param[in] warm_start: uses result from previous run to restart the calculations
+  DiagnosticAndResult operator()() const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic &>(result) = operator()(result.x);
     return result;
   }
 
@@ -250,22 +274,29 @@ protected:
         std::bind(&L1ProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
     ProximalADMM<Scalar>::g_proximal(std::cref(l2ball_proximal()));
   }
+
+  //! \brief Call Proximal ADMM for L1 and L2 ball
+  //! \param[out] out: Output x vector
+  //! \param[in] guess: initial guess for the image
+  //! \param[in] res: initial guess for the residual
+  Diagnostic operator()(t_Vector &out, t_Vector const &guess, t_Vector const &res) const;
 };
 
 template <class SCALAR>
 typename L1ProximalADMM<SCALAR>::Diagnostic L1ProximalADMM<SCALAR>::
-operator()(t_Vector &out, t_Vector const &guess) const {
+operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) const {
 
   SOPT_INFO("Performing Proximal ADMM with L1 and L2 operators");
-  ProximalADMM<Scalar>::sanity_check(guess);
+  ProximalADMM<Scalar>::sanity_check(x_guess, res_guess);
 
-  t_Vector lambda = t_Vector::Zero(target().size()), z = t_Vector::Zero(target().size()),
-           residual = t_Vector::Zero(target().size());
+  t_Vector lambda = t_Vector::Zero(target().size());
+  t_Vector z = t_Vector::Zero(target().size());
+  t_Vector residual = res_guess;
+  out = x_guess;
   bool const has_user_convergence = static_cast<bool>(is_converged());
   l1_diagnostic = {0, 0, 0, false};
 
   SOPT_NOTICE("    - Initialization");
-  ProximalADMM<Scalar>::initialization_step(out, residual);
   std::pair<Real, Real> objectives{sopt::l1_norm(residual, l1_proximal_weights()), 0};
 
   for(t_uint niters(0); niters < itermax(); ++niters) {
@@ -295,7 +326,7 @@ operator()(t_Vector &out, t_Vector const &guess) const {
   }
 
   SOPT_WARN("    - did not converge within {} iterations", itermax());
-  return {itermax(), false, l1_diagnostic};
+  return {itermax(), false, l1_diagnostic, std::move(residual)};
 }
 }
 } /* sopt::algorithm */
