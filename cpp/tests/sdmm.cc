@@ -17,7 +17,7 @@ typedef sopt::t_real Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
-auto const N = 6;
+auto const N = 4;
 
 // Makes members public so we can test one at a time
 class IntrospectSDMM : public sopt::algorithm::SDMM<Scalar> {
@@ -231,35 +231,3 @@ TEST_CASE("SDMM with ||x - x0||_2 functions", "[sdmm][integration]") {
     }
   }
 }
-
-TEST_CASE("SDMM with warm start", "[sdmm][integration]") {
-  using namespace sopt;
-
-  t_Matrix const Id = t_Matrix::Identity(N, N).eval();
-  t_Vector const target0 = t_Vector::Random(N);
-  t_Vector target1 = t_Vector::Random(N) * 4;
-
-  auto convergence = [&target1, &target0](t_Vector const &x) -> bool {
-    t_Vector const segment = (target1 - target0).normalized();
-    t_real const alpha = (x - target0).transpose() * segment;
-    return (x - target0 - alpha * segment).stableNorm() < 1e-8;
-  };
-
-  auto sdmm = algorithm::SDMM<Scalar>()
-                  .is_converged(convergence)
-                  .itermax(5000)
-                  .gamma(1)
-                  .conjugate_gradient(std::numeric_limits<t_uint>::max(), 1e-12)
-                  .append(proximal::translate(proximal::EuclidianNorm(), -target0), Id)
-                  .append(proximal::translate(proximal::EuclidianNorm(), -target1), Id);
-
-
-  t_Vector input = t_Vector::Random(N);
-  auto const full = sdmm(input);
-  CHECK(full.niters > 20);
-  CHECK(full.good);
-  auto const first_half = sdmm.itermax(full.niters - 5)(input);
-  auto const second_half = sdmm.itermax(5000)(first_half);
-  CHECK(second_half.niters < 10);
-}
-
