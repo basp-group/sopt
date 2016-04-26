@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-#include <sopt/l1_padmm.h>
+#include <sopt/imaging_padmm.h>
 #include <sopt/logging.h>
 #include <sopt/maths.h>
 #include <sopt/relative_variation.h>
@@ -81,7 +81,7 @@ int main(int argc, char const **argv) {
   }
 
   SOPT_TRACE("Creating proximal-ADMM Functor");
-  auto const padmm = sopt::algorithm::L1ProximalADMM<Scalar>(y)
+  auto const padmm = sopt::algorithm::ImagingProximalADMM<Scalar>(y)
                          .itermax(500)
                          .gamma(1e-1)
                          .relative_variation(5e-4)

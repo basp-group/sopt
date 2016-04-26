@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 
-#include "sopt/l1_padmm.h"
+#include "sopt/imaging_padmm.h"
 #include "sopt/padmm.h"
 #include "sopt/proximal.h"
 #include "sopt/types.h"
@@ -31,7 +31,9 @@ TEST_CASE("Proximal ADMM with ||x - x0||_2 functions", "[padmm][integration]") {
 
   t_Vector const translation = t_Vector::Ones(N) * 5;
   auto const padmm = algorithm::ProximalADMM<Scalar>(g0, g1, t_Vector::Zero(N))
-    .Phi(mId).itermax(3000).gamma(0.01);
+                         .Phi(mId)
+                         .itermax(3000)
+                         .gamma(0.01);
   auto const result = padmm();
 
   t_Vector const segment = (target1 - target0).normalized();
@@ -46,40 +48,42 @@ TEST_CASE("Proximal ADMM with ||x - x0||_2 functions", "[padmm][integration]") {
 }
 
 template <class T>
-struct is_l1_proximal_ref : public std::is_same<sopt::algorithm::L1ProximalADMM<double> &, T> {};
+struct is_imaging_proximal_ref
+    : public std::is_same<sopt::algorithm::ImagingProximalADMM<double> &, T> {};
 TEST_CASE("Check type returned on setting variables") {
   // Yeah, could be static asserts
   using namespace sopt;
   using namespace sopt::algorithm;
-  L1ProximalADMM<double> admm(Vector<double>::Zero(0));
-  CHECK(is_l1_proximal_ref<decltype(admm.itermax(500))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.gamma(1e-1))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.relative_variation(5e-4))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l2ball_proximal_epsilon(1e-4))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.tight_frame(false))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l1_proximal_tolerance(1e-2))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l1_proximal_nu(1))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l1_proximal_itermax(50))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l1_proximal_positivity_constraint(true))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.l1_proximal_real_constraint(true))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.residual_convergence(1.001))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.lagrange_update_scale(0.9))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.nu(1e0))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.target(Vector<double>::Zero(0)))>::value);
+  ImagingProximalADMM<double> admm(Vector<double>::Zero(0));
+  CHECK(is_imaging_proximal_ref<decltype(admm.itermax(500))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.gamma(1e-1))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.relative_variation(5e-4))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l2ball_proximal_epsilon(1e-4))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.tight_frame(false))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l1_proximal_tolerance(1e-2))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l1_proximal_nu(1))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l1_proximal_itermax(50))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l1_proximal_positivity_constraint(true))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.l1_proximal_real_constraint(true))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.residual_convergence(1.001))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.lagrange_update_scale(0.9))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.nu(1e0))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.target(Vector<double>::Zero(0)))>::value);
   typedef ConvergenceFunction<double> ConvFunc;
-  CHECK(is_l1_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc &>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc &&>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc const &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.is_converged(std::declval<ConvFunc &&>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(
+            admm.is_converged(std::declval<ConvFunc const &>()))>::value);
   typedef LinearTransform<Vector<double>> LinTrans;
-  CHECK(is_l1_proximal_ref<decltype(admm.Phi(linear_transform_identity<double>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Phi(std::declval<LinTrans>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Phi(std::declval<LinTrans &&>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Phi(std::declval<LinTrans &>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Phi(std::declval<LinTrans const &>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Psi(linear_transform_identity<double>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Psi(std::declval<LinTrans>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Psi(std::declval<LinTrans &&>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Psi(std::declval<LinTrans &>()))>::value);
-  CHECK(is_l1_proximal_ref<decltype(admm.Psi(std::declval<LinTrans const &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Phi(linear_transform_identity<double>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Phi(std::declval<LinTrans>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Phi(std::declval<LinTrans &&>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Phi(std::declval<LinTrans &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Phi(std::declval<LinTrans const &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Psi(linear_transform_identity<double>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Psi(std::declval<LinTrans>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Psi(std::declval<LinTrans &&>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Psi(std::declval<LinTrans &>()))>::value);
+  CHECK(is_imaging_proximal_ref<decltype(admm.Psi(std::declval<LinTrans const &>()))>::value);
 }

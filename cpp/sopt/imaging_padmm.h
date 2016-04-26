@@ -3,8 +3,8 @@
 
 #include "sopt/config.h"
 #include <numeric>
-#include <utility>
 #include <tuple>
+#include <utility>
 #include "sopt/exception.h"
 #include "sopt/l1_proximal.h"
 #include "sopt/linear_transform.h"
@@ -20,7 +20,7 @@ namespace algorithm {
 //! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$, where \f$f(x) =
 //! ||Ψ^Hx||_1 + i_C(x)\f$ and \f$h(x) = i_B(z)\f$ with \f$C = R^N_{+}\f$ and \f$B = {z \in R^M:
 //! ||z||_2 \leq \epsilon}\f$
-template <class SCALAR> class L1ProximalADMM : private ProximalADMM<SCALAR> {
+template <class SCALAR> class ImagingProximalADMM : private ProximalADMM<SCALAR> {
   //! Defines convergence behaviour
   struct Breaker;
 
@@ -42,8 +42,7 @@ public:
                typename proximal::L1<Scalar>::Diagnostic const &l1diag
                = typename proximal::L1<Scalar>::Diagnostic())
         : ProximalADMM<Scalar>::Diagnostic(niters, good), l1_diag(l1diag) {}
-    Diagnostic(t_uint niters, bool good,
-               typename proximal::L1<Scalar>::Diagnostic const &l1diag,
+    Diagnostic(t_uint niters, bool good, typename proximal::L1<Scalar>::Diagnostic const &l1diag,
                t_Vector &&residual)
         : ProximalADMM<Scalar>::Diagnostic(niters, good, std::move(residual)), l1_diag(l1diag) {}
   };
@@ -54,32 +53,32 @@ public:
   };
 
   template <class DERIVED>
-  L1ProximalADMM(Eigen::MatrixBase<DERIVED> const &target)
+  ImagingProximalADMM(Eigen::MatrixBase<DERIVED> const &target)
       : ProximalADMM<SCALAR>(nullptr, nullptr, target), l1_proximal_(), l2ball_proximal_(1e0),
         tight_frame_(false), relative_variation_(1e-4), residual_convergence_(1e-4) {
     set_f_and_g_proximal_to_members_of_this();
   }
-  L1ProximalADMM(L1ProximalADMM<Scalar> const &c)
+  ImagingProximalADMM(ImagingProximalADMM<Scalar> const &c)
       : ProximalADMM<Scalar>(c), l1_proximal_(c.l1_proximal_), l2ball_proximal_(c.l2ball_proximal_),
         tight_frame_(c.tight_frame_), relative_variation_(c.relative_variation_),
         residual_convergence_(c.residual_convergence_) {
     set_f_and_g_proximal_to_members_of_this();
   }
-  L1ProximalADMM(L1ProximalADMM<Scalar> &&c)
+  ImagingProximalADMM(ImagingProximalADMM<Scalar> &&c)
       : ProximalADMM<Scalar>(std::move(c)), l1_proximal_(std::move(c.l1_proximal_)),
         l2ball_proximal_(std::move(c.l2ball_proximal_)), tight_frame_(c.tight_frame_),
         relative_variation_(c.relative_variation_), residual_convergence_(c.residual_convergence_) {
     set_f_and_g_proximal_to_members_of_this();
   }
 
-  void operator=(L1ProximalADMM<Scalar> const &c) {
+  void operator=(ImagingProximalADMM<Scalar> const &c) {
     ProximalADMM<Scalar>::operator=(c);
     l1_proximal_ = c.l1_proximal_;
     l2ball_proximal_ = c.l2ball_proximal_;
     tight_frame_ = c.tight_frame_;
     set_f_and_g_proximal_to_members_of_this();
   }
-  void operator=(L1ProximalADMM<Scalar> &&c) {
+  void operator=(ImagingProximalADMM<Scalar> &&c) {
     ProximalADMM<Scalar>::operator=(std::move(c));
     l1_proximal_ = std::move(c.l1_proximal_);
     l2ball_proximal_ = std::move(c.l2ball_proximal_);
@@ -87,13 +86,13 @@ public:
     set_f_and_g_proximal_to_members_of_this();
   }
 
-  virtual ~L1ProximalADMM() {}
+  virtual ~ImagingProximalADMM() {}
 
 // Macro helps define properties that can be initialized as in
 // auto sdmm  = ProximalADMM<float>().prop0(value).prop1(value);
 #define SOPT_MACRO(NAME, TYPE, CODE)                                                               \
   TYPE const &NAME() const { return NAME##_; }                                                     \
-  L1ProximalADMM<SCALAR> &NAME(TYPE const &NAME) {                                                 \
+  ImagingProximalADMM<SCALAR> &NAME(TYPE const &NAME) {                                            \
     NAME##_ = NAME;                                                                                \
     CODE;                                                                                          \
     return *this;                                                                                  \
@@ -123,7 +122,7 @@ public:
   t_LinearTransform const &Psi() const { return l1_proximal().Psi(); }
   //! Analysis operator Ψ
   template <class... ARGS>
-  typename std::enable_if<sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar> &>::type
+  typename std::enable_if<sizeof...(ARGS) >= 1, ImagingProximalADMM<Scalar> &>::type
   Psi(ARGS &&... args) {
     l1_proximal().Psi(std::forward<ARGS>(args)...);
     return *this;
@@ -132,7 +131,7 @@ public:
   t_LinearTransform const &Phi() const { return ProximalADMM<Scalar>::Phi(); }
   //! Φ initialized via some call to \ref linear_transform
   template <class... ARGS>
-  typename std::enable_if<sizeof...(ARGS) >= 1, L1ProximalADMM<Scalar> &>::type
+  typename std::enable_if<sizeof...(ARGS) >= 1, ImagingProximalADMM<Scalar> &>::type
   Phi(ARGS &&... args) {
     ProximalADMM<Scalar>::Phi(std::forward<ARGS>(args)...);
     return *this;
@@ -142,7 +141,7 @@ public:
   t_Vector const &target() const { return ProximalADMM<Scalar>::target(); }
   //! target measurements
   template <class DERIVED>
-  L1ProximalADMM<Scalar> &target(Eigen::MatrixBase<DERIVED> const &target) const {
+  ImagingProximalADMM<Scalar> &target(Eigen::MatrixBase<DERIVED> const &target) const {
     ProximalADMM<Scalar>::target(target);
     return *this;
   }
@@ -170,7 +169,7 @@ public:
     return NAME##_proximal().VAR();                                                                \
   }                                                                                                \
   /** \brief Forwards to l1_proximal **/                                                           \
-  L1ProximalADMM<Scalar> &NAME##_proximal_##VAR(                                                   \
+  ImagingProximalADMM<Scalar> &NAME##_proximal_##VAR(                                              \
       decltype(std::declval<proximal::PROXIMAL<Scalar> const>().VAR()) VAR) {                      \
     NAME##_proximal().VAR(VAR);                                                                    \
     return *this;                                                                                  \
@@ -190,7 +189,7 @@ public:
 #define SOPT_MACRO(NAME)                                                                           \
   using ProximalADMM<Scalar>::NAME;                                                                \
   /** \brief Forwards to ProximalADMM base class **/                                               \
-  L1ProximalADMM<Scalar> &NAME(decltype(std::declval<ProximalADMM<Scalar>>().NAME()) NAME) {       \
+  ImagingProximalADMM<Scalar> &NAME(decltype(std::declval<ProximalADMM<Scalar>>().NAME()) NAME) {  \
     ProximalADMM<Scalar>::NAME(NAME);                                                              \
     return *this;                                                                                  \
   }
@@ -271,7 +270,7 @@ protected:
   void set_f_and_g_proximal_to_members_of_this() {
     using namespace std::placeholders;
     ProximalADMM<Scalar>::f_proximal(
-        std::bind(&L1ProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
+        std::bind(&ImagingProximalADMM<Scalar>::erased_f_proximal, this, _1, _2, _3));
     ProximalADMM<Scalar>::g_proximal(std::cref(l2ball_proximal()));
   }
 
@@ -283,7 +282,7 @@ protected:
 };
 
 template <class SCALAR>
-typename L1ProximalADMM<SCALAR>::Diagnostic L1ProximalADMM<SCALAR>::
+typename ImagingProximalADMM<SCALAR>::Diagnostic ImagingProximalADMM<SCALAR>::
 operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) const {
 
   SOPT_INFO("Performing Proximal ADMM with L1 and L2 operators");
