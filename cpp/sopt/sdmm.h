@@ -32,7 +32,7 @@ public:
   };
   struct DiagnosticAndResult : public Diagnostic {
     //! Vector which minimizes the sum of functions.
-    Vector<SCALAR> out;
+    Vector<SCALAR> x;
   };
   //! Scalar type
   typedef SCALAR value_type;
@@ -117,13 +117,13 @@ public:
   Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
   DiagnosticAndResult operator()(t_Vector const &input) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.out, input);
+    static_cast<Diagnostic &>(result) = operator()(result.x, input);
     return result;
   }
   //! Makes it simple to chain different calls to SDMM
   DiagnosticAndResult operator()(DiagnosticAndResult const &warmstart) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.out, warmstart.out);
+    static_cast<Diagnostic &>(result) = operator()(result.x, warmstart.x);
     return result;
   }
 
