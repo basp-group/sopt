@@ -155,7 +155,7 @@ TEST_CASE("Standard deviation", "[utility]") {
   sopt::t_real stddev = 0e0;
   for(sopt::Vector<>::Index i(0); i < input.size(); ++i)
     stddev += std::real(std::conj(input(i) - mean) * (input(i) - mean));
-  stddev /= std::sqrt(sopt::t_real(input.size()));
+  stddev = std::sqrt(stddev) / std::sqrt(sopt::t_real(input.size()));
 
   CHECK(std::abs(sopt::standard_deviation(input) - stddev) < 1e-8);
   CHECK(std::abs(sopt::standard_deviation(input.matrix()) - stddev) < 1e-8);

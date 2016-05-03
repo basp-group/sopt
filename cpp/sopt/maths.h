@@ -12,15 +12,15 @@
 namespace sopt {
 
 //! Computes the standard deviation of a vector
-template<class T>
-  typename real_type<typename T::Scalar>::type standard_deviation(Eigen::ArrayBase<T> const &x) {
-    return (x - x.mean()).matrix().squaredNorm() / std::sqrt(x.size());
-  }
+template <class T>
+typename real_type<typename T::Scalar>::type standard_deviation(Eigen::ArrayBase<T> const &x) {
+  return (x - x.mean()).matrix().stableNorm() / std::sqrt(x.size());
+}
 //! Computes the standard deviation of a vector
-template<class T>
-  typename real_type<typename T::Scalar>::type standard_deviation(Eigen::MatrixBase<T> const &x) {
-    return standard_deviation(x.array());
-  }
+template <class T>
+typename real_type<typename T::Scalar>::type standard_deviation(Eigen::MatrixBase<T> const &x) {
+  return standard_deviation(x.array());
+}
 
 //! abs(x) < threshhold ? 0: x - sgn(x) * threshhold
 template <class SCALAR>
