@@ -54,9 +54,9 @@ public:
     //! Weights at last iteration
     t_Vector weights;
     //! Result from last inner loop
-    typename Algorithm::DiagnosticAndResult inner_loop;
+    typename Algorithm::DiagnosticAndResult algo;
     //! Default construction
-    ReweightedResult() : niters(0), good(false), weights(t_Vector::Ones(1)), inner_loop() {}
+    ReweightedResult() : niters(0), good(false), weights(t_Vector::Ones(1)), algo() {}
   };
 
   Reweighted(Algorithm const &algo, t_SetWeights const &setweights, t_Reweightee const &reweightee)
@@ -186,7 +186,7 @@ template <class ALGORITHM>
 typename Reweighted<ALGORITHM>::ReweightedResult Reweighted<ALGORITHM>::
 operator()(typename Algorithm::DiagnosticAndResult const &warm) const {
   ReweightedResult result;
-  result.inner_loop = warm;
+  result.algo = warm;
   result.weights = t_Vector::Ones(1);
   return operator()(result);
 }
@@ -199,15 +199,15 @@ operator()(ReweightedResult const &warm) const {
   Algorithm algo(algorithm());
   ReweightedResult result(warm);
 
-  auto delta = std::max(standard_deviation(reweightee(warm.inner_loop.x)), noise());
+  auto delta = std::max(standard_deviation(reweightee(warm.algo.x)), noise());
   SOPT_WARN("-   Initial delta: {}", delta);
   for(result.niters = 0; result.niters < itermax(); ++result.niters) {
     SOPT_INFO("Reweigting iteration {}/{} ", result.niters, itermax());
     SOPT_WARN("  - delta: {}", delta);
-    result.weights = delta / (delta + reweightee(result.inner_loop.x).array().abs());
+    result.weights = delta / (delta + reweightee(result.algo.x).array().abs());
     set_weights(algo, result.weights);
-    result.inner_loop = algo(result.inner_loop);
-    if(is_converged(result.inner_loop.x)) {
+    result.algo = algo(result.algo);
+    if(is_converged(result.algo.x)) {
       SOPT_INFO("Reweighting scheme did converge in {} iterations", result.niters);
       result.good = true;
       break;

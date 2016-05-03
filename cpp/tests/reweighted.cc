@@ -86,7 +86,7 @@ TEST_CASE("L0-Approximation") {
       THEN("The inner algorithm was called once") {
         CHECK(DummyAlgorithm::called_with_x == 1);
         CHECK(DummyAlgorithm::called_with_warm == 0);
-        CHECK(result.inner_loop.x.array().isApprox(input.array() + 0.1));
+        CHECK(result.algo.x.array().isApprox(input.array() + 0.1));
       }
     }
   }
@@ -109,7 +109,7 @@ TEST_CASE("L0-Approximation") {
       THEN("The inner algorithm was called twice") {
         CHECK(DummyAlgorithm::called_with_x == 1);
         CHECK(DummyAlgorithm::called_with_warm == 1);
-        CHECK(result.inner_loop.x.array().isApprox(input.array() + 0.2));
+        CHECK(result.algo.x.array().isApprox(input.array() + 0.2));
       }
     }
   }
