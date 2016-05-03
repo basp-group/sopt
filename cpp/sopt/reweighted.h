@@ -212,7 +212,7 @@ operator()(ReweightedResult const &warm) const {
       result.good = true;
       break;
     }
-    delta = update_delta(delta);
+    delta = std::max(noise(), update_delta(delta));
   }
   // result is always good if no convergence function is defined
   if(not is_converged())
