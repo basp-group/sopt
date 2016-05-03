@@ -140,6 +140,10 @@ public:
   std::vector<t_Proximal> const &proximals() const { return proximals_; }
   //! Linear transforms associated with each objective function
   std::vector<t_Proximal> &proximals() { return proximals_; }
+  //! Proximal associated with a given objective function
+  t_Proximal const &proximals(t_uint i) const { return proximals_[i]; }
+  //! Proximal associated with a given objective function
+  t_Proximal &proximals(t_uint i) { return proximals_[i]; }
   //! Lazy call to specific proximal function
   template <class T0>
   proximal::ProximalExpression<t_Proximal const &, T0>
