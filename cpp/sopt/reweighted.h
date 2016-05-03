@@ -11,8 +11,8 @@ template <class ALGORITHM> class Reweighted;
 //! Factory function to create an l0-approximation by reweighting an l1 norm
 template <class ALGORITHM>
 Reweighted<ALGORITHM>
-reweighted(ALGORITHM const &algo, typename Reweighted<ALGORITHM>::t_SetWeights set_weights,
-           typename Reweighted<ALGORITHM>::t_Reweightee reweightee);
+reweighted(ALGORITHM const &algo, typename Reweighted<ALGORITHM>::t_SetWeights const &set_weights,
+           typename Reweighted<ALGORITHM>::t_Reweightee const &reweightee);
 
 //! \brief L0-approximation algorithm, through reweighting
 //! \details This algorithm approximates \f$min_x ||Ψ^Tx||_0 + f(x)\f$ by solving the set of
@@ -224,8 +224,8 @@ operator()(ReweightedResult const &warm) const {
 //! Factory function to create an l0-approximation by reweighting an l1 norm
 template <class ALGORITHM>
 Reweighted<ALGORITHM>
-reweighted(ALGORITHM const &algo, typename Reweighted<ALGORITHM>::t_SetWeights set_weights,
-           typename Reweighted<ALGORITHM>::t_Reweightee reweightee) {
+reweighted(ALGORITHM const &algo, typename Reweighted<ALGORITHM>::t_SetWeights const &set_weights,
+           typename Reweighted<ALGORITHM>::t_Reweightee const &reweightee) {
   return {algo, set_weights, reweightee};
 }
 
