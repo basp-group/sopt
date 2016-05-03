@@ -1,7 +1,6 @@
 #include <catch.hpp>
 #include <complex>
 #include <iomanip>
-#include <iostream>
 #include <type_traits>
 
 #include "sopt/imaging_padmm.h"

@@ -3,7 +3,6 @@
 
 #include "sopt/config.h"
 #include <array>
-#include <iostream>
 #include <type_traits>
 #include <Eigen/Core>
 #include "sopt/linear_transform.h"

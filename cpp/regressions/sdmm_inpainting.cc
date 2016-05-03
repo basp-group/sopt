@@ -1,7 +1,6 @@
 #include <catch.hpp>
 #include <complex>
 #include <iomanip>
-#include <iostream>
 #include <random>
 #include <type_traits>
 
