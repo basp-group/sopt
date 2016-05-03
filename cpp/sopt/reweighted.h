@@ -61,7 +61,7 @@ public:
 
   Reweighted(Algorithm const &algo, t_SetWeights const &setweights, t_Reweightee const &reweightee)
       : algo_(algo), setweights_(setweights), reweightee_(reweightee),
-        itermax_(std::numeric_limits<t_uint>::max()), noise_(0e0), is_converged_(),
+        itermax_(std::numeric_limits<t_uint>::max()), min_delta_(0e0), is_converged_(),
         update_delta_([](Real delta) { return 1e-1 * delta; }) {}
 
   //! Underlying "inner-loop" algorithm
@@ -108,10 +108,10 @@ public:
     itermax_ = i;
     return *this;
   }
-  //! \brief weights are set to noise / (noise + x), more or less
-  Real noise() const { return noise_; }
-  Reweighted &noise(Real noise) {
-    noise_ = noise;
+  //! Lower limit for delta
+  Real min_delta() const { return min_delta_; }
+  Reweighted &min_delta(Real min_delta) {
+    min_delta_ = min_delta;
     return *this;
   }
   //! Checks convergence of the reweighting scheme
@@ -154,9 +154,8 @@ protected:
   t_Reweightee reweightee_;
   //! Maximum number of reweighted iterations
   t_uint itermax_;
-  //! \brief weights are set to noise / (noise + x)
-  //! \details If noise is <= 0e0, then it is computed in current_noise
-  Real noise_;
+  //! \brief Lower limit for delta
+  Real min_delta_;
   //! Checks convergence
   t_IsConverged is_converged_;
   //! Updates delta at each turn
@@ -199,7 +198,7 @@ operator()(ReweightedResult const &warm) const {
   Algorithm algo(algorithm());
   ReweightedResult result(warm);
 
-  auto delta = std::max(standard_deviation(reweightee(warm.algo.x)), noise());
+  auto delta = std::max(standard_deviation(reweightee(warm.algo.x)), min_delta());
   SOPT_WARN("-   Initial delta: {}", delta);
   for(result.niters = 0; result.niters < itermax(); ++result.niters) {
     SOPT_INFO("Reweigting iteration {}/{} ", result.niters, itermax());
@@ -212,7 +211,7 @@ operator()(ReweightedResult const &warm) const {
       result.good = true;
       break;
     }
-    delta = std::max(noise(), update_delta(delta));
+    delta = std::max(min_delta(), update_delta(delta));
   }
   // result is always good if no convergence function is defined
   if(not is_converged())
