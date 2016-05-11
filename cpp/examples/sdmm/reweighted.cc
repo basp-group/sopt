@@ -3,6 +3,7 @@
 #include <functional>
 #include <random>
 #include <vector>
+#include <iostream>
 
 #include <sopt/logging.h>
 #include <sopt/maths.h>

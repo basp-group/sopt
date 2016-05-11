@@ -3,6 +3,7 @@
 #include <functional>
 #include <random>
 #include <vector>
+#include <iostream>
 
 #include <sopt/imaging_padmm.h>
 #include <sopt/logging.h>
