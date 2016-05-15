@@ -19,6 +19,7 @@ option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 option(regressions    "Enable regressions"                     on)
 option(Csopt          "Enable C sopt"                          on)
+option(openmp         "Enable OpenMP"                          off)
 
 if(regressions OR Csopt)
   enable_language(C)

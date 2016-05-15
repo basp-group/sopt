@@ -31,6 +31,15 @@ elseif(regressions AND Csopt)
   set(Sopt_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
 endif()
 
+if(openmp)
+  find_package(OpenMP)
+  if(OPENMP_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  else()
+    message(STATUS "Could not find OpenMP. Compiling without.")
+  endif()
+endif()
+
 if(Csopt)
   find_package(CBLAS REQUIRED)
   # On some (linux) machines we also need libm to compile sopt_demo*.c
