@@ -34,9 +34,9 @@ template <class TYPE> void function_cg(benchmark::State &state) {
   state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(N) * sizeof(TYPE));
 }
 
-BENCHMARK_TEMPLATE(matrix_cg, sopt::t_complex)->RangePair(1, 256, 4, 12);
-BENCHMARK_TEMPLATE(matrix_cg, sopt::t_real)->RangePair(1, 256, 4, 12);
-BENCHMARK_TEMPLATE(function_cg, sopt::t_complex)->RangePair(1, 256, 4, 12);
-BENCHMARK_TEMPLATE(function_cg, sopt::t_real)->RangePair(1, 256, 4, 12);
+BENCHMARK_TEMPLATE(matrix_cg, sopt::t_complex)->RangePair(1, 256, 4, 12)->UseRealTime();
+BENCHMARK_TEMPLATE(matrix_cg, sopt::t_real)->RangePair(1, 256, 4, 12)->UseRealTime();
+BENCHMARK_TEMPLATE(function_cg, sopt::t_complex)->RangePair(1, 256, 4, 12)->UseRealTime();
+BENCHMARK_TEMPLATE(function_cg, sopt::t_real)->RangePair(1, 256, 4, 12)->UseRealTime();
 
 BENCHMARK_MAIN()
