@@ -3,12 +3,11 @@
 
 #include "sopt/config.h"
 #include <array>
-#include <iostream>
 #include <type_traits>
 #include <Eigen/Core>
 #include "sopt/linear_transform.h"
-#include "sopt/proximal_expression.h"
 #include "sopt/maths.h"
+#include "sopt/proximal_expression.h"
 
 namespace sopt {
 namespace proximal {
@@ -171,14 +170,13 @@ public:
   };
 
   //! Computes proximal for given γ
-  template <class T0, class T1>
-  Diagnostic
-  operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x) const {
+  template <class T0>
+  Diagnostic operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x) const {
     // Note that we *must* call eval on x, in case it is an expression involving out
     if(fista_mixing())
-      return operator()(out, gamma, x.eval(), FistaMixing());
+      return operator()(out, gamma, x, FistaMixing());
     else
-      return operator()(out, gamma, x.eval(), NoMixing());
+      return operator()(out, gamma, x, NoMixing());
   }
 
   //! Lazy version
@@ -264,23 +262,22 @@ protected:
   void apply_constraints(Eigen::MatrixBase<T0> &out, Eigen::MatrixBase<T1> const &x) const;
 
   //! Operation with explicit mixing step
-  template <class T0, class T1, class MIXING>
-  Diagnostic operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x,
-                        MIXING mixing) const;
+  template <class T0, class MIXING>
+  Diagnostic
+  operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x, MIXING mixing) const;
 };
 
 //! Computes proximal for given γ
 template <class SCALAR>
-template <class T0, class T1, class MIXING>
+template <class T0, class MIXING>
 typename L1<SCALAR>::Diagnostic L1<SCALAR>::
-operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &x,
-           MIXING mixing) const {
+operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x, MIXING mixing) const {
 
   SOPT_NOTICE("  Starting Proximal L1 operator:");
   t_uint niters = 0;
   out = x;
 
-  Breaker breaker(objective(x, x, gamma), tolerance(), false); // not fista_mixing());
+  Breaker breaker(objective(out, x, gamma), tolerance(), false); // not fista_mixing());
   SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));

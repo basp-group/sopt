@@ -1,8 +1,8 @@
 # list of headers
 set(headers
-  l1_padmm.h logging.disabled.h maths.h proximal_expression.h conjugate_gradient.h l1_proximal.h
-  logging.enabled.h padmm.h real_type.h exception.h linear_transform.h logging.h proximal.h
-  relative_variation.h sampling.h utilities.h sdmm.h wavelets.h types.h wrapper.h
+  imaging_padmm.h logging.disabled.h maths.h proximal_expression.h conjugate_gradient.h
+  l1_proximal.h logging.enabled.h padmm.h real_type.h exception.h linear_transform.h logging.h
+  proximal.h relative_variation.h sampling.h utilities.h sdmm.h wavelets.h types.h wrapper.h
   ${PROJECT_BINARY_DIR}/include/sopt/config.h)
 set(wavelet_headers
   wavelets/direct.h wavelets/indirect.h wavelets/innards.impl.h wavelets/sara.h
@@ -44,4 +44,4 @@ install(TARGETS sopt
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   INCLUDES DESTINATION include/sopt
-)
+  )

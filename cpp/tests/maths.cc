@@ -149,6 +149,18 @@ TEST_CASE("Relative variation", "[utility][convergence]") {
   CHECK(not relvar(input + relvar.epsilon() * 1.1 * sopt::Array<>::Ones(6)));
 }
 
+TEST_CASE("Standard deviation", "[utility]") {
+  sopt::Array<sopt::t_complex> input = sopt::Array<sopt::t_complex>::Random(6) + 1e0;
+  sopt::t_complex mean = input.mean();
+  sopt::t_real stddev = 0e0;
+  for(sopt::Vector<>::Index i(0); i < input.size(); ++i)
+    stddev += std::real(std::conj(input(i) - mean) * (input(i) - mean));
+  stddev = std::sqrt(stddev) / std::sqrt(sopt::t_real(input.size()));
+
+  CHECK(std::abs(sopt::standard_deviation(input) - stddev) < 1e-8);
+  CHECK(std::abs(sopt::standard_deviation(input.matrix()) - stddev) < 1e-8);
+}
+
 // Checks type traits work
 static_assert(not sopt::details::HasValueType<double>::value, "");
 static_assert(not sopt::details::HasValueType<std::pair<double, int>>::value, "");

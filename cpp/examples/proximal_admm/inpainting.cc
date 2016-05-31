@@ -3,8 +3,9 @@
 #include <functional>
 #include <random>
 #include <vector>
+#include <iostream>
 
-#include <sopt/l1_padmm.h>
+#include <sopt/imaging_padmm.h>
 #include <sopt/logging.h>
 #include <sopt/maths.h>
 #include <sopt/relative_variation.h>
@@ -81,7 +82,7 @@ int main(int argc, char const **argv) {
   }
 
   SOPT_TRACE("Creating proximal-ADMM Functor");
-  auto const padmm = sopt::algorithm::L1ProximalADMM<Scalar>(y)
+  auto const padmm = sopt::algorithm::ImagingProximalADMM<Scalar>(y)
                          .itermax(500)
                          .gamma(1e-1)
                          .relative_variation(5e-4)
@@ -99,7 +100,9 @@ int main(int argc, char const **argv) {
                          .Phi(sampling);
 
   SOPT_TRACE("Starting proximal-ADMM");
-  auto const diagnostic = padmm(Vector::Zero(image.size()));
+  // Alternatively, padmm can be called with a tuple (x, residual) as argument
+  // Here, we default to (Φ^Ty/ν, ΦΦ^Ty/ν - y)
+  auto const diagnostic = padmm();
   SOPT_TRACE("proximal-ADMM returned {}", diagnostic.good);
 
   // diagnostic should tell us the function converged

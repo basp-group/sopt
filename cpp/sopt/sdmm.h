@@ -32,7 +32,7 @@ public:
   };
   struct DiagnosticAndResult : public Diagnostic {
     //! Vector which minimizes the sum of functions.
-    Vector<SCALAR> out;
+    Vector<SCALAR> x;
   };
   //! Scalar type
   typedef SCALAR value_type;
@@ -117,7 +117,13 @@ public:
   Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
   DiagnosticAndResult operator()(t_Vector const &input) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.out, input);
+    static_cast<Diagnostic &>(result) = operator()(result.x, input);
+    return result;
+  }
+  //! Makes it simple to chain different calls to SDMM
+  DiagnosticAndResult operator()(DiagnosticAndResult const &warmstart) const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic &>(result) = operator()(result.x, warmstart.x);
     return result;
   }
 
@@ -134,6 +140,10 @@ public:
   std::vector<t_Proximal> const &proximals() const { return proximals_; }
   //! Linear transforms associated with each objective function
   std::vector<t_Proximal> &proximals() { return proximals_; }
+  //! Proximal associated with a given objective function
+  t_Proximal const &proximals(t_uint i) const { return proximals_[i]; }
+  //! Proximal associated with a given objective function
+  t_Proximal &proximals(t_uint i) { return proximals_[i]; }
   //! Lazy call to specific proximal function
   template <class T0>
   proximal::ProximalExpression<t_Proximal const &, T0>
