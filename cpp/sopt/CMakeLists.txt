@@ -3,7 +3,7 @@ set(headers
   imaging_padmm.h logging.disabled.h maths.h proximal.h relative_variation.h sdmm.h
   wavelets.h conjugate_gradient.h l1_proximal.h logging.enabled.h padmm.h proximal_expression.h
   reweighted.h types.h wrapper.h exception.h linear_transform.h logging.h positive_quadrant.h
-  real_type.h sampling.h utilities.h ${EXTERNAL_ROOT}/include/sopt/config.h
+  real_type.h sampling.h ${EXTERNAL_ROOT}/include/sopt/config.h
 )
 set(wavelet_headers
   wavelets/direct.h wavelets/indirect.h wavelets/innards.impl.h wavelets/sara.h
@@ -11,6 +11,10 @@ set(wavelet_headers
 )
 
 set(sources wavelets/wavelets.cc wavelets/wavelet_data.cc)
+if(TIFF_FOUND)
+  list(APPEND sources utilities.cc)
+  list(APPEND headers utilities.h)
+endif()
 
 add_library(sopt SHARED ${sources})
 add_dependencies(sopt lookup_dependencies)
@@ -21,6 +25,7 @@ target_include_directories(sopt PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include/>)
+
 if(TIFF_FOUND)
   target_link_libraries(sopt ${TIFF_LIBRARY})
   target_include_directories(sopt SYSTEM PUBLIC ${TIFF_LIBRARY})
