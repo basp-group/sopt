@@ -17,6 +17,9 @@ if(NOT Sopt_BUILD_TYPE)
     set(Sopt_BUILD_TYPE Release)
 endif()
 
+lookup_package(Eigen3)
+lookup_package(spdlog)
+
 # write subset of variables to cache for sopt to use
 include(PassonVariables)
 passon_variables(Sopt
@@ -45,3 +48,9 @@ ExternalProject_Add(
     LOG_BUILD ON
 )
 add_recursive_cmake_step(Sopt DEPENDEES install)
+if(TARGET Eigen3)
+  add_dependencies(Sopt Eigen3)
+endif()
+if(TARGET spdlog)
+  add_dependencies(Sopt spdlog)
+endif()

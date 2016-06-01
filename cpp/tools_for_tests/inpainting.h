@@ -1,14 +1,11 @@
-#ifndef SOPT_TOOLS_FOR_TESTS_INPAINTING
-#define SOPT_TOOLS_FOR_TESTS_INPAINTING
+#ifndef SOPT_TOOLS_FOR_TESTS_INPAINTING_H
+#define SOPT_TOOLS_FOR_TESTS_INPAINTING_H
 
 #include "sopt/config.h"
 #include <random>
 #include <sopt/linear_transform.h>
 #include <sopt/types.h>
-
-extern "C" {
-#include "sopt/sopt_l1.h"
-}
+#include "sopt_l1.h"
 
 namespace sopt {
 

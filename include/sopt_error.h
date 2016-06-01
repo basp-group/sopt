@@ -9,19 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-inline void SOPT_ERROR_GENERIC(char *comment) {
-  printf("ERROR: %s.\n", comment);					
-  printf("ERROR: %s <%s> %s %s %s %d.\n",				
-    "Occurred in function",					
-    __PRETTY_FUNCTION__,						
-    "of file", __FILE__,						
-    "on line", __LINE__);					
-  exit(1);
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-inline void SOPT_ERROR_MEM_ALLOC_CHECK(void *pointer) {				
-  if(pointer == NULL)
-    SOPT_ERROR_GENERIC("Memory allocation failed");
-}
+extern inline void SOPT_ERROR_GENERIC(char *comment);
+extern inline void SOPT_ERROR_MEM_ALLOC_CHECK(void *pointer);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

@@ -7,18 +7,22 @@
 
 #include <sopt/logging.h>
 #include <sopt/maths.h>
+#include <sopt/positive_quadrant.h>
 #include <sopt/relative_variation.h>
+#include <sopt/reweighted.h>
 #include <sopt/sampling.h>
 #include <sopt/sdmm.h>
 #include <sopt/types.h>
-#include <sopt/wavelets.h>
 #include <sopt/utilities.h>
+#include <sopt/wavelets.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
 #include <tools_for_tests/directories.h>
 #include <tools_for_tests/tiffwrappers.h>
 
-// \min_{x} ||\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
+// \min_{x} ||W_j\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
+// with W_j = ||\Psi^Tx_{j-1}||_1
+// By iterating this algorithm, we can approximate L0 from L1.
 int main(int argc, char const **argv) {
   // Some typedefs for simplicity
   typedef double Scalar;
@@ -106,21 +110,41 @@ int main(int argc, char const **argv) {
             // x in positive quadrant
             .append(sopt::proximal::positive_quadrant<Scalar>);
 
-  SOPT_TRACE("Allocating result vector");
-  Vector result(image.size());
-  SOPT_TRACE("Starting SDMM");
-  auto const diagnostic = sdmm(result, Vector::Zero(image.size()));
-  SOPT_TRACE("SDMM returned {}", diagnostic.good);
+  SOPT_TRACE("Creating the reweighted algorithm");
+  auto const posq = positive_quadrant(sdmm);
+  typedef std::remove_const<decltype(posq)>::type t_PosQuadSDMM;
+  auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
+  // Sets weight after each sdmm iteration.
+  // In practice, this means replacing the proximal of the l1 objective function.
+  auto set_weights = [](t_PosQuadSDMM &sdmm, Vector const &weights) {
+    sdmm.algorithm().proximals(0) = [weights](Vector &out, Scalar gamma, Vector const &x) {
+      out = sopt::soft_threshhold(x, gamma * weights);
+    };
+  };
+  auto call_PsiT
+      = [&psi](t_PosQuadSDMM const &, Vector const &x) -> Vector { return psi.adjoint() * x; };
+  auto const reweighted = sopt::algorithm::reweighted(posq, set_weights, call_PsiT)
+                              .itermax(5)
+                              .min_delta(min_delta)
+                              .is_converged(sopt::RelativeVariation<Scalar>(1e-3));
 
-  // diagnostic should tell us the function converged
-  // it also contains diagnostic.niters - the number of iterations, and cg_diagnostic - the
-  // diagnostic from the last call to the conjugate gradient.
-  if(not diagnostic.good)
+  SOPT_TRACE("Computing warm-start SDMM");
+  auto warm_start = sdmm(Vector::Zero(image.size()));
+  warm_start.x = sopt::positive_quadrant(warm_start.x);
+  SOPT_TRACE("SDMM returned {}", warm_start.good);
+
+  SOPT_TRACE("Computing warm-start SDMM");
+  auto const result = reweighted(warm_start);
+
+  // result should tell us the function converged
+  // it also contains result.niters - the number of iterations, and cg_diagnostic - the
+  // result from the last call to the conjugate gradient.
+  if(not result.good)
     throw std::runtime_error("Did not converge!");
 
-  SOPT_INFO("SOPT-SDMM converged in {} iterations", diagnostic.niters);
+  SOPT_INFO("SOPT-SDMM converged in {} iterations", result.niters);
   if(output != "none")
-    sopt::utilities::write_tiff(Matrix::Map(result.data(), image.rows(), image.cols()),
+    sopt::utilities::write_tiff(Matrix::Map(result.algo.x.data(), image.rows(), image.cols()),
                                 output + ".tiff");
 
   return 0;

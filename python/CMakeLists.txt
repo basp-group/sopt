@@ -1,4 +1,3 @@
-include_directories("${EXTERNAL_ROOT}/include/")
 add_subdirectory(wavelets)
 if(tests)
   add_subdirectory(tests)

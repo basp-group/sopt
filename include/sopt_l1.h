@@ -1,9 +1,11 @@
 #ifndef SOPT_L1
 #define SOPT_L1
 #include "sopt_config.h"
-
 #include "sopt_prox.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*!  
  * Data structure containing the parameters for solving the l1
  * optimisation problem using the Douglas-Rachford algorithm.
@@ -252,4 +254,7 @@ void sopt_l1_sdmm2(void *xsol,
                     double *weights_l1,
                     double *weights_l2,
                     sopt_l1_sdmmparam param);
+#ifdef __cplusplus
+}
+#endif
 #endif

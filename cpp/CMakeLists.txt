@@ -1,14 +1,5 @@
-# some common compilation flags
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-if(EIGEN3_INCLUDE_DIR)
-  include_directories(SYSTEM "${EIGEN3_INCLUDE_DIR}")
-endif()
-
 # Setup logging
 if(logging)
-  if(SPDLOG_INCLUDE_DIR)
-    include_directories(SYSTEM "${SPDLOG_INCLUDE_DIR}")
-  endif()
   set(SOPT_DO_LOGGING 1)
   set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
   set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS
@@ -24,8 +15,7 @@ list(GET version 0 Sopt_VERSION_MAJOR)
 list(GET version 1 Sopt_VERSION_MINOR)
 list(GET version 2 Sopt_VERSION_PATCH)
 
-configure_file(sopt/config.in.h "${EXTERNAL_ROOT}/include/sopt/config.h")
-include_directories("${EXTERNAL_ROOT}/include/")
+configure_file(sopt/config.in.h "${PROJECT_BINARY_DIR}/include/sopt/config.h")
 
 add_subdirectory(sopt)
 if(regressions OR examples)

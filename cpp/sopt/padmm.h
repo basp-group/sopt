@@ -13,7 +13,7 @@ namespace sopt {
 namespace algorithm {
 
 //! \brief Proximal Alternate Direction method of mutltipliers
-//! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$.
+//! \details \f$\min_{x, z} f(x) + h(z)\f$ subject to \f$Φx + z = y\f$. \f$y\f$ is a target vector.
 template <class SCALAR> class ProximalADMM {
 public:
   //! Scalar type
@@ -37,7 +37,13 @@ public:
     t_uint niters;
     //! Wether convergence was achieved
     bool good;
-    Diagnostic(t_uint niters = 0u, bool good = false) : niters(niters), good(good) {}
+    //! the residual from the last iteration
+    t_Vector residual;
+
+    Diagnostic(t_uint niters = 0u, bool good = false)
+        : niters(niters), good(good), residual(t_Vector::Zero(0)) {}
+    Diagnostic(t_uint niters, bool good, t_Vector &&residual)
+        : niters(niters), good(good), residual(std::move(residual)) {}
   };
   //! Holds result vector as well
   struct DiagnosticAndResult : public Diagnostic {
@@ -48,10 +54,12 @@ public:
   //! Setups ProximalADMM
   //! \param[in] f_proximal: proximal operator of the \f$f\f$ function.
   //! \param[in] g_proximal: proximal operator of the \f$g\f$ function
-  ProximalADMM(t_Proximal const &f_proximal, t_Proximal const &g_proximal)
+  template <class DERIVED>
+  ProximalADMM(t_Proximal const &f_proximal, t_Proximal const &g_proximal,
+               Eigen::MatrixBase<DERIVED> const &target)
       : itermax_(std::numeric_limits<t_uint>::max()), gamma_(1e-8), nu_(1),
         lagrange_update_scale_(0.9), is_converged_(), Phi_(linear_transform_identity<Scalar>()),
-        f_proximal_(f_proximal), g_proximal_(g_proximal) {}
+        f_proximal_(f_proximal), g_proximal_(g_proximal), target_(target) {}
   virtual ~ProximalADMM() {}
 
 // Macro helps define properties that can be initialized as in
@@ -94,21 +102,48 @@ public:
     g_proximal()(out, gamma, x);
   }
 
+  //! Vector of target measurements
+  t_Vector const &target() const { return target_; }
+  //! Sets the vector of target measurements
+  template <class DERIVED> ProximalADMM<DERIVED> &target(Eigen::MatrixBase<DERIVED> const &target) {
+    target_ = target;
+    return *this;
+  }
+
   //! Facilitates call to user-provided convergence function
-  bool is_converged(t_Vector const &x) const { return is_converged() and is_converged()(x); }
+  bool is_converged(t_Vector const &x) const {
+    return static_cast<bool>(is_converged()) and is_converged()(x);
+  }
 
   //! \brief Calls Proximal ADMM
   //! \param[out] out: Output vector x
-  //! \param[in] input: Target measurement vector y
-  Diagnostic operator()(t_Vector &out, t_Vector const &input) const;
+  Diagnostic operator()(t_Vector &out) const { return operator()(out, initial_guess()); }
   //! \brief Calls Proximal ADMM
-  //! \param[in] input: Target measurement vector y
-  DiagnosticAndResult operator()(t_Vector const &input) const {
+  //! \param[out] out: Output vector x
+  //! \param[in] guess: initial guess
+  Diagnostic operator()(t_Vector &out, std::tuple<t_Vector, t_Vector> const &guess) const {
+    return operator()(out, std::get<0>(guess), std::get<1>(guess));
+  }
+  //! \brief Calls Proximal ADMM
+  //! \param[in] guess: initial guess
+  DiagnosticAndResult operator()(std::tuple<t_Vector, t_Vector> const &guess) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.x, input);
+    static_cast<Diagnostic &>(result) = operator()(result.x, guess);
     return result;
   }
-
+  //! \brief Calls Proximal ADMM
+  //! \param[in] guess: initial guess
+  DiagnosticAndResult operator()() const {
+    DiagnosticAndResult result;
+    static_cast<Diagnostic &>(result) = operator()(result.x, initial_guess());
+    return result;
+  }
+  //! Makes it simple to chain different calls to PADMM
+  DiagnosticAndResult operator()(DiagnosticAndResult const &warmstart) const {
+    DiagnosticAndResult result = warmstart;
+    static_cast<Diagnostic &>(result) = operator()(result.x, warmstart.x, warmstart.residual);
+    return result;
+  }
   //! Set Φ and Φ^† using arguments that sopt::linear_transform understands
   template <class... ARGS>
   typename std::enable_if<sizeof...(ARGS) >= 1, ProximalADMM &>::type Phi(ARGS &&... args) {
@@ -116,53 +151,69 @@ public:
     return *this;
   }
 
+  //! \brief Computes initial guess for x and the residual using the targets
+  //! \details with y the vector of measurements
+  //! - x = Φ^T y / ν
+  //! - residuals = Φ x - y
+  std::tuple<t_Vector, t_Vector> initial_guess() const {
+    std::tuple<t_Vector, t_Vector> guess;
+    std::get<0>(guess) = Phi().adjoint() * target() / nu();
+    std::get<1>(guess) = Phi() * std::get<0>(guess) - target();
+    return guess;
+  }
+
 protected:
-  void initialization_step(t_Vector const &input, t_Vector &out, t_Vector &residual) const;
-  void iteration_step(t_Vector const &input, t_Vector &out, t_Vector &residual, t_Vector &lambda,
-                      t_Vector &z) const;
+  void iteration_step(t_Vector &out, t_Vector &residual, t_Vector &lambda, t_Vector &z) const;
 
   //! Checks input makes sense
-  void sanity_check(t_Vector const &) const {
-    // if((Phi().adjoint() * target()).size() != input.size())
-    //   SOPT_THROW("target, measurement operator and input vector have inconsistent sizes");
+  void sanity_check(t_Vector const &x_guess, t_Vector const &res_guess) const {
+    if((Phi().adjoint() * target()).size() != x_guess.size())
+      SOPT_THROW("target, adjoint measurement operator and input vector have inconsistent sizes");
+    if(target().size() != res_guess.size())
+      SOPT_THROW("target and residual vector have inconsistent sizes");
+    if((Phi() * x_guess).size() != target().size())
+      SOPT_THROW("target, measurement operator and input vector have inconsistent sizes");
     if(not static_cast<bool>(is_converged()))
       SOPT_WARN("No convergence function was provided: algorithm will run for {} steps", itermax());
   }
+
+  //! \brief Calls Proximal ADMM
+  //! \param[out] out: Output vector x
+  //! \param[in] guess: initial guess
+  //! \param[in] residuals: initial residuals
+  Diagnostic operator()(t_Vector &out, t_Vector const &guess, t_Vector const &res) const;
+
+  //! Vector of measurements
+  t_Vector target_;
 };
 
 template <class SCALAR>
-void ProximalADMM<SCALAR>::initialization_step(t_Vector const &input, t_Vector &out,
-                                               t_Vector &residual) const {
-  out = Phi().adjoint() * input / nu();
-  residual = Phi() * out - input;
-}
-template <class SCALAR>
-void ProximalADMM<SCALAR>::iteration_step(t_Vector const &input, t_Vector &out, t_Vector &residual,
-                                          t_Vector &lambda, t_Vector &z) const {
+void ProximalADMM<SCALAR>::iteration_step(t_Vector &out, t_Vector &residual, t_Vector &lambda,
+                                          t_Vector &z) const {
   g_proximal(z, gamma(), -lambda - residual);
   f_proximal(out, gamma() / nu(), out - Phi().adjoint() * (residual + lambda + z) / nu());
-  residual = Phi() * out - input;
+  residual = Phi() * out - target();
   lambda += lagrange_update_scale() * (residual + z);
 }
 
 template <class SCALAR>
 typename ProximalADMM<SCALAR>::Diagnostic ProximalADMM<SCALAR>::
-operator()(t_Vector &out, t_Vector const &input) const {
+operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) const {
 
   SOPT_INFO("Performing Proximal ADMM");
-  sanity_check(input);
+  sanity_check(x_guess, res_guess);
 
-  t_Vector lambda = t_Vector::Zero(input.size()), z = t_Vector::Zero(input.size()),
-           residual = t_Vector::Zero(input.size());
-
-  SOPT_NOTICE("    - Initialization");
-  initialization_step(input, out, residual);
+  t_Vector lambda = t_Vector::Zero(target().size());
+  t_Vector z = t_Vector::Zero(target().size());
+  t_Vector residual = res_guess;
+  out = x_guess;
 
   for(t_uint niters(0); niters < itermax(); ++niters) {
-    SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
-    iteration_step(input, out, residual, lambda, z);
+    SOPT_NOTICE("    - Iteration {}/{}", niters, itermax());
+    iteration_step(out, residual, lambda, z);
+    SOPT_NOTICE("      - Sum of residuals: {}", residual.array().abs().sum());
 
-    if(static_cast<bool>(is_converged()) and is_converged(out)) {
+    if(is_converged(out)) {
       SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
       return {niters, true};
     }
@@ -170,7 +221,7 @@ operator()(t_Vector &out, t_Vector const &input) const {
   // check function exists, otherwise, don't know if convergence is meaningful
   if(static_cast<bool>(is_converged()))
     SOPT_WARN("    - did not converge within {} iterations", itermax());
-  return {itermax(), false};
+  return {itermax(), false, std::move(residual)};
 }
 }
 } /* sopt::algorithm */

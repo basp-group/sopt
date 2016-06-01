@@ -9,8 +9,11 @@
 #ifndef SOPT_L2
 #define SOPT_L2
 #include "sopt_config.h"
-
 #include "sopt_prox.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*!  
  * Data structure containing the parameters for solving the weighted l2
@@ -60,4 +63,7 @@ void sopt_l2_solver(void *xsol,
                     double *weights,
                     sopt_wl2_param param);
 
+#ifdef __cplusplus
+}
+#endif
 #endif

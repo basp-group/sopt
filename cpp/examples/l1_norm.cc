@@ -1,5 +1,5 @@
 #include <sopt/types.h>
-#include <sopt/utility.h>
+#include <sopt/maths.h>
 
 int main(int, char const **) {
   sopt::Image<std::complex<int>> input(2, 2), weights(2, 2);

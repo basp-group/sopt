@@ -12,9 +12,9 @@ if(NOT NOEXPORT)
 endif()
 
 # First in binary dir
-set(ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/cpp" "${EXTERNAL_ROOT}/include")
+set(ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/cpp" "${PROJECT_BINARY_DIR}/include")
 if(Csopt)
-  list(APPEND ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include")
+  list(APPEND ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include/sopt")
 endif()
 configure_File(cmake_files/SoptConfig.in.cmake
     "${PROJECT_BINARY_DIR}/SoptConfig.cmake" @ONLY
@@ -41,8 +41,5 @@ install(FILES
     COMPONENT dev
 )
 
-install(EXPORT SoptCTargets
-    DESTINATION share/cmake/sopt
-    COMPONENT dev
-)
-
+install(EXPORT SoptCTargets DESTINATION share/cmake/sopt COMPONENT dev)
+install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)

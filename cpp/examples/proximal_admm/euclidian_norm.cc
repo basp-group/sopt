@@ -27,7 +27,7 @@ int main(int, char const **) {
   auto prox_g0 = sopt::proximal::translate(sopt::proximal::EuclidianNorm(), -target0);
   auto prox_g1 = sopt::proximal::translate(sopt::proximal::EuclidianNorm(), -target1);
 
-  auto padmm = sopt::algorithm::ProximalADMM<t_Scalar>(prox_g0, prox_g1)
+  auto padmm = sopt::algorithm::ProximalADMM<t_Scalar>(prox_g0, prox_g1, t_Vector::Zero(N))
                    .itermax(5000)
                    .is_converged(sopt::RelativeVariation<t_Scalar>(1e-12))
                    .gamma(0.01)
@@ -35,7 +35,9 @@ int main(int, char const **) {
                    // padmm.
                    .Phi(-t_Matrix::Identity(N, N));
 
-  auto const diagnostic = padmm(t_Vector::Zero(N));
+  // Alternatively, padmm can be called with a tuple (x, residual) as argument
+  // Here, we default to (Φ^Ty/ν, ΦΦ^Ty/ν - y)
+  auto const diagnostic = padmm();
 
   // diagnostic should tell us the function converged
   // it also contains diagnostic.niters - the number of iterations, and cg_diagnostic - the

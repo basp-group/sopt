@@ -1,3 +1,3 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-add_example(euclidian_norm DEPENDS lookup_dependencies LABELS sdmm)
-add_example(inpainting LIBRARIES sopt tools_for_tests)
+add_example(euclidian_norm LIBRARIES sopt LABELS sdmm)
+add_example(inpainting LIBRARIES sopt tools_for_tests LABELS sdmm)
+add_example(reweighted LIBRARIES sopt tools_for_tests LABELS sdmm)

@@ -7,7 +7,7 @@
 #include "sopt/config.h"
 #include "sopt/exception.h"
 #include "sopt/types.h"
-#include "sopt/utility.h"
+#include "sopt/maths.h"
 
 namespace sopt {
 namespace details {
@@ -102,10 +102,11 @@ public:
   std::array<t_int, 3> const &sizes() const { return sizes_; }
 
   //! Output vector size for a input with `xsize` elements
-  t_uint rows(t_uint xsize) const {
+  template <class T>
+  typename std::enable_if<std::is_integral<T>::value, T>::type rows(T xsize) const {
     auto const result = (static_cast<t_int>(xsize) * sizes_[0]) / sizes_[1] + sizes_[2];
     assert(result > 0);
-    return static_cast<t_uint>(result);
+    return static_cast<T>(result);
   }
 
 protected:

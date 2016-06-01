@@ -60,22 +60,22 @@ void indirect_vector(benchmark::State &state) {
 auto const n = 64;
 auto const N = 256 * 3;
 
-BENCHMARK_TEMPLATE(direct_matrix, sopt::t_complex, 1, 1)->RangePair(n, N, n, N);
-BENCHMARK_TEMPLATE(direct_matrix, sopt::t_real, 1, 1)->RangePair(n, N, n, N);
-BENCHMARK_TEMPLATE(direct_matrix, sopt::t_complex, 10, 1)->RangePair(n, N, n, N);
+BENCHMARK_TEMPLATE(direct_matrix, sopt::t_complex, 1, 1)->RangePair(n, N, n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(direct_matrix, sopt::t_real, 1, 1)->RangePair(n, N, n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(direct_matrix, sopt::t_complex, 10, 1)->RangePair(n, N, n, N)->UseRealTime();
 
-BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 1, 1)->Range(n, N);
-BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 10, 1)->Range(n, N);
-BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 1, 2)->Range(n, N);
-BENCHMARK_TEMPLATE(direct_vector, sopt::t_real, 1, 1)->Range(n, N);
+BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 1, 1)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 10, 1)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(direct_vector, sopt::t_complex, 1, 2)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(direct_vector, sopt::t_real, 1, 1)->Range(n, N)->UseRealTime();
 
-BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_complex, 1, 1)->RangePair(n, N, n, N);
-BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_real, 1, 1)->RangePair(n, N, n, N);
-BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_complex, 10, 1)->RangePair(n, N, n, N);
+BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_complex, 1, 1)->RangePair(n, N, n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_real, 1, 1)->RangePair(n, N, n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(indirect_matrix, sopt::t_complex, 10, 1)->RangePair(n, N, n, N)->UseRealTime();
 
-BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 1, 1)->Range(n, N);
-BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 10, 1)->Range(n, N);
-BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 1, 2)->Range(n, N);
-BENCHMARK_TEMPLATE(indirect_vector, sopt::t_real, 1, 1)->Range(n, N);
+BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 1, 1)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 10, 1)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(indirect_vector, sopt::t_complex, 1, 2)->Range(n, N)->UseRealTime();
+BENCHMARK_TEMPLATE(indirect_vector, sopt::t_real, 1, 1)->Range(n, N)->UseRealTime();
 
 BENCHMARK_MAIN()

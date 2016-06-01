@@ -17,9 +17,24 @@ public:
 #ifndef SOPT_HAS_NOT_USING
   // Constructors
   using std::vector<Wavelet>::vector;
+#else
+  //! Default constructor
+  SARA() : std::vector<Wavelet>(){};
 #endif
-  //! Easier constructor
-  SARA(std::initializer_list<std::tuple<std::string, t_uint>> const &init);
+  //! Easy constructor
+  SARA(std::initializer_list<std::tuple<std::string, t_uint>> const &init)
+      : SARA(init.begin(), init.end()) {}
+  //! Construct from any iterator over a (std:string, t_uint) tuple
+  template <class ITERATOR,
+            class T = typename std::
+                enable_if<std::is_convertible<decltype(std::get<0>(*std::declval<ITERATOR>())),
+                                              std::string>::value
+                          and std::is_convertible<decltype(std::get<1>(*std::declval<ITERATOR>())),
+                                                  t_uint>::value>::type>
+  SARA(ITERATOR first, ITERATOR last) {
+    for(; first != last; ++first)
+      emplace_back(std::get<0>(*first), std::get<1>(*first));
+  }
   //! Destructor
   virtual ~SARA() {}
 
@@ -87,7 +102,9 @@ public:
   }
 
   //! Adds a wavelet of specific type
-  void emplace_back(std::string const &name, t_uint levels);
+  void emplace_back(std::string const &name, t_uint nlevels) {
+    std::vector<Wavelet>::emplace_back(factory(name, nlevels));
+  }
 };
 
 #define SOPT_WAVELET_ERROR_MACRO(INPUT)                                                            \
