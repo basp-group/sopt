@@ -27,9 +27,8 @@ install(FILES ${headers} DESTINATION include/sopt)
 install(FILES ${wavelet_headers} DESTINATION include/sopt/wavelets)
 install(TARGETS sopt
   EXPORT SoptCPPTargets
+  DESTINATION share/cmake/sopt
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-  INCLUDES DESTINATION include/sopt
-  DESTINATION share/cmake/sopt
-  COMPONENT dev
+  INCLUDES DESTINATION include
 )
