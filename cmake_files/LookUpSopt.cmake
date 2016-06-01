@@ -22,7 +22,7 @@ lookup_package(spdlog)
 
 # write subset of variables to cache for sopt to use
 include(PassonVariables)
-passon_variables(Sopt
+passon_variables(Lookup-Sopt
   FILENAME "${EXTERNAL_ROOT}/src/SoptVariables.cmake"
   PATTERNS
       "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*"
@@ -32,7 +32,7 @@ passon_variables(Sopt
       "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
 )
 ExternalProject_Add(
-    Sopt
+    Lookup-Sopt
     PREFIX ${EXTERNAL_ROOT}
     GIT_REPOSITORY ${Sopt_GIT_REPOSITORY}
     GIT_TAG ${Sopt_GIT_TAG}
@@ -47,10 +47,10 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
-add_recursive_cmake_step(Sopt DEPENDEES install)
+add_recursive_cmake_step(Lookup-Sopt DEPENDEES install)
 if(TARGET Eigen3)
-  add_dependencies(Sopt Eigen3)
+  add_dependencies(Lookup-Sopt Eigen3)
 endif()
 if(TARGET spdlog)
-  add_dependencies(Sopt spdlog)
+  add_dependencies(Lookup-Sopt spdlog)
 endif()
