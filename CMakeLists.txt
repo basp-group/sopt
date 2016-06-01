@@ -30,7 +30,9 @@ endif()
 # Add c++11 stuff
 include(AddCPP11Flags)
 include(CheckCXX11Features)
-include(AddPyTest)
+if(tests AND python)
+  include(AddPyTest)
+endif()
 cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 include(compilations)
 
