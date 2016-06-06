@@ -111,6 +111,8 @@ int main(int argc, char const **argv) {
             .append(sopt::proximal::positive_quadrant<Scalar>);
 
   SOPT_TRACE("Creating the reweighted algorithm");
+  // positive_quadrant projects the result of SDMM on the positive quadrant.
+  // This follows the reweighted algorithm in the original C implementation.
   auto const posq = positive_quadrant(sdmm);
   typedef std::remove_const<decltype(posq)>::type t_PosQuadSDMM;
   auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
