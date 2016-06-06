@@ -32,6 +32,7 @@ public:
   typedef typename ProximalADMM<SCALAR>::t_Vector t_Vector;
   typedef typename ProximalADMM<SCALAR>::t_LinearTransform t_LinearTransform;
   typedef typename ProximalADMM<SCALAR>::t_Proximal t_Proximal;
+  typedef typename ProximalADMM<SCALAR>::t_IsConverged t_IsConverged;
   using ProximalADMM<SCALAR>::initial_guess;
 
   //! Values indicating how the algorithm ran
