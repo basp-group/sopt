@@ -237,7 +237,7 @@ public:
   //! \param[in] warm_start: uses result from previous run to restart the calculations
   DiagnosticAndResult operator()(DiagnosticAndResult const &warm_start) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.x, {warm_start.x, warm_start.residual});
+    static_cast<Diagnostic &>(result) = operator()(result.x, warm_start.x, warm_start.residual);
     return result;
   }
   //! \brief Calls Proximal ADMM for L1 and L2 ball
