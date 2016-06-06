@@ -297,7 +297,7 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
   l1_diagnostic = {0, 0, 0, false};
 
   SOPT_NOTICE("    - Initialization");
-  std::pair<Real, Real> objectives{sopt::l1_norm(residual, l1_proximal_weights()), 0};
+  std::pair<Real, Real> objectives{sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights()), 0};
 
   bool converged = false;
   for(t_uint niters(0); niters < itermax(); ++niters) {
@@ -306,7 +306,7 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
 
     // print-out stuff
     objectives.second = objectives.first;
-    objectives.first = sopt::l1_norm(residual, l1_proximal_weights());
+    objectives.first = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
     t_real const relative_objective
         = std::abs(objectives.first - objectives.second) / objectives.first;
     auto const residual_norm = sopt::l2_norm(residual, l2ball_proximal_weights());
