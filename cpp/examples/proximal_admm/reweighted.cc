@@ -15,6 +15,7 @@
 #include <sopt/types.h>
 #include <sopt/utilities.h>
 #include <sopt/wavelets.h>
+#include <sopt/wavelets/sara.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
 #include <tools_for_tests/directories.h>
@@ -62,8 +63,10 @@ int main(int argc, char const **argv) {
       = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
   SOPT_TRACE("Initializing wavelets");
-  auto const wavelet = sopt::wavelets::factory("DB4", 4);
-  auto const psi = sopt::linear_transform<Scalar>(wavelet, image.rows(), image.cols());
+  sopt::wavelets::SARA const sara{std::make_tuple(std::string{"DB3"}, 1u),
+                                  std::make_tuple(std::string{"DB1"}, 2u),
+                                  std::make_tuple(std::string{"DB1"}, 3u)};
+  auto const psi = sopt::linear_transform<Scalar>(sara, image.rows(), image.cols());
 
   SOPT_TRACE("Computing proximal-ADMM parameters");
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
@@ -102,6 +105,8 @@ int main(int argc, char const **argv) {
                          .Phi(sampling);
 
   SOPT_TRACE("Creating the reweighted algorithm");
+  // positive_quadrant projects the result of PADMM on the positive quadrant.
+  // This follows the reweighted algorithm for SDMM
   auto const posq = sopt::algorithm::positive_quadrant(padmm);
   auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
   // Sets weight after each padmm iteration.
