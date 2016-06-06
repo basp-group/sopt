@@ -321,7 +321,7 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
     auto const rel = relative_variation() <= 0e0 or relative_objective < relative_variation();
     if(user and res and rel) {
       SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
-      return Diagnostic{niters, true, l1_diagnostic};
+      return Diagnostic{niters, true, l1_diagnostic, std::move(residual)};
     }
   }
 
