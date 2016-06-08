@@ -32,6 +32,7 @@ public:
   typedef typename ProximalADMM<SCALAR>::t_Vector t_Vector;
   typedef typename ProximalADMM<SCALAR>::t_LinearTransform t_LinearTransform;
   typedef typename ProximalADMM<SCALAR>::t_Proximal t_Proximal;
+  typedef typename ProximalADMM<SCALAR>::t_IsConverged t_IsConverged;
   using ProximalADMM<SCALAR>::initial_guess;
 
   //! Values indicating how the algorithm ran
@@ -236,7 +237,7 @@ public:
   //! \param[in] warm_start: uses result from previous run to restart the calculations
   DiagnosticAndResult operator()(DiagnosticAndResult const &warm_start) const {
     DiagnosticAndResult result;
-    static_cast<Diagnostic &>(result) = operator()(result.x, {warm_start.x, warm_start.residual});
+    static_cast<Diagnostic &>(result) = operator()(result.x, warm_start.x, warm_start.residual);
     return result;
   }
   //! \brief Calls Proximal ADMM for L1 and L2 ball
@@ -296,15 +297,16 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
   l1_diagnostic = {0, 0, 0, false};
 
   SOPT_NOTICE("    - Initialization");
-  std::pair<Real, Real> objectives{sopt::l1_norm(residual, l1_proximal_weights()), 0};
+  std::pair<Real, Real> objectives{sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights()), 0};
 
+  bool converged = false;
   for(t_uint niters(0); niters < itermax(); ++niters) {
     SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
     ProximalADMM<Scalar>::iteration_step(out, residual, lambda, z);
 
     // print-out stuff
     objectives.second = objectives.first;
-    objectives.first = sopt::l1_norm(residual, l1_proximal_weights());
+    objectives.first = sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights());
     t_real const relative_objective
         = std::abs(objectives.first - objectives.second) / objectives.first;
     auto const residual_norm = sopt::l2_norm(residual, l2ball_proximal_weights());
@@ -318,14 +320,16 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
     auto const user = (not has_user_convergence) or is_converged(out);
     auto const res = residual_convergence() <= 0e0 or residual_norm < residual_convergence();
     auto const rel = relative_variation() <= 0e0 or relative_objective < relative_variation();
-    if(user and res and rel) {
+    converged = user and rel and res;
+    if(converged) {
       SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
-      return Diagnostic{niters, true, l1_diagnostic};
+      break;
     }
   }
 
-  SOPT_WARN("    - did not converge within {} iterations", itermax());
-  return {itermax(), false, l1_diagnostic, std::move(residual)};
+  if(not converged)
+    SOPT_WARN("    - did not converge within {} iterations", itermax());
+  return {itermax(), converged, l1_diagnostic, std::move(residual)};
 }
 }
 } /* sopt::algorithm */

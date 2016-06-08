@@ -1,36 +1,35 @@
 #include <algorithm>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <vector>
-#include <iostream>
 
+#include <sopt/imaging_padmm.h>
+#include <sopt/positive_quadrant.h>
 #include <sopt/logging.h>
 #include <sopt/maths.h>
-#include <sopt/positive_quadrant.h>
 #include <sopt/relative_variation.h>
 #include <sopt/reweighted.h>
 #include <sopt/sampling.h>
-#include <sopt/sdmm.h>
 #include <sopt/types.h>
 #include <sopt/utilities.h>
 #include <sopt/wavelets.h>
+#include <sopt/wavelets/sara.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
 #include <tools_for_tests/directories.h>
 #include <tools_for_tests/tiffwrappers.h>
 
-// \min_{x} ||W_j\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
-// with W_j = ||\Psi^Tx_{j-1}||_1
-// By iterating this algorithm, we can approximate L0 from L1.
+// \min_{x} ||\Psi^Tx||_1 \quad \mbox{s.t.} \quad ||y - Ax||_2 < \epsilon and x \geq 0
 int main(int argc, char const **argv) {
   // Some typedefs for simplicity
   typedef double Scalar;
   // Column vector - linear algebra - A * x is a matrix-vector multiplication
-  // type expected by SDMM
+  // type expected by ProximalADMM
   typedef sopt::Vector<Scalar> Vector;
   // Matrix - linear algebra - A * x is a matrix-vector multiplication
-  // type expected by SDMM
+  // type expected by ProximalADMM
   typedef sopt::Matrix<Scalar> Matrix;
   // Image - 2D array - A * x is a coefficient-wise multiplication
   // Type expected by wavelets and image write/read functions
@@ -64,10 +63,12 @@ int main(int argc, char const **argv) {
       = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
   SOPT_TRACE("Initializing wavelets");
-  auto const wavelet = sopt::wavelets::factory("DB4", 4);
-  auto const psi = sopt::linear_transform<Scalar>(wavelet, image.rows(), image.cols());
+  sopt::wavelets::SARA const sara{std::make_tuple(std::string{"DB3"}, 1u),
+                                  std::make_tuple(std::string{"DB1"}, 2u),
+                                  std::make_tuple(std::string{"DB1"}, 3u)};
+  auto const psi = sopt::linear_transform<Scalar>(sara, image.rows(), image.cols());
 
-  SOPT_TRACE("Computing sdmm parameters");
+  SOPT_TRACE("Computing proximal-ADMM parameters");
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
   auto const snr = 30.0;
   auto const sigma = y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
@@ -85,68 +86,51 @@ int main(int argc, char const **argv) {
                                 "dirty_" + output + ".tiff");
   }
 
-  SOPT_TRACE("Initializing convergence function");
-  auto relvar = sopt::RelativeVariation<Scalar>(5e-2);
-  auto convergence = [&y, &sampling, &psi, &relvar](sopt::Vector<Scalar> const &x) -> bool {
-    SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
-    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
-    SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
-    return relvar(x);
-  };
-
-  SOPT_TRACE("Creating SDMM Functor");
-  auto const sdmm
-      = sopt::algorithm::SDMM<Scalar>()
-            .itermax(3000)
-            .gamma(0.1)
-            .conjugate_gradient(200, 1e-8)
-            .is_converged(convergence)
-            // Any number of (proximal g_i, L_i) pairs can be added
-            // ||Psi^dagger x||_1
-            .append(sopt::proximal::l1_norm<Scalar>, psi.adjoint(), psi)
-            // ||y - A x|| < epsilon
-            .append(sopt::proximal::translate(sopt::proximal::L2Ball<Scalar>(epsilon), -y),
-                    sampling)
-            // x in positive quadrant
-            .append(sopt::proximal::positive_quadrant<Scalar>);
+  SOPT_TRACE("Creating proximal-ADMM Functor");
+  auto const padmm = sopt::algorithm::ImagingProximalADMM<Scalar>(y)
+                         .itermax(500)
+                         .gamma(1e-1)
+                         .relative_variation(5e-4)
+                         .l2ball_proximal_epsilon(epsilon)
+                         .tight_frame(false)
+                         .l1_proximal_tolerance(1e-2)
+                         .l1_proximal_nu(1)
+                         .l1_proximal_itermax(50)
+                         .l1_proximal_positivity_constraint(true)
+                         .l1_proximal_real_constraint(true)
+                         .residual_convergence(epsilon * 1.001)
+                         .lagrange_update_scale(0.9)
+                         .nu(1e0)
+                         .Psi(psi)
+                         .Phi(sampling);
 
   SOPT_TRACE("Creating the reweighted algorithm");
-  // positive_quadrant projects the result of SDMM on the positive quadrant.
-  // This follows the reweighted algorithm in the original C implementation.
-  auto const posq = positive_quadrant(sdmm);
-  typedef std::remove_const<decltype(posq)>::type t_PosQuadSDMM;
+  // positive_quadrant projects the result of PADMM on the positive quadrant.
+  // This follows the reweighted algorithm for SDMM
+  auto const posq = sopt::algorithm::positive_quadrant(padmm);
   auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
-  // Sets weight after each sdmm iteration.
+  // Sets weight after each padmm iteration.
   // In practice, this means replacing the proximal of the l1 objective function.
-  auto set_weights = [](t_PosQuadSDMM &sdmm, Vector const &weights) {
-    sdmm.algorithm().proximals(0) = [weights](Vector &out, Scalar gamma, Vector const &x) {
-      out = sopt::soft_threshhold(x, gamma * weights);
-    };
+  auto set_weights = [](std::remove_const<decltype(posq)>::type &posq, Vector const &weights) {
+    posq.algorithm().l1_proximal_weights(weights);
   };
-  auto call_PsiT
-      = [&psi](t_PosQuadSDMM const &, Vector const &x) -> Vector { return psi.adjoint() * x; };
+  auto call_PsiT = [](decltype(posq) const &posq, Vector const &x) -> Vector {
+    return posq.algorithm().Psi().adjoint() * x;
+  };
   auto const reweighted = sopt::algorithm::reweighted(posq, set_weights, call_PsiT)
                               .itermax(5)
                               .min_delta(min_delta)
                               .is_converged(sopt::RelativeVariation<Scalar>(1e-3));
 
-  SOPT_TRACE("Computing warm-start SDMM");
-  auto warm_start = sdmm(Vector::Zero(image.size()));
-  warm_start.x = sopt::positive_quadrant(warm_start.x);
-  SOPT_TRACE("SDMM returned {}", warm_start.good);
+  SOPT_TRACE("Starting proximal-ADMM");
+  // Alternatively, padmm can be called with a tuple (x, residual) as argument
+  // Here, we default to (Φ^Ty/ν, ΦΦ^Ty/ν - y)
+  auto const diagnostic = reweighted();
+  SOPT_INFO("proximal-ADMM returned {}", diagnostic.good);
 
-  SOPT_TRACE("Computing warm-start SDMM");
-  auto const result = reweighted(warm_start);
-
-  // result should tell us the function converged
-  // it also contains result.niters - the number of iterations, and cg_diagnostic - the
-  // result from the last call to the conjugate gradient.
-  if(not result.good)
-    throw std::runtime_error("Did not converge!");
-
-  SOPT_INFO("SOPT-SDMM converged in {} iterations", result.niters);
+  SOPT_INFO("SOPT-proximal-ADMM converged in {} iterations", diagnostic.niters);
   if(output != "none")
-    sopt::utilities::write_tiff(Matrix::Map(result.algo.x.data(), image.rows(), image.cols()),
+    sopt::utilities::write_tiff(Matrix::Map(diagnostic.algo.x.data(), image.rows(), image.cols()),
                                 output + ".tiff");
 
   return 0;

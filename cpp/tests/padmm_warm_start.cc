@@ -12,7 +12,7 @@ typedef sopt::Vector<Scalar> t_Vector;
 typedef sopt::Matrix<Scalar> t_Matrix;
 
 auto const N = 30;
-SCENARIO("ProximalADMM with warm start", "[sdmm][integration]") {
+SCENARIO("ProximalADMM with warm start", "[padmm][integration]") {
   using namespace sopt;
 
   GIVEN("A ProximalADMM instance with its input") {
