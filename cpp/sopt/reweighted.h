@@ -33,15 +33,17 @@ public:
   typedef typename Algorithm::Scalar Scalar;
   //! Real type
   typedef typename real_type<Scalar>::type Real;
+  //! Weight vector type
+  typedef Vector<Real> WeightVector;
   //! Type of then underlying vectors
-  typedef typename Algorithm::t_Vector t_Vector;
+  typedef typename Algorithm::t_Vector XVector;
   //! Type of the convergence function
   typedef typename Algorithm::t_IsConverged t_IsConverged;
   //! \brief Type of the function that is subject to reweighting
   //! \details E.g. \f$Ψ^Tx\f$. Note that l1-norm is not applied here.
-  typedef std::function<t_Vector(Algorithm const &, t_Vector const &)> t_Reweightee;
+  typedef std::function<XVector(Algorithm const &, XVector const &)> t_Reweightee;
   //! Type of the function to set weights
-  typedef std::function<void(Algorithm &, t_Vector const &)> t_SetWeights;
+  typedef std::function<void(Algorithm &, WeightVector const &)> t_SetWeights;
   //! Function to update delta at each turn
   typedef std::function<Real(Real)> t_DeltaUpdate;
 
@@ -52,11 +54,11 @@ public:
     //! Wether convergence was achieved
     bool good;
     //! Weights at last iteration
-    t_Vector weights;
+    WeightVector weights;
     //! Result from last inner loop
     typename Algorithm::DiagnosticAndResult algo;
     //! Default construction
-    ReweightedResult() : niters(0), good(false), weights(t_Vector::Ones(1)), algo() {}
+    ReweightedResult() : niters(0), good(false), weights(WeightVector::Ones(1)), algo() {}
   };
 
   Reweighted(Algorithm const &algo, t_SetWeights const &setweights, t_Reweightee const &reweightee)
@@ -87,7 +89,7 @@ public:
     return *this;
   }
   //! Sets the weights on the underlying algorithm
-  void set_weights(Algorithm &algo, t_Vector const &weights) const {
+  void set_weights(Algorithm &algo, WeightVector const &weights) const {
     return set_weights()(algo, weights);
   }
 
@@ -100,7 +102,7 @@ public:
   //! Function that needs to be reweighted
   t_Reweightee const &reweightee() const { return reweightee_; }
   //! Forwards to the reweightee function
-  t_Vector reweightee(t_Vector const &x) const { return reweightee()(algorithm(), x); }
+  XVector reweightee(XVector const &x) const { return reweightee()(algorithm(), x); }
 
   //! Maximum number of reweighted iterations
   t_uint itermax() const { return itermax_; }
@@ -120,7 +122,7 @@ public:
     is_converged_ = convergence;
     return *this;
   }
-  bool is_converged(t_Vector const &x) const { return is_converged() ? is_converged()(x) : false; }
+  bool is_converged(XVector const &x) const { return is_converged() ? is_converged()(x) : false; }
 
   //! \brief Performs reweighting
   //! \details This overload will compute an initial result without initial weights set to one.
@@ -170,14 +172,14 @@ typename std::
               typename Reweighted<ALGORITHM>::ReweightedResult>::type
     Reweighted<ALGORITHM>::operator()(INPUT const &input) const {
   Algorithm algo = algorithm();
-  set_weights(algo, t_Vector::Ones(1));
+  set_weights(algo, WeightVector::Ones(1));
   return operator()(algo(input));
 }
 
 template <class ALGORITHM>
 typename Reweighted<ALGORITHM>::ReweightedResult Reweighted<ALGORITHM>::operator()() const {
   Algorithm algo = algorithm();
-  set_weights(algo, t_Vector::Ones(1));
+  set_weights(algo, WeightVector::Ones(1));
   return operator()(algo());
 }
 
@@ -186,7 +188,7 @@ typename Reweighted<ALGORITHM>::ReweightedResult Reweighted<ALGORITHM>::
 operator()(typename Algorithm::DiagnosticAndResult const &warm) const {
   ReweightedResult result;
   result.algo = warm;
-  result.weights = t_Vector::Ones(1);
+  result.weights = WeightVector::Ones(1);
   return operator()(result);
 }
 
