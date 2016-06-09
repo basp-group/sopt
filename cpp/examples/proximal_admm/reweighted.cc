@@ -6,9 +6,9 @@
 #include <vector>
 
 #include <sopt/imaging_padmm.h>
-#include <sopt/positive_quadrant.h>
 #include <sopt/logging.h>
 #include <sopt/maths.h>
+#include <sopt/positive_quadrant.h>
 #include <sopt/relative_variation.h>
 #include <sopt/reweighted.h>
 #include <sopt/sampling.h>
@@ -107,20 +107,10 @@ int main(int argc, char const **argv) {
   SOPT_TRACE("Creating the reweighted algorithm");
   // positive_quadrant projects the result of PADMM on the positive quadrant.
   // This follows the reweighted algorithm for SDMM
-  auto const posq = sopt::algorithm::positive_quadrant(padmm);
   auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
-  // Sets weight after each padmm iteration.
-  // In practice, this means replacing the proximal of the l1 objective function.
-  auto set_weights = [](std::remove_const<decltype(posq)>::type &posq, Vector const &weights) {
-    posq.algorithm().l1_proximal_weights(weights);
-  };
-  auto call_PsiT = [](decltype(posq) const &posq, Vector const &x) -> Vector {
-    return posq.algorithm().Psi().adjoint() * x;
-  };
-  auto const reweighted = sopt::algorithm::reweighted(posq, set_weights, call_PsiT)
-                              .itermax(5)
-                              .min_delta(min_delta)
-                              .is_converged(sopt::RelativeVariation<Scalar>(1e-3));
+  auto const reweighted
+      = sopt::algorithm::reweighted(padmm).itermax(5).min_delta(min_delta).is_converged(
+          sopt::RelativeVariation<Scalar>(1e-3));
 
   SOPT_TRACE("Starting proximal-ADMM");
   // Alternatively, padmm can be called with a tuple (x, residual) as argument
