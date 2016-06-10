@@ -28,7 +28,7 @@ target_include_directories(sopt PUBLIC
 
 if(TIFF_FOUND)
   target_link_libraries(sopt ${TIFF_LIBRARY})
-  target_include_directories(sopt SYSTEM PUBLIC ${TIFF_LIBRARY})
+  target_include_directories(sopt SYSTEM PUBLIC ${TIFF_INCLUDE_DIR})
 endif()
 # Add spdlog as direct dependency if not downloaded
 if(SPDLOG_INCLUDE_DIR AND NOT spdlog_BUILT_AS_EXTERNAL_PROJECT)
