@@ -27,6 +27,8 @@ sopt::algorithm::SDMM<Scalar> create_sdmm(sopt::LinearTransform<t_Vector> const 
   using namespace sopt;
   auto weighted_l1_norm
       = [&weights](t_Vector &out, real_type<Scalar>::type gamma, t_Vector const &x) {
+          assert(gamma > 1e-12);
+          assert((weights.array() > 1e-12).all());
           out = soft_threshhold(x, gamma * weights);
         };
   return algorithm::SDMM<Scalar>()
@@ -67,7 +69,8 @@ TEST_CASE("Compare SDMMS", "") {
   // Create C bindings for C++ operators
   CData<Scalar> const sampling_data{image.size(), y.size(), sampling, 0, 0};
   CData<Scalar> const psi_data{image.size(), image.size(), psi, 0, 0};
-  t_Vector const weights = t_Vector::Random((psi * t_Vector::Zero(image.size())).size());
+  t_Vector const weights
+      = t_Vector::Random((psi * t_Vector::Zero(image.size())).size()).array().abs();
 
   // Try increasing number of iterations and check output of c and c++ algorithms are the same
   for(t_uint i : {1, 2, 5, 10}) {
