@@ -20,13 +20,10 @@ template <class TYPE> void function_l1p(benchmark::State &state){
     .Psi(Psi)
     .weights(weights);
 
-  // gamma should be sufficiently small. Or is it nu should not be 1?
-  // In any case, this seems to work.
   Real const gamma = 1e-2 / Psi.array().abs().sum();
   auto output = sopt::Vector<TYPE>::Zero(N).eval();
-  auto const result = l1(gamma, input);
   while(state.KeepRunning())
-    l1(gamma, input);
+    l1(output, gamma, input);
   state.SetBytesProcessed(int64_t(state.iterations()) * int64_t(N) * sizeof(TYPE));
 }
 
