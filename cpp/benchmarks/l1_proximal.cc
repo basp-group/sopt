@@ -1,10 +1,11 @@
 #include <sopt/l1_proximal.h>
 #include <sopt/types.h>
+#include <sopt/real_type.h>
 #include <sstream>
 #include <benchmark/benchmark.h>
 
 template <class TYPE> void function_l1p(benchmark::State &state){
-  typedef sopt::t_real Real; // just because I think so...
+  typedef typename sopt::real_type<TYPE>::type Real;
   auto const N = state.range_x();
   auto const input = sopt::Vector<TYPE>::Random(N).eval();
   auto const Psi = sopt::Matrix<TYPE>::Random(input.size(), input.size() * 10).eval();
