@@ -1,5 +1,5 @@
-#ifndef SOPT_TOOLS_FOR_TESTS_INPAINTING
-#define SOPT_TOOLS_FOR_TESTS_INPAINTING
+#ifndef SOPT_TOOLS_FOR_TESTS_INPAINTING_H
+#define SOPT_TOOLS_FOR_TESTS_INPAINTING_H
 
 #include "sopt/config.h"
 #include <random>

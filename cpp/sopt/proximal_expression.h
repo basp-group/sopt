@@ -2,7 +2,6 @@
 #define SOPT_PROXIMAL_EXPRESSION_H
 
 #include "sopt/config.h"
-#include <iostream>
 #include <type_traits>
 #include <Eigen/Core>
 #include "sopt/maths.h"

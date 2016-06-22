@@ -66,4 +66,5 @@ install(TARGETS libsopt sopt_about
     LIBRARY DESTINATION lib COMPONENT shlib
     ARCHIVE DESTINATION lib COMPONENT archive
     RUNTIME DESTINATION bin COMPONENT bin
+    INCLUDES DESTINATION include/sopt
 )
