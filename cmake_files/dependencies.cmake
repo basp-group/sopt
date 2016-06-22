@@ -41,7 +41,11 @@ if(openmp)
 endif()
 
 if(Csopt)
-  find_package(CBLAS REQUIRED)
+  if(NOT archer) 
+    find_package(CBLAS REQUIRED)
+  else()
+    set(BLAS_INCLUDE_FILENAME "cblas.h")
+  endif()
   # On some (linux) machines we also need libm to compile sopt_demo*.c
   # Make a half-hearted attempt at finding it.
   # If it exists, it shouldn't be difficult.
