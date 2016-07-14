@@ -1,6 +1,6 @@
 include(PackageLookup)  # check for existence, or install external projects
 
-lookup_package(Eigen3 REQUIRED)
+lookup_package(Eigen3 ARGUMENTS HG_REPOSITORY https://bitbucket.org/LukePratley/eigen)
 if(logging)
   lookup_package(spdlog REQUIRED)
 endif()
