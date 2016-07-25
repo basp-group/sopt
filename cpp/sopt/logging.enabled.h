@@ -3,6 +3,7 @@
 
 #include "sopt/config.h"
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/ostr.h>
 #include "sopt/exception.h"
 
 namespace sopt {
@@ -30,12 +31,9 @@ inline std::shared_ptr<spdlog::logger> get(std::string const &name = "") {
 //!     - "trace"
 //!     - "debug"
 //!     - "info"
-//!     - "notice"
 //!     - "warn"
 //!     - "err"
 //!     - "critical"
-//!     - "alert"
-//!     - "emerg"
 //!     - "off"
 inline void set_level(std::string const &level, std::string const &name) {
   auto const logger = get(name);
@@ -47,12 +45,9 @@ inline void set_level(std::string const &level, std::string const &name) {
   SOPT_MACRO(trace);
   else SOPT_MACRO(debug);
   else SOPT_MACRO(info);
-  else SOPT_MACRO(notice);
   else SOPT_MACRO(warn);
   else SOPT_MACRO(err);
   else SOPT_MACRO(critical);
-  else SOPT_MACRO(alert);
-  else SOPT_MACRO(emerg);
   else SOPT_MACRO(off);
 #undef SOPT_MACRO
   else SOPT_THROW("Unknown logging level ") << level << "\n";
@@ -69,12 +64,9 @@ inline bool has_level(std::string const &level, std::string const &name = "") {
   SOPT_MACRO(trace);
   else SOPT_MACRO(debug);
   else SOPT_MACRO(info);
-  else SOPT_MACRO(notice);
   else SOPT_MACRO(warn);
   else SOPT_MACRO(err);
   else SOPT_MACRO(critical);
-  else SOPT_MACRO(alert);
-  else SOPT_MACRO(emerg);
   else SOPT_MACRO(off);
 #undef SOPT_MACRO
   else SOPT_THROW("Unknown logging level ") << level << "\n";
