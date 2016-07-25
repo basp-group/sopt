@@ -9,15 +9,14 @@
 #include "sopt/logging.disabled.h"
 #endif
 
-//! \macro Informational message about normal condition
-//! \details Say "Residuals == "
-#define SOPT_INFO(...) SOPT_LOG_(, info, __VA_ARGS__)
-//! \macro Normal but signigicant condition
-#define SOPT_NOTICE(...) SOPT_LOG_(, notice, __VA_ARGS__)
-//! \macro Something might be going wrong
-#define SOPT_WARN(...) SOPT_LOG_(, warn, __VA_ARGS__)
+//! \macro Normal but significant condition or critical error
+#define SOPT_NOTICE(...) SOPT_LOG_(, critical, __VA_ARGS__)
 //! \macro Something is definitely wrong, algorithm exits
 #define SOPT_ERROR(...) SOPT_LOG_(, error, __VA_ARGS__)
+//! \macro Something might be going wrong
+#define SOPT_WARN(...) SOPT_LOG_(, warn, __VA_ARGS__)
+//! \macro Verbose informational message about normal condition
+#define SOPT_INFO(...) SOPT_LOG_(, info, __VA_ARGS__)
 //! \macro Output some debugging
 #define SOPT_DEBUG(...) SOPT_LOG_(, debug, __VA_ARGS__)
 //! \macro Output internal values of no interest to anyone

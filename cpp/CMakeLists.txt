@@ -3,7 +3,7 @@ if(logging)
   set(SOPT_DO_LOGGING 1)
   set(SOPT_TEST_LOG_LEVEL off CACHE STRING "Level when logging tests")
   set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS
-    emerg off trace debug info notice warn err critical alert)
+    off trace debug info warn err critical)
 else()
   unset(SOPT_DO_LOGGING)
   set(SOPT_TEST_LOG_LEVEL off)
