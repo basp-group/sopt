@@ -68,8 +68,9 @@ soft_threshhold(Eigen::DenseBase<T> const &input,
                 typename real_type<typename T::Scalar>::type const &threshhold) {
   typedef typename T::Scalar Scalar;
   typedef typename real_type<Scalar>::type Real;
-  return {input.derived(),
-          std::bind(soft_threshhold<Scalar>, std::placeholders::_1, Real(threshhold))};
+  return Eigen::CwiseUnaryOp<const details::SoftThreshhold<typename T::Scalar>, const T>
+  {input.derived(),
+      std::bind(soft_threshhold<Scalar>, std::placeholders::_1, Real(threshhold))};
 }
 
 //! \brief Expression to create soft-threshhold with multiple parameters
