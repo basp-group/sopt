@@ -28,6 +28,10 @@ inline constexpr std::tuple<uint8_t, uint8_t, uint8_t> version_tuple() {
 inline std::string gitref() { return "@Sopt_GITREF@"; }
 //! Default logging level
 inline std::string default_logging_level() { return "@SOPT_TEST_LOG_LEVEL@"; }
+//! Default logger name
+inline std::string default_logger_name() { return "@SOPT_LOGGER_NAME@"; }
+//! Wether to add color to the logger
+inline constexpr bool color_logger() { return @SOPT_COLOR_LOGGING@; }
 //! Number of threads used during testing
 inline constexpr std::size_t number_of_threads_in_tests() { return @SOPT_DEFAULT_OPENMP_THREADS@; }
 }
