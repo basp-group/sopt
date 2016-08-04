@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <vector>
-#include <iostream>
 
 #include <sopt/logging.h>
 #include <sopt/maths.h>
@@ -11,8 +11,8 @@
 #include <sopt/sampling.h>
 #include <sopt/sdmm.h>
 #include <sopt/types.h>
-#include <sopt/wavelets.h>
 #include <sopt/utilities.h>
+#include <sopt/wavelets.h>
 // This header is not part of the installed sopt interface
 // It is only present in tests
 #include <tools_for_tests/directories.h>
@@ -51,25 +51,25 @@ int main(int argc, char const **argv) {
   // See set_level function for levels.
   sopt::logging::initialize();
 
-  SOPT_TRACE("Read input file {}", input);
+  SOPT_HIGH_LOG("Read input file {}", input);
   Image const image = sopt::notinstalled::read_standard_tiff(input);
 
-  SOPT_TRACE("Initializing sensing operator");
+  SOPT_HIGH_LOG("Initializing sensing operator");
   sopt::t_uint nmeasure = 0.33 * image.size();
   auto const sampling
       = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
-  SOPT_TRACE("Initializing wavelets");
+  SOPT_HIGH_LOG("Initializing wavelets");
   auto const wavelet = sopt::wavelets::factory("DB4", 4);
   auto const psi = sopt::linear_transform<Scalar>(wavelet, image.rows(), image.cols());
 
-  SOPT_TRACE("Computing sdmm parameters");
+  SOPT_HIGH_LOG("Computing sdmm parameters");
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
   auto const snr = 30.0;
   auto const sigma = y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
   auto const epsilon = std::sqrt(nmeasure + 2 * std::sqrt(y0.size())) * sigma;
 
-  SOPT_TRACE("Create dirty vector");
+  SOPT_HIGH_LOG("Create dirty vector");
   std::normal_distribution<> gaussian_dist(0, sigma);
   Vector y(y0.size());
   for(sopt::t_int i = 0; i < y0.size(); i++)
@@ -81,16 +81,16 @@ int main(int argc, char const **argv) {
                                 "dirty_" + output + ".tiff");
   }
 
-  SOPT_TRACE("Initializing convergence function");
+  SOPT_HIGH_LOG("Initializing convergence function");
   auto relvar = sopt::RelativeVariation<Scalar>(5e-2);
   auto convergence = [&y, &sampling, &psi, &relvar](sopt::Vector<Scalar> const &x) -> bool {
-    SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
-    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
-    SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
+    SOPT_MEDIUM_LOG("||x - y||_2: {}", (y - sampling * x).stableNorm());
+    SOPT_MEDIUM_LOG("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
+    SOPT_MEDIUM_LOG("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
   };
 
-  SOPT_TRACE("Creating SDMM Functor");
+  SOPT_HIGH_LOG("Creating SDMM Functor");
   auto const sdmm
       = sopt::algorithm::SDMM<Scalar>()
             .itermax(3000)
@@ -106,11 +106,11 @@ int main(int argc, char const **argv) {
             // x in positive quadrant
             .append(sopt::proximal::positive_quadrant<Scalar>);
 
-  SOPT_TRACE("Allocating result vector");
+  SOPT_HIGH_LOG("Allocating result vector");
   Vector result(image.size());
-  SOPT_TRACE("Starting SDMM");
+  SOPT_HIGH_LOG("Starting SDMM");
   auto const diagnostic = sdmm(result, Vector::Zero(image.size()));
-  SOPT_TRACE("SDMM returned {}", diagnostic.good);
+  SOPT_HIGH_LOG("SDMM returned {}", diagnostic.good);
 
   // diagnostic should tell us the function converged
   // it also contains diagnostic.niters - the number of iterations, and cg_diagnostic - the
@@ -118,7 +118,7 @@ int main(int argc, char const **argv) {
   if(not diagnostic.good)
     throw std::runtime_error("Did not converge!");
 
-  SOPT_INFO("SOPT-SDMM converged in {} iterations", diagnostic.niters);
+  SOPT_HIGH_LOG("SOPT-SDMM converged in {} iterations", diagnostic.niters);
   if(output != "none")
     sopt::utilities::write_tiff(Matrix::Map(result.data(), image.rows(), image.cols()),
                                 output + ".tiff");

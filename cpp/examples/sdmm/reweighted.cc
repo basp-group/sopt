@@ -55,25 +55,25 @@ int main(int argc, char const **argv) {
   // See set_level function for levels.
   sopt::logging::initialize();
 
-  SOPT_TRACE("Read input file {}", input);
+  SOPT_HIGH_LOG("Read input file {}", input);
   Image const image = sopt::notinstalled::read_standard_tiff(input);
 
-  SOPT_TRACE("Initializing sensing operator");
+  SOPT_HIGH_LOG("Initializing sensing operator");
   sopt::t_uint nmeasure = 0.33 * image.size();
   auto const sampling
       = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
-  SOPT_TRACE("Initializing wavelets");
+  SOPT_HIGH_LOG("Initializing wavelets");
   auto const wavelet = sopt::wavelets::factory("DB4", 4);
   auto const psi = sopt::linear_transform<Scalar>(wavelet, image.rows(), image.cols());
 
-  SOPT_TRACE("Computing sdmm parameters");
+  SOPT_HIGH_LOG("Computing sdmm parameters");
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
   auto const snr = 30.0;
   auto const sigma = y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
   auto const epsilon = std::sqrt(nmeasure + 2 * std::sqrt(y0.size())) * sigma;
 
-  SOPT_TRACE("Create dirty vector");
+  SOPT_HIGH_LOG("Create dirty vector");
   std::normal_distribution<> gaussian_dist(0, sigma);
   Vector y(y0.size());
   for(sopt::t_int i = 0; i < y0.size(); i++)
@@ -85,16 +85,16 @@ int main(int argc, char const **argv) {
                                 "dirty_" + output + ".tiff");
   }
 
-  SOPT_TRACE("Initializing convergence function");
+  SOPT_HIGH_LOG("Initializing convergence function");
   auto relvar = sopt::RelativeVariation<Scalar>(5e-2);
   auto convergence = [&y, &sampling, &psi, &relvar](sopt::Vector<Scalar> const &x) -> bool {
-    SOPT_INFO("||x - y||_2: {}", (y - sampling * x).stableNorm());
-    SOPT_INFO("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
-    SOPT_INFO("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
+    SOPT_MEDIUM_LOG("||x - y||_2: {}", (y - sampling * x).stableNorm());
+    SOPT_MEDIUM_LOG("||Psi^Tx||_1: {}", sopt::l1_norm(psi.adjoint() * x));
+    SOPT_MEDIUM_LOG("||abs(x) - x||_2: {}", (x.array().abs().matrix() - x).stableNorm());
     return relvar(x);
   };
 
-  SOPT_TRACE("Creating SDMM Functor");
+  SOPT_HIGH_LOG("Creating SDMM Functor");
   auto const sdmm
       = sopt::algorithm::SDMM<Scalar>()
             .itermax(3000)
@@ -110,7 +110,7 @@ int main(int argc, char const **argv) {
             // x in positive quadrant
             .append(sopt::proximal::positive_quadrant<Scalar>);
 
-  SOPT_TRACE("Creating the reweighted algorithm");
+  SOPT_HIGH_LOG("Creating the reweighted algorithm");
   // positive_quadrant projects the result of SDMM on the positive quadrant.
   // This follows the reweighted algorithm in the original C implementation.
   auto const posq = positive_quadrant(sdmm);
@@ -130,12 +130,12 @@ int main(int argc, char const **argv) {
                               .min_delta(min_delta)
                               .is_converged(sopt::RelativeVariation<Scalar>(1e-3));
 
-  SOPT_TRACE("Computing warm-start SDMM");
+  SOPT_HIGH_LOG("Computing warm-start SDMM");
   auto warm_start = sdmm(Vector::Zero(image.size()));
   warm_start.x = sopt::positive_quadrant(warm_start.x);
-  SOPT_TRACE("SDMM returned {}", warm_start.good);
+  SOPT_HIGH_LOG("SDMM returned {}", warm_start.good);
 
-  SOPT_TRACE("Computing warm-start SDMM");
+  SOPT_HIGH_LOG("Computing warm-start SDMM");
   auto const result = reweighted(warm_start);
 
   // result should tell us the function converged
@@ -144,7 +144,7 @@ int main(int argc, char const **argv) {
   if(not result.good)
     throw std::runtime_error("Did not converge!");
 
-  SOPT_INFO("SOPT-SDMM converged in {} iterations", result.niters);
+  SOPT_HIGH_LOG("SOPT-SDMM converged in {} iterations", result.niters);
   if(output != "none")
     sopt::utilities::write_tiff(Matrix::Map(result.algo.x.data(), image.rows(), image.cols()),
                                 output + ".tiff");

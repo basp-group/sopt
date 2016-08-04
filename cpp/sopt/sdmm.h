@@ -201,27 +201,25 @@ operator()(t_Vector &out, t_Vector const &input) const {
     return niters >= itermax() or convergence;
   };
 
-  SOPT_NOTICE("Performing SDMM ");
+  SOPT_HIGH_LOG("Performing SDMM ");
   out = input;
   t_Vectors y(transforms().size()), z(transforms().size());
 
   // Initial step replaces iteration update with initialization
-  SOPT_TRACE("Input {} ", input.transpose());
   initialization(y, z, input);
   auto cg_diagnostic = solve_for_xn(out, y, z);
 
   while(not has_finished(out)) {
-    SOPT_NOTICE("Iteration {}/{}. ", niters, itermax());
+    SOPT_LOW_LOG("Iteration {}/{}. ", niters, itermax());
     // computes y and z from out and transforms
     update_directions(y, z, out);
-    SOPT_NOTICE("   - sum z_ij = {}",
-                std::accumulate(z.begin(), z.end(), Scalar(0e0),
-                                [](Scalar const &a, t_Vector const &z) { return a + z.sum(); }));
+    SOPT_LOW_LOG("   - sum z_ij = {}",
+                 std::accumulate(z.begin(), z.end(), Scalar(0e0),
+                                 [](Scalar const &a, t_Vector const &z) { return a + z.sum(); }));
     // computes x = L^-1 y
     cg_diagnostic = solve_for_xn(out, y, z);
-    SOPT_NOTICE("   - CG Residual = {} in {}/{} iterations", cg_diagnostic.residual,
-                cg_diagnostic.niters, conjugate_gradient().itermax());
-    SOPT_TRACE("  - x {}", out.transpose());
+    SOPT_LOW_LOG("   - CG Residual = {} in {}/{} iterations", cg_diagnostic.residual,
+                 cg_diagnostic.niters, conjugate_gradient().itermax());
 
     ++niters;
   }
@@ -234,7 +232,7 @@ SDMM<SCALAR>::solve_for_xn(t_Vector &out, t_Vectors const &y, t_Vectors const &z
 
   assert(z.size() == transforms().size());
   assert(y.size() == transforms().size());
-  SOPT_INFO("Solving for x_n");
+  SOPT_TRACE("Solving for x_n");
 
   // Initialize b of A x = b = sum_i L_i^H(z_i - y_i)
   t_Vector b = out.Zero(out.size());
@@ -265,7 +263,7 @@ SDMM<SCALAR>::solve_for_xn(t_Vector &out, t_Vectors const &y, t_Vectors const &z
 
 template <class SCALAR>
 void SDMM<SCALAR>::update_directions(t_Vectors &y, t_Vectors &z, t_Vector const &x) const {
-  SOPT_INFO("Updating directions");
+  SOPT_TRACE("Updating directions");
   for(t_uint i(0); i < transforms().size(); ++i) {
     z[i] += transforms(i) * x;
     y[i] = proximals(i, z[i]);
@@ -275,7 +273,7 @@ void SDMM<SCALAR>::update_directions(t_Vectors &y, t_Vectors &z, t_Vector const 
 
 template <class SCALAR>
 void SDMM<SCALAR>::initialization(t_Vectors &y, t_Vectors &z, t_Vector const &x) const {
-  SOPT_INFO("Initializing SDMM");
+  SOPT_TRACE("Initializing SDMM");
   for(t_uint i(0); i < transforms().size(); i++) {
     y[i] = transforms(i) * x;
     z[i].resize(y[i].size());

@@ -112,7 +112,7 @@ operator()(Eigen::MatrixBase<T0> &out, Real gamma, Eigen::MatrixBase<T1> const &
     out = Psi() * (soft_threshhold(psit_x, nu() * gamma * weights()(0)) - psit_x) / nu() + x;
   else
     out = Psi() * (soft_threshhold(psit_x, nu() * gamma * weights()) - psit_x) / nu() + x;
-  SOPT_INFO("Prox L1: objective = {}", objective(x, out, gamma));
+  SOPT_LOW_LOG("Prox L1: objective = {}", objective(x, out, gamma));
 }
 
 template <class SCALAR>
@@ -273,12 +273,12 @@ template <class T0, class MIXING>
 typename L1<SCALAR>::Diagnostic L1<SCALAR>::
 operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x, MIXING mixing) const {
 
-  SOPT_NOTICE("  Starting Proximal L1 operator:");
+  SOPT_MEDIUM_LOG("  Starting Proximal L1 operator:");
   t_uint niters = 0;
   out = x;
 
   Breaker breaker(objective(out, x, gamma), tolerance(), false); // not fista_mixing());
-  SOPT_NOTICE("    - iter {}, prox_fval = {}", niters, breaker.current());
+  SOPT_LOW_LOG("    - iter {}, prox_fval = {}", niters, breaker.current());
   Vector<Scalar> const res = Psi().adjoint() * out;
   Vector<Scalar> u_l1 = 1e0 / nu() * (res - apply_soft_threshhold(gamma, res));
   apply_constraints(out, x - Psi() * u_l1);
@@ -287,8 +287,8 @@ operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x, MIXI
   for(++niters; niters < itermax() or itermax() == 0; ++niters) {
 
     auto const do_break = breaker(objective(x, out, gamma));
-    SOPT_NOTICE("    - iter {}, prox_fval = {}, rel_fval = {}", niters, breaker.current(),
-                breaker.relative_variation());
+    SOPT_LOW_LOG("    - iter {}, prox_fval = {}, rel_fval = {}", niters, breaker.current(),
+                 breaker.relative_variation());
     if(do_break)
       break;
 
@@ -298,12 +298,13 @@ operator()(Eigen::MatrixBase<T0> &out, Real gamma, Vector<Scalar> const &x, MIXI
   }
 
   if(breaker.two_cycle())
-    SOPT_NOTICE("Two-cycle detected when computing L1");
+    SOPT_WARN("Two-cycle detected when computing L1");
 
   if(breaker.converged()) {
-    SOPT_INFO("  Proximal L1 operator converged at {} in {} iterations", breaker.current(), niters);
+    SOPT_LOW_LOG("  Proximal L1 operator converged at {} in {} iterations", breaker.current(),
+                 niters);
   } else
-    SOPT_INFO("  Proximal L1 operator did not converge after {} iterations", niters);
+    SOPT_ERROR("  Proximal L1 operator did not converge after {} iterations", niters);
   return {niters, breaker.relative_variation(), breaker.current(), breaker.converged()};
 }
 
