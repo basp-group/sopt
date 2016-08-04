@@ -1,10 +1,5 @@
 # Exports Sopt so other packages can access it
-if(Csopt AND NOT  ONLY_CLIBS)
-  export(TARGETS sopt_about libsopt FILE "${PROJECT_BINARY_DIR}/SoptCTargets.cmake")
-endif()
-if(TARGET sopt)
-  export(TARGETS sopt FILE "${PROJECT_BINARY_DIR}/SoptCPPTargets.cmake")
-endif()
+export(TARGETS sopt FILE "${PROJECT_BINARY_DIR}/SoptCPPTargets.cmake")
 
 # Avoids creating an entry in the cmake registry.
 if(NOT NOEXPORT)
@@ -13,9 +8,6 @@ endif()
 
 # First in binary dir
 set(ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/cpp" "${PROJECT_BINARY_DIR}/include")
-if(Csopt)
-  list(APPEND ALL_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include" "${PROJECT_BINARY_DIR}/include/sopt")
-endif()
 configure_File(cmake_files/SoptConfig.in.cmake
     "${PROJECT_BINARY_DIR}/SoptConfig.cmake" @ONLY
 )
@@ -41,9 +33,4 @@ install(FILES
     COMPONENT dev
 )
 
-if(Csopt)
-  install(EXPORT SoptCTargets DESTINATION share/cmake/sopt COMPONENT dev)
-endif()
-if(cpp)
-  install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)
-endif()
+install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)

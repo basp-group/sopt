@@ -12,18 +12,16 @@ include(VersionAndGitRef)
 set_version(2.0.0)
 get_gitref()
 
-option(cpp            "Enable cpp"                             on)
 option(tests          "Enable testing"                         on)
 option(python         "Enable python"                          on)
 option(benchmarks     "Enable benchmarking"                    on)
 option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 option(regressions    "Enable regressions"                     on)
-option(Csopt          "Enable C sopt"                          on)
 option(openmp         "Enable OpenMP"                          on)
 option(archer         "Compiling on ARCHER"                    off)
 
-if(regressions OR Csopt)
+if(regressions)
   enable_language(C)
 endif()
 if(tests)
@@ -40,10 +38,6 @@ cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 include(compilations)
 
 # search/install dependencies
-if(regression AND NOT Csopt)
-  set(REGRESSION_ORACLE_ID "development"
-    CACHE STRING "Commmit/tag/branch againts which to run regressions")
-endif()
 include(dependencies)
 # sets rpath policy explicitly
 if(CMAKE_VERSION VERSION_LESS 3.0)
@@ -74,17 +68,11 @@ if(python)
   include(PythonModule)
 endif()
 
-if(cpp AND python)
+if(python)
   add_subdirectory(python)
 endif()
-if(Csopt)
-  add_subdirectory(src/c)
-  add_subdirectory(include)
-endif()
 
-if(cpp)
-  add_subdirectory(cpp)
-endif()
+add_subdirectory(cpp)
 
 # Exports all Sopt so other packages can access it
 include(export_sopt)

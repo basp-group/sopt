@@ -5,7 +5,6 @@
 #include <random>
 #include <sopt/linear_transform.h>
 #include <sopt/types.h>
-#include "sopt_l1.h"
 
 namespace sopt {
 

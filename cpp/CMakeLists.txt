@@ -9,7 +9,6 @@ if(logging)
 else()
   unset(SOPT_DO_LOGGING)
   set(SOPT_TEST_LOG_LEVEL off)
-  set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS off)
 endif()
 
 set(version ${Sopt_VERSION})

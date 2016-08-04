@@ -14,6 +14,7 @@
 #include "tools_for_tests/directories.h"
 #include "tools_for_tests/inpainting.h"
 #include "tools_for_tests/tiffwrappers.h"
+#include "sopt_l1.h"
 
 typedef double Scalar;
 typedef sopt::Vector<Scalar> t_Vector;
