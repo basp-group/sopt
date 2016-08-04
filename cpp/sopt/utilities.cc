@@ -1,3 +1,4 @@
+#include "sopt/utilities.h"
 #include "sopt/config.h"
 #include <fstream>
 #include <tiff.h>
@@ -5,7 +6,6 @@
 #include "sopt/exception.h"
 #include "sopt/logging.h"
 #include "sopt/types.h"
-#include "sopt/utilities.h"
 
 namespace {
 //! A single pixel

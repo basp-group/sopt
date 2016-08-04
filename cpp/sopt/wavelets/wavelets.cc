@@ -1,7 +1,7 @@
-#include "sopt/config.h"
 #include "sopt/wavelets/wavelets.h"
-#include "sopt/logging.h"
+#include "sopt/config.h"
 #include <exception>
+#include "sopt/logging.h"
 
 namespace sopt {
 namespace wavelets {

@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <vector>
-#include <iostream>
 
 #include <sopt/logging.h>
 #include <sopt/maths.h>
