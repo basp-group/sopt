@@ -33,13 +33,15 @@ target_include_directories(libsopt PUBLIC
 set_target_properties(libsopt PROPERTIES VERSION 1.0.0 SOVERSION 1.0.0)
 
 # Add each demo
-foreach(DEMO_SOURCE ${DEMO_SOURCES})
-  # first extract name
-  get_filename_component(DEMO_NAME ${DEMO_SOURCE} NAME_WE)
-  # then creates executable
-  add_executable(${DEMO_NAME} ${DEMO_SOURCE})
-  target_link_libraries(${DEMO_NAME} libsopt)
-endforeach()
+if(NOT ONLY_CLIBS)
+  foreach(DEMO_SOURCE ${DEMO_SOURCES})
+    # first extract name
+    get_filename_component(DEMO_NAME ${DEMO_SOURCE} NAME_WE)
+    # then creates executable
+    add_executable(${DEMO_NAME} ${DEMO_SOURCE})
+    target_link_libraries(${DEMO_NAME} libsopt)
+  endforeach()
+endif()
 
 # add test
 if(tests AND FFTW3_DOUBLE_FOUND)
@@ -53,15 +55,21 @@ if(tests AND FFTW3_DOUBLE_FOUND)
 endif()
 
 # Add about
-add_executable(sopt_about ${ABOUT_SOURCE})
-set_target_properties(sopt_about PROPERTIES
-  COMPILE_DEFINITIONS
-     "SOPT_VERSION=\"${Sopt_VERSION}\";SOPT_BUILD=\"${Sopt_GITREF}\""
-)
-target_link_libraries(sopt_about libsopt ${DEPENDENCY_LIBRARIES})
+if(NOT ONLY_CLIBS)
+  add_executable(sopt_about ${ABOUT_SOURCE})
+  set_target_properties(sopt_about PROPERTIES
+    COMPILE_DEFINITIONS
+       "SOPT_VERSION=\"${Sopt_VERSION}\";SOPT_BUILD=\"${Sopt_GITREF}\""
+  )
+  target_link_libraries(sopt_about libsopt ${DEPENDENCY_LIBRARIES})
+  install(TARGETS sopt_about
+      EXPORT SoptCTargets
+      RUNTIME DESTINATION bin COMPONENT bin
+  )
+endif()
 
 # install library and about
-install(TARGETS libsopt sopt_about
+install(TARGETS libsopt
     EXPORT SoptCTargets
     LIBRARY DESTINATION lib COMPONENT shlib
     ARCHIVE DESTINATION lib COMPONENT archive

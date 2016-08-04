@@ -1,5 +1,5 @@
 # Exports Sopt so other packages can access it
-if(Csopt)
+if(Csopt AND NOT  ONLY_CLIBS)
   export(TARGETS sopt_about libsopt FILE "${PROJECT_BINARY_DIR}/SoptCTargets.cmake")
 endif()
 if(TARGET sopt)
