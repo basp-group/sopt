@@ -41,5 +41,9 @@ install(FILES
     COMPONENT dev
 )
 
-install(EXPORT SoptCTargets DESTINATION share/cmake/sopt COMPONENT dev)
-install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)
+if(Csopt)
+  install(EXPORT SoptCTargets DESTINATION share/cmake/sopt COMPONENT dev)
+endif()
+if(cpp)
+  install(EXPORT SoptCPPTargets DESTINATION share/cmake/sopt COMPONENT dev)
+endif()

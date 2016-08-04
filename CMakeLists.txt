@@ -12,6 +12,7 @@ include(VersionAndGitRef)
 set_version(2.0.0)
 get_gitref()
 
+option(cpp            "Enable cpp"                             on)
 option(tests          "Enable testing"                         on)
 option(python         "Enable python"                          on)
 option(benchmarks     "Enable benchmarking"                    on)
@@ -73,7 +74,7 @@ if(python)
   include(PythonModule)
 endif()
 
-if(python)
+if(cpp AND python)
   add_subdirectory(python)
 endif()
 if(Csopt)
@@ -81,7 +82,9 @@ if(Csopt)
   add_subdirectory(include)
 endif()
 
-add_subdirectory(cpp)
+if(cpp)
+  add_subdirectory(cpp)
+endif()
 
 # Exports all Sopt so other packages can access it
 include(export_sopt)
