@@ -54,27 +54,27 @@ int main(int argc, char const **argv) {
   // See set_level function for levels.
   sopt::logging::initialize();
 
-  SOPT_TRACE("Read input file {}", input);
+  SOPT_MEDIUM_LOG("Read input file {}", input);
   Image const image = sopt::notinstalled::read_standard_tiff(input);
 
-  SOPT_TRACE("Initializing sensing operator");
+  SOPT_MEDIUM_LOG("Initializing sensing operator");
   sopt::t_uint nmeasure = 0.33 * image.size();
   auto const sampling
       = sopt::linear_transform<Scalar>(sopt::Sampling(image.size(), nmeasure, mersenne));
 
-  SOPT_TRACE("Initializing wavelets");
+  SOPT_MEDIUM_LOG("Initializing wavelets");
   sopt::wavelets::SARA const sara{std::make_tuple(std::string{"DB3"}, 1u),
                                   std::make_tuple(std::string{"DB1"}, 2u),
                                   std::make_tuple(std::string{"DB1"}, 3u)};
   auto const psi = sopt::linear_transform<Scalar>(sara, image.rows(), image.cols());
 
-  SOPT_TRACE("Computing proximal-ADMM parameters");
+  SOPT_MEDIUM_LOG("Computing proximal-ADMM parameters");
   Vector const y0 = sampling * Vector::Map(image.data(), image.size());
   auto const snr = 30.0;
   auto const sigma = y0.stableNorm() / std::sqrt(y0.size()) * std::pow(10.0, -(snr / 20.0));
   auto const epsilon = std::sqrt(nmeasure + 2 * std::sqrt(y0.size())) * sigma;
 
-  SOPT_TRACE("Create dirty vector");
+  SOPT_MEDIUM_LOG("Create dirty vector");
   std::normal_distribution<> gaussian_dist(0, sigma);
   Vector y(y0.size());
   for(sopt::t_int i = 0; i < y0.size(); i++)
@@ -86,7 +86,7 @@ int main(int argc, char const **argv) {
                                 "dirty_" + output + ".tiff");
   }
 
-  SOPT_TRACE("Creating proximal-ADMM Functor");
+  SOPT_MEDIUM_LOG("Creating proximal-ADMM Functor");
   auto const padmm = sopt::algorithm::ImagingProximalADMM<Scalar>(y)
                          .itermax(500)
                          .gamma(1e-1)
@@ -104,7 +104,7 @@ int main(int argc, char const **argv) {
                          .Psi(psi)
                          .Phi(sampling);
 
-  SOPT_TRACE("Creating the reweighted algorithm");
+  SOPT_MEDIUM_LOG("Creating the reweighted algorithm");
   // positive_quadrant projects the result of PADMM on the positive quadrant.
   // This follows the reweighted algorithm for SDMM
   auto const min_delta = sigma * std::sqrt(y.size()) / std::sqrt(8 * image.size());
@@ -112,13 +112,13 @@ int main(int argc, char const **argv) {
       = sopt::algorithm::reweighted(padmm).itermax(5).min_delta(min_delta).is_converged(
           sopt::RelativeVariation<Scalar>(1e-3));
 
-  SOPT_TRACE("Starting proximal-ADMM");
+  SOPT_MEDIUM_LOG("Starting proximal-ADMM");
   // Alternatively, padmm can be called with a tuple (x, residual) as argument
   // Here, we default to (Φ^Ty/ν, ΦΦ^Ty/ν - y)
   auto const diagnostic = reweighted();
-  SOPT_INFO("proximal-ADMM returned {}", diagnostic.good);
+  SOPT_MEDIUM_LOG("proximal-ADMM returned {}", diagnostic.good);
 
-  SOPT_INFO("SOPT-proximal-ADMM converged in {} iterations", diagnostic.niters);
+  SOPT_MEDIUM_LOG("SOPT-proximal-ADMM converged in {} iterations", diagnostic.niters);
   if(output != "none")
     sopt::utilities::write_tiff(Matrix::Map(diagnostic.algo.x.data(), image.rows(), image.cols()),
                                 output + ".tiff");

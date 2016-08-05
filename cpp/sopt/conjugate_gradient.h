@@ -129,7 +129,7 @@ ConjugateGradient::implementation(VECTOR &x, MATRIXLIKE const &A,
     residuals -= alpha * Ap;
 
     Real new_residual = std::abs((residuals.transpose().conjugate() * residuals)(0));
-    SOPT_DEBUG("CG iteration {} - residuals: {}", i, new_residual);
+    SOPT_LOW_LOG("CG iteration {} - residuals: {}", i, new_residual);
     if(std::abs(new_residual) < tolerance()) {
       residual = new_residual;
       break;

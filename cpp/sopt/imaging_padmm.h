@@ -286,7 +286,7 @@ template <class SCALAR>
 typename ImagingProximalADMM<SCALAR>::Diagnostic ImagingProximalADMM<SCALAR>::
 operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) const {
 
-  SOPT_INFO("Performing Proximal ADMM with L1 and L2 operators");
+  SOPT_HIGH_LOG("Performing Proximal ADMM with L1 and L2 operators");
   ProximalADMM<Scalar>::sanity_check(x_guess, res_guess);
 
   t_Vector lambda = t_Vector::Zero(target().size());
@@ -296,12 +296,12 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
   bool const has_user_convergence = static_cast<bool>(is_converged());
   l1_diagnostic = {0, 0, 0, false};
 
-  SOPT_NOTICE("    - Initialization");
+  SOPT_TRACE("    - Initialization");
   std::pair<Real, Real> objectives{sopt::l1_norm(Psi().adjoint() * out, l1_proximal_weights()), 0};
 
   bool converged = false;
   for(t_uint niters(0); niters < itermax(); ++niters) {
-    SOPT_NOTICE("    - Iteration {}/{}. ", niters, itermax());
+    SOPT_LOW_LOG("    - Iteration {}/{}. ", niters, itermax());
     ProximalADMM<Scalar>::iteration_step(out, residual, lambda, z);
 
     // print-out stuff
@@ -311,10 +311,10 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
         = std::abs(objectives.first - objectives.second) / objectives.first;
     auto const residual_norm = sopt::l2_norm(residual, l2ball_proximal_weights());
 
-    SOPT_NOTICE("    - objective: obj value = {}, rel obj = {}", objectives.first,
-                relative_objective);
-    SOPT_NOTICE("    - Residuals: epsilon = {}, residual norm = {}", l2ball_proximal_epsilon(),
-                residual_norm);
+    SOPT_LOW_LOG("    - objective: obj value = {}, rel obj = {}", objectives.first,
+                 relative_objective);
+    SOPT_LOW_LOG("    - Residuals: epsilon = {}, residual norm = {}", l2ball_proximal_epsilon(),
+                 residual_norm);
 
     // convergence stuff
     auto const user = (not has_user_convergence) or is_converged(out);
@@ -322,13 +322,13 @@ operator()(t_Vector &out, t_Vector const &x_guess, t_Vector const &res_guess) co
     auto const rel = relative_variation() <= 0e0 or relative_objective < relative_variation();
     converged = user and rel and res;
     if(converged) {
-      SOPT_INFO("    - converged in {} of {} iterations", niters, itermax());
+      SOPT_MEDIUM_LOG("    - converged in {} of {} iterations", niters, itermax());
       break;
     }
   }
 
   if(not converged)
-    SOPT_WARN("    - did not converge within {} iterations", itermax());
+    SOPT_ERROR("    - did not converge within {} iterations", itermax());
   return {itermax(), converged, l1_diagnostic, std::move(residual)};
 }
 }

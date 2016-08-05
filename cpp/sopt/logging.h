@@ -23,4 +23,10 @@
 //! \details Except maybe when debugging.
 #define SOPT_TRACE(...) SOPT_LOG_(, trace, __VA_ARGS__)
 
+//! High priority message
+#define SOPT_HIGH_LOG(...) SOPT_LOG_(, critical, __VA_ARGS__)
+//! Medium priority message
+#define SOPT_MEDIUM_LOG(...) SOPT_LOG_(, info, __VA_ARGS__)
+//! Low priority message
+#define SOPT_LOW_LOG(...) SOPT_LOG_(, debug, __VA_ARGS__)
 #endif

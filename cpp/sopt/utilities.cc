@@ -1,11 +1,11 @@
+#include "sopt/utilities.h"
 #include "sopt/config.h"
 #include <fstream>
 #include <tiff.h>
 #include <tiffio.h>
-#include "sopt/types.h"
 #include "sopt/exception.h"
 #include "sopt/logging.h"
-#include "sopt/utilities.h"
+#include "sopt/types.h"
 
 namespace {
 //! A single pixel
@@ -37,7 +37,7 @@ uint32_t convert_from_greyscale(double pixel) {
 namespace sopt {
 namespace utilities {
 Image<> read_tiff(std::string const &filename) {
-  SOPT_INFO("Reading image file {} ", filename);
+  SOPT_MEDIUM_LOG("Reading image file {} ", filename);
   TIFF *tif = TIFFOpen(filename.c_str(), "r");
   if(not tif)
     SOPT_THROW("Could not open file ") << filename;
@@ -47,7 +47,7 @@ Image<> read_tiff(std::string const &filename) {
   TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
   TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
   TIFFGetField(tif, TIFFTAG_PHOTOMETRIC, &t);
-  SOPT_DEBUG("- image size {}, {} ", width, height);
+  SOPT_LOW_LOG("- image size {}, {} ", width, height);
   Image<> result = Image<>::Zero(height, width);
 
   uint32 *raster = (uint32 *)_TIFFmalloc(width * height * sizeof(uint32));
@@ -68,8 +68,8 @@ Image<> read_tiff(std::string const &filename) {
 }
 
 void write_tiff(Image<> const &image, std::string const &filename) {
-  SOPT_INFO("Writing image file {} ", filename);
-  SOPT_DEBUG("- image size {}, {} ", image.rows(), image.cols());
+  SOPT_MEDIUM_LOG("Writing image file {} ", filename);
+  SOPT_LOW_LOG("- image size {}, {} ", image.rows(), image.cols());
   TIFF *tif = TIFFOpen(filename.c_str(), "w");
   if(not tif)
     SOPT_THROW("Could not open file ") << filename;

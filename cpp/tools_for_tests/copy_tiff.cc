@@ -1,9 +1,9 @@
 #include <algorithm>
 #include <exception>
 #include <functional>
+#include <iostream>
 #include <random>
 #include <vector>
-#include <iostream>
 
 #include <tools_for_tests/directories.h>
 #include <tools_for_tests/tiffwrappers.h>

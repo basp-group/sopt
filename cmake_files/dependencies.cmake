@@ -34,9 +34,15 @@ endif()
 if(openmp)
   find_package(OpenMP)
   if(OPENMP_FOUND)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(SOPT_DEFAULT_OPENMP_THREADS 4 CACHE STRING "Number of threads used in testing")
+    set(SOPT_OPENMP TRUE)
+    add_library(openmp::openmp INTERFACE IMPORTED GLOBAL)
+    set_target_properties(openmp::openmp PROPERTIES
+      INTERFACE_COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}"
+      INTERFACE_LINK_LIBRARIES  "${OpenMP_CXX_FLAGS}")
   else()
     message(STATUS "Could not find OpenMP. Compiling without.")
+    set(SOPT_OPENMP FALSE)
   endif()
 endif()
 

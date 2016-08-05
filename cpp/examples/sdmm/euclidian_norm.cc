@@ -43,7 +43,7 @@ int main(int, char const **) {
       return false;
     }
     auto const norm = (*previous - candidate).stableNorm();
-    SOPT_INFO("   - Checking convergence {}", norm);
+    SOPT_TRACE("   - Checking convergence {}", norm);
     auto const result = norm < 1e-8 * candidate.size();
     *previous = candidate;
     return result;

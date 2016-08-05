@@ -3,8 +3,8 @@
 #include <string>
 #include <tuple>
 
-#include "sopt/wavelets/sara.h"
 #include "sopt/wavelets.h"
+#include "sopt/wavelets/sara.h"
 
 sopt::t_int random_integer(sopt::t_int min, sopt::t_int max) {
   extern std::unique_ptr<std::mt19937_64> mersenne;

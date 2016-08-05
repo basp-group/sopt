@@ -195,21 +195,21 @@ operator()(typename Algorithm::DiagnosticAndResult const &warm) const {
 template <class ALGORITHM>
 typename Reweighted<ALGORITHM>::ReweightedResult Reweighted<ALGORITHM>::
 operator()(ReweightedResult const &warm) const {
-  SOPT_NOTICE("Starting reweighted scheme");
+  SOPT_HIGH_LOG("Starting reweighted scheme");
   // Copies inner algorithm, so that operator() can be constant
   Algorithm algo(algorithm());
   ReweightedResult result(warm);
 
   auto delta = std::max(standard_deviation(reweightee(warm.algo.x)), min_delta());
-  SOPT_WARN("-   Initial delta: {}", delta);
+  SOPT_LOW_LOG("-   Initial delta: {}", delta);
   for(result.niters = 0; result.niters < itermax(); ++result.niters) {
-    SOPT_INFO("Reweigting iteration {}/{} ", result.niters, itermax());
-    SOPT_WARN("  - delta: {}", delta);
+    SOPT_LOW_LOG("Reweigting iteration {}/{} ", result.niters, itermax());
+    SOPT_LOW_LOG("  - delta: {}", delta);
     result.weights = delta / (delta + reweightee(result.algo.x).array().abs());
     set_weights(algo, result.weights);
     result.algo = algo(result.algo);
     if(is_converged(result.algo.x)) {
-      SOPT_INFO("Reweighting scheme did converge in {} iterations", result.niters);
+      SOPT_MEDIUM_LOG("Reweighting scheme did converge in {} iterations", result.niters);
       result.good = true;
       break;
     }
@@ -219,7 +219,7 @@ operator()(ReweightedResult const &warm) const {
   if(not is_converged())
     result.good = true;
   else if(not result.good)
-    SOPT_INFO("Reweighting scheme did *not* converge in {} iterations", itermax());
+    SOPT_ERROR("Reweighting scheme did *not* converge in {} iterations", itermax());
   return result;
 }
 

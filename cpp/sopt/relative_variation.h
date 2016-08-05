@@ -31,7 +31,7 @@ public:
     }
     auto const norm = (input - previous).matrix().squaredNorm();
     previous = input;
-    SOPT_DEBUG("    - relative variation: {} <? {}", std::sqrt(norm), epsilon());
+    SOPT_LOW_LOG("    - relative variation: {} <? {}", std::sqrt(norm), epsilon());
     return norm < epsilon() * epsilon();
   }
   //! Allowed variation

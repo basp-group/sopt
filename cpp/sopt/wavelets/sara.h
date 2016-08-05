@@ -6,6 +6,7 @@
 #include <initializer_list>
 #include <tuple>
 #include <vector>
+#include "sopt/logging.h"
 #include "sopt/wavelets/wavelets.h"
 
 namespace sopt {
@@ -121,12 +122,23 @@ void SARA::direct(Eigen::ArrayBase<T1> &coeffs, Eigen::ArrayBase<T0> const &sign
   if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     throw std::length_error("Incorrect size for output matrix(or could not resize)");
   auto const Ncols = signal.cols();
-  auto colindex = Ncols;
-  for(auto const &wavelet : *this) {
-    wavelet.direct(coeffs.leftCols(colindex).rightCols(Ncols), signal);
-    colindex += Ncols;
-  }
-  coeffs /= std::sqrt(size());
+#ifndef SOPT_OPENMP
+  SOPT_TRACE("Calling direct sara without threads");
+  for(size_type i(0); i < size(); ++i)
+    at(i).direct(coeffs.leftCols((i + 1) * Ncols).rightCols(Ncols), signal);
+#else
+#pragma omp parallel
+  {
+    if(omp_get_thread_num() == 0) {
+      SOPT_TRACE("Calling direct sara with {} threads of {}", omp_get_num_threads(),
+                 omp_get_max_threads());
+    }
+#pragma omp for
+    for(size_type i = 0; i < size(); ++i)
+      at(i).direct(coeffs.leftCols((i + 1) * Ncols).rightCols(Ncols), signal);
+#endif
+}
+coeffs /= std::sqrt(size());
 }
 
 template <class T0, class T1>
@@ -139,10 +151,30 @@ void SARA::indirect(Eigen::ArrayBase<T1> const &coeffs, Eigen::ArrayBase<T0> &si
     signal.derived().resize(coeffs.rows(), coeffs.cols() / size());
   if(coeffs.rows() != signal.rows() or coeffs.cols() != signal.cols() * static_cast<t_int>(size()))
     throw std::length_error("Incorrect size for output matrix(or could not resize)");
+
   auto const Ncols = signal.cols();
-  front().indirect(coeffs.leftCols(Ncols) / std::sqrt(size()), signal);
-  for(size_type i(1), colindex(2 * Ncols); i < size(); ++i, colindex += Ncols)
-    signal += (*this)[i].indirect(coeffs.leftCols(colindex).rightCols(Ncols)) / std::sqrt(size());
+#ifndef SOPT_OPENMP
+  SOPT_TRACE("Calling indirect sara without threads");
+  signal = front().indirect(coeffs.leftCols(Ncols).rightCols(Ncols));
+  for(size_type i(1); i < size(); ++i)
+    signal += at(i).indirect(coeffs.leftCols((i + 1) * Ncols).rightCols(Ncols));
+#else
+  signal.fill(0);
+#pragma omp parallel
+  {
+    if(omp_get_thread_num() == 0) {
+      SOPT_TRACE("Calling indirect sara with {} threads of {}", omp_get_num_threads(),
+                 omp_get_max_threads());
+    }
+    Image<typename T0::Scalar> reductor = Image<typename T0::Scalar>::Zero(signal.rows(), Ncols);
+#pragma omp for
+    for(size_type i = 0; i < size(); ++i)
+      reductor += at(i).indirect(coeffs.leftCols((i + 1) * Ncols).rightCols(Ncols));
+#pragma omp critical
+    signal += reductor;
+  }
+#endif
+  signal /= std::sqrt(size());
 }
 
 #undef SOPT_WAVELET_ERROR_MACRO

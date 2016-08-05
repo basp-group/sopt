@@ -6,8 +6,8 @@
 #include <type_traits>
 
 #include "sopt/l1_proximal.h"
-#include "tools_for_tests/cdata.h"
 #include "sopt_prox.h"
+#include "tools_for_tests/cdata.h"
 
 std::random_device rd;
 std::default_random_engine rengine(rd());
