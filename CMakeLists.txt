@@ -18,11 +18,10 @@ option(benchmarks     "Enable benchmarking"                    on)
 option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 option(regressions    "Enable regressions"                     on)
-option(Csopt          "Enable C sopt"                          on)
 option(openmp         "Enable OpenMP"                          on)
 option(archer         "Compiling on ARCHER"                    off)
 
-if(regressions OR Csopt)
+if(regressions)
   enable_language(C)
 endif()
 if(tests)
@@ -39,10 +38,6 @@ cxx11_feature_check(REQUIRED unique_ptr nullptr override constructor_delegate)
 include(compilations)
 
 # search/install dependencies
-if(regression AND NOT Csopt)
-  set(REGRESSION_ORACLE_ID "development"
-    CACHE STRING "Commmit/tag/branch againts which to run regressions")
-endif()
 include(dependencies)
 # sets rpath policy explicitly
 if(CMAKE_VERSION VERSION_LESS 3.0)
@@ -75,10 +70,6 @@ endif()
 
 if(python)
   add_subdirectory(python)
-endif()
-if(Csopt)
-  add_subdirectory(src/c)
-  add_subdirectory(include)
 endif()
 
 add_subdirectory(cpp)
