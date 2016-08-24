@@ -1,42 +1,44 @@
-# Look for external software
-find_package(FFTW3 COMPONENTS DOUBLE)
-find_package(CBLAS REQUIRED)
-find_package(TIFF REQUIRED)
-if(EXISTS "${BLAS_INCLUDE_DIR}/cblas.h")
-    set(SOPT_BLAS_H cblas.h)
-elseif(EXISTS "${BLAS_INCLUDE_DIR}/mkl.h")
-    set(SOPT_BLAS_H mkl.h)
-elseif(EXISTS "${BLAS_INCLUDE_DIR}/Accelerate.h")
-    set(SOPT_BLAS_H Accelerate.h)
+include(PackageLookup)  # check for existence, or install external projects
+
+lookup_package(Eigen3 ARGUMENTS HG_REPOSITORY https://bitbucket.org/LukePratley/eigen)
+if(logging)
+  lookup_package(spdlog REQUIRED)
 endif()
 
-# On some (linux) machines we also need libm to compile sopt_demo*.c
-# Make a half-hearted attempt at finding it.
-# If it exists, it shouldn't be difficult.
-find_library(M_LIBRARY m)
-
-find_package(Doxygen)
-
-# Adds include directories
-include_directories(
-  ${BLAS_INCLUDE_DIR}
-  ${FFTW3_INCLUDE_DIR}
-  ${TIFF_INCLUDE_DIR}
-)
-
-# Target libraries for the different executables
-set(DEPENDENCY_LIBRARIES
-    ${FFTW3_DOUBLE_LIBRARY}
-    ${BLAS_LIBRARIES}
-    ${TIFF_LIBRARY}
-)
-if(M_LIBRARY)
-    list(APPEND DEPENDENCY_LIBRARIES "${M_LIBRARY}")
+find_package(TIFF)
+if(examples OR regression)
+  if(NOT TIFF_FOUND)
+    message(FATAL_ERROR "Examples and regressions require TIFF")
+  endif()
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${BLAS_LINKER_FLAGS}")
+if(regressions)
+  find_package(FFTW3 REQUIRED DOUBLE)
+  set(REGRESSION_ORACLE_ID "last_of_c"
+    CACHE STRING "Commmit/tag/branch againts which to run regressions")
 
-if(FFTW3_DOUBLE_FOUND)
-    add_definitions(-DSOPT_FFTW_INSTALLED)
+  lookup_package(Sopt
+    REQUIRED DOWNLOAD_BY_DEFAULT
+    PATHS "${EXTERNAL_ROOT}"
+    NO_DEFAULT_PATH
+    ARGUMENTS
+      GIT_REPOSITORY "git@github.com:astro-informatics/sopt"
+      GIT_TAG ${REGRESSION_ORACLE_ID}
+      BUILD_TYPE Release
+  )
 endif()
 
+if(openmp)
+  find_package(OpenMP)
+  if(OPENMP_FOUND)
+    set(SOPT_DEFAULT_OPENMP_THREADS 4 CACHE STRING "Number of threads used in testing")
+    set(SOPT_OPENMP TRUE)
+    add_library(openmp::openmp INTERFACE IMPORTED GLOBAL)
+    set_target_properties(openmp::openmp PROPERTIES
+      INTERFACE_COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}"
+      INTERFACE_LINK_LIBRARIES  "${OpenMP_CXX_FLAGS}")
+  else()
+    message(STATUS "Could not find OpenMP. Compiling without.")
+    set(SOPT_OPENMP FALSE)
+  endif()
+endif()
