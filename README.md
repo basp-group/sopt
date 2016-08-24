@@ -33,17 +33,35 @@ http://basp-group.github.io/sopt/
 
 ## Installation
 
-The build system uses [CMake](https://cmake.org/).
+### C++ pre-requisites and dependencies
 
-The C++ library also requires [Eigen 3](http://eigen.tuxfamily.org/index.php?title=Main_Page),
-[spdlog](https://github.com/gabime/spdlog), and [tiff](http://www.remotesensing.org/libtiff/)
-(optionally). The first two will be downloaded automatically if the build system cannot find them.
+- [CMake](http://www.cmake.org/): a free software that allows cross-platform compilation
+- [tiff](http://www.libtiff.org/): Tag Image File Format library
+- [OpenMP](http://openmp.org/wp/): Optional. Speeds up some of the operations.
+- [UCL/GreatCMakeCookOff](https://github.com/UCL/GreatCMakeCookOff): Collection of cmake recipes.
+  Downloaded automatically if absent.
+- [Eigen 3](http://eigen.tuxfamily.org/index.php?title=Main_Page): Modern C++ linear algebra.
+  Downloaded automatically if absent.
+- [spdlog](https://github.com/gabime/spdlog): Optional. Logging library. Downloaded automatically if
+  absent.
+- [philsquared/Catch](https://github.com/philsquared/Catch): Optional - only for testing. A C++
+  unit-testing framework. Downloaded automatically if absent.
+- [google/benchmark](https://github.com/google/benchmar): Optional - only for benchmarks. A C++
+  micro-benchmarking framework. Downloaded automatically if absent.
 
-Additionally, the Python bindings require [numpy](http://www.numpy.org/),
-[scipy](https://www.scipy.org/), [pandas](http://pandas.pydata.org/), [cython](http://cython.org/)
-(during build only), and [pytest](http://doc.pytest.org/en/latest/) (for testing only). The last
-two will be downloaded automatically if not found. However, the user will have to take care of
-installing the first three (via pip, or conda, for instance).
+### Python pre-requisites and dependencies
+
+- [numpy](http://www.numpy.org/): Fundamental package for scientific computing with Python
+- [scipy](https://www.scipy.org/): User-friendly and efficient numerical routines such as routines
+  for numerical integration and optimization
+- [pandas](http://pandas.pydata.org/): library providing high-performance, easy-to-use data
+  structures and data analysis tools
+- [cython](http://cython.org/): Makes writing C extensions for Python as easy as Python itself.
+  Downloaded automatically if absent.
+- [pytest](http://doc.pytest.org/en/latest/): Optional - for testing only. Unit-testing framework
+  for python. Downloaded automatically if absent and testing is not disabled.
+
+### Installing Sopt
 
 Once the dependencies are present, the program can be built with:
 
