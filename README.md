@@ -74,8 +74,8 @@ make install
 
 ## Support
 
-If you have any questions or comments, feel free to contact Rafael Carrillo or Jason McEwen, or to
-add an issue in the [issue tracker](https://github.com/astro-informatics/sopt/issues).
+If you have any questions or comments, feel free to contact Rafael Carrillo or Jason McEwen, or add
+an issue in the [issue tracker](https://github.com/astro-informatics/sopt/issues).
 
 ## Notes
 
