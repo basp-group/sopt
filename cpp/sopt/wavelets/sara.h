@@ -136,9 +136,9 @@ void SARA::direct(Eigen::ArrayBase<T1> &coeffs, Eigen::ArrayBase<T0> const &sign
 #pragma omp for
     for(size_type i = 0; i < size(); ++i)
       at(i).direct(coeffs.leftCols((i + 1) * Ncols).rightCols(Ncols), signal);
+  }
 #endif
-}
-coeffs /= std::sqrt(size());
+  coeffs /= std::sqrt(size());
 }
 
 template <class T0, class T1>

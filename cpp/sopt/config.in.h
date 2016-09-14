@@ -32,8 +32,10 @@ inline std::string default_logging_level() { return "@SOPT_TEST_LOG_LEVEL@"; }
 inline std::string default_logger_name() { return "@SOPT_LOGGER_NAME@"; }
 //! Wether to add color to the logger
 inline constexpr bool color_logger() { return @SOPT_COLOR_LOGGING@; }
+# ifdef SOPT_OPENMP
 //! Number of threads used during testing
 inline constexpr std::size_t number_of_threads_in_tests() { return @SOPT_DEFAULT_OPENMP_THREADS@; }
+# endif
 }
 
 #endif
