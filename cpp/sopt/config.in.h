@@ -20,7 +20,7 @@ namespace sopt {
 //! Returns library version
 inline std::string version() { return "@Sopt_VERSION@"; }
 //! Returns library version
-inline constexpr std::tuple<uint8_t, uint8_t, uint8_t> version_tuple() {
+inline std::tuple<uint8_t, uint8_t, uint8_t> version_tuple() {
   return std::tuple<uint8_t, uint8_t, uint8_t>(
       @Sopt_VERSION_MAJOR@, @Sopt_VERSION_MINOR@, @Sopt_VERSION_PATCH@);
 }
