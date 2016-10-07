@@ -22,7 +22,7 @@ if(regressions)
     PATHS "${EXTERNAL_ROOT}"
     NO_DEFAULT_PATH
     ARGUMENTS
-      GIT_REPOSITORY "git@github.com:astro-informatics/sopt"
+      GIT_REPOSITORY "https://www.github.com/basp-group/sopt.git"
       GIT_TAG ${REGRESSION_ORACLE_ID}
       BUILD_TYPE Release
   )
