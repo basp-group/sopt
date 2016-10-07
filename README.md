@@ -8,24 +8,29 @@ SOPT is a C++ package to perform Sparse OPTimisation. It solves a variety of spa
 problems, including the SARA algorithm. Prototype Matlab implementations of various algorithms are
 also included.
 
-## Creators
+## Contributors
+
+SOPT was initially created by Rafael Carrillo, Jason McEwen and Yves Wiaux but major contributions
+have since been made by a number of others. The full list of contributors is as follows:
 
 * [Rafael E. Carrillo](http://people.epfl.ch/rafael.carrillo)
 * [Jason D. McEwen](http://www.jasonmcewen.org)
 * [Yves Wiaux](http://basp.eps.hw.ac.uk)
-
-## Contributors
-
-* Mayeul d'Avezac
-* Vijay Kartik
+* [Vijay Kartik](https://people.epfl.ch/vijay.kartik)
+* [Mayeul d'Avezac](https://github.com/mdavezac)
+* [Luke Pratley](https://about.me/luke.pratley)
+* [David Perez-Suarez](https://dpshelio.github.io)
 
 ## References
-When referencing this code, please cite our related paper:
+When referencing this code, please cite our related papers:
 
-    [1] R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran,
-    and Y. Wiaux.  "Sparsity averaging for compressive imaging", IEEE
-    Signal Processing Letters, Vol. 20, No. 6, pp. 591-594, 2013
-    (arXiv:1208.2330).
+1. R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran, and Y. Wiaux.  "Sparsity averaging
+   for compressive imaging", IEEE Signal Processing Letters, 20(6):591-594, 2013,
+   [arXiv:1208.2330](http://arxiv.org/abs/arXiv:1208.2330)
+1. A. Onose, R. E. Carrillo, A. Repetti, J. D. McEwen, J.-P. Thiran, J.-C. Pesquet, and Y. Wiaux.
+   "Scalable splitting algorithms for big-data interferometric imaging in the SKA era". Mon. Not.
+   Roy. Astron. Soc., 462(4):4314-4335, 2016,
+   [arXiv:1601.04026](http://arxiv.org/abs/arXiv:1601.04026)
 
 ## Webpage
 
@@ -93,7 +98,7 @@ make install
 ## Support
 
 If you have any questions or comments, feel free to contact Rafael Carrillo or Jason McEwen, or add
-an issue in the [issue tracker](https://github.com/astro-informatics/sopt/issues).
+an issue in the [issue tracker](https://github.com/basp-group/sopt/issues).
 
 ## Notes
 
@@ -103,17 +108,17 @@ The code is given for educational purpose. For the matlab version of the code se
 
     SOPT: Sparse OPTimisation package
     Copyright (C) 2013 Rafael Carrillo, Jason McEwen, Yves Wiaux
-    
+
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
     published by the Free Software Foundation; either version 2 of the
     License, or (at your option) any later version.
-    
+
     This program is distributed in the hope that it will be useful, but
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
     General Public License for more details (LICENSE.txt).
-    
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
