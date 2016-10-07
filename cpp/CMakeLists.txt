@@ -1,0 +1,38 @@
+# Setup logging
+set(SOPT_LOGGER_NAME "sopt" CACHE STRING "NAME of the logger")
+set(SOPT_COLOR_LOGGING true CACHE BOOL "Whether to add color to the log")
+if(logging)
+  set(SOPT_DO_LOGGING 1)
+  set(SOPT_TEST_LOG_LEVEL critical CACHE STRING "Level when logging tests")
+  set_property(CACHE SOPT_TEST_LOG_LEVEL PROPERTY STRINGS
+    off critical error warn info debug trace)
+else()
+  unset(SOPT_DO_LOGGING)
+  set(SOPT_TEST_LOG_LEVEL off)
+endif()
+
+set(version ${Sopt_VERSION})
+string(REGEX REPLACE "\\." ";" version "${Sopt_VERSION}")
+list(GET version 0 Sopt_VERSION_MAJOR)
+list(GET version 1 Sopt_VERSION_MINOR)
+list(GET version 2 Sopt_VERSION_PATCH)
+
+configure_file(sopt/config.in.h "${PROJECT_BINARY_DIR}/include/sopt/config.h")
+
+add_subdirectory(sopt)
+if(regressions OR examples)
+  # Tiff wrappers and whatnot
+  add_subdirectory(tools_for_tests)
+endif()
+if(tests)
+  add_subdirectory(tests)
+endif()
+if(examples)
+  add_subdirectory(examples)
+endif()
+if(benchmarks)
+  add_subdirectory(benchmarks)
+endif()
+if(regressions)
+  add_subdirectory(regressions)
+endif()

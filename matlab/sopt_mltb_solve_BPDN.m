@@ -153,7 +153,7 @@ while 1
     
     % Proximal L1 operator
     xhat = 2*sol - xhat;
-    temp = sopt_mltb_prox_L1(xhat, param.gamma, param_L1);
+    [temp,~] = sopt_mltb_prox_L1(xhat, param.gamma, param_L1);
     xhat = temp + sol - xhat;
     
     % Update variables
