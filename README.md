@@ -13,7 +13,7 @@ also included.
 SOPT was initially created by Rafael Carrillo, Jason McEwen and Yves Wiaux but major contributions
 have since been made by a number of others. The full list of contributors is as follows:
 
-* [Rafael E. Carrillo](http://people.epfl.ch/rafael.carrill)
+* [Rafael E. Carrillo](http://people.epfl.ch/rafael.carrillo)
 * [Jason D. McEwen](http://www.jasonmcewen.org)
 * [Yves Wiaux](http://basp.eps.hw.ac.uk)
 * [Vijay Kartik](https://people.epfl.ch/vijay.kartik)
