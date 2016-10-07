@@ -13,7 +13,7 @@ also included.
 SOPT was initially created by Rafael Carrillo, Jason McEwen and Yves Wiaux but major contributions
 have since been made by a number of others. The full list of contributors is as follows:
 
-* [Rafael E. Carrillo](http://people.epfl.ch/rafael.carrillo)
+* [Rafael E. Carrillo](https://www.researchgate.net/profile/Rafael_Carrillo2)
 * [Jason D. McEwen](http://www.jasonmcewen.org)
 * [Yves Wiaux](http://basp.eps.hw.ac.uk)
 * [Vijay Kartik](https://people.epfl.ch/vijay.kartik)
@@ -24,6 +24,10 @@ have since been made by a number of others. The full list of contributors is as 
 ## References
 When referencing this code, please cite our related papers:
 
+1. R. E. Carrillo, J. D. McEwen and Y. Wiaux. "Sparsity Averaging Reweighted
+   Analysis (SARA): a novel algorithm for radio-interferometric imaging", Mon.
+   Not. Roy. Astron. Soc., 426(2):1223-1234, 2012,
+   [arXiv:1205.3123](http://arxiv.org/abs/arXiv:1205.3123)
 1. R. E. Carrillo, J. D. McEwen, D. Van De Ville, J.-P. Thiran, and Y. Wiaux.  "Sparsity averaging
    for compressive imaging", IEEE Signal Processing Letters, 20(6):591-594, 2013,
    [arXiv:1208.2330](http://arxiv.org/abs/arXiv:1208.2330)
