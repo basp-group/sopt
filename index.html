@@ -69,9 +69,7 @@ Public release of SOPT.
 
   <p> <strong>SOPT</strong> is an open-source code that provides
   functionality to perform sparse optimisation using state-of-the-art
-  convex optimisation algorithms.  Furthermore, <strong>SOPT</strong>
-  implements the SARA algorithm, where the average sparsity of images
-  over a set of dictionaries is exploited.
+  convex optimisation algorithms.
 
   <p> <strong>SOPT</strong>  is written in C++ primarily but also
   contains partial Matlab support.  <strong>SOPT</strong> is largely
@@ -95,70 +93,9 @@ Public release of SOPT.
   available under the license described <a
    href="#license">below</a>.
 
-  <p>The latest version of <strong>SOPT</strong> code is available
-  at <a href="https://github.com/astro-informatics/sopt/releases/tag/v2.0.0">github</a>.
+  <p>The <strong>SOPT</strong> code is available
+  at <a href="https://github.com/basp-group/sopt/">github</a>.
   </p>
-
-
-<!--------------------------------------------------------------->  
-<a name="installation"><h2>Installation</h2></a>
-
-  <p> The <strong>SOPT</strong> code is written in C++, hence a
-   suitable C compiler will be required to build the main code.  In
-   the following the dependencies of <strong>SOPT</strong> are
-   described, before outlining instructions to compile, test,
-   self-document and clean the code.
-
-
-  <h4>Dependencies</h4>
-
-  <p> The <strong>SOPT</strong> library itself requires the following
-    software:
-<ul>
-<li><a href="http://www.cmake.org/">CMake</a>: a free software that allows cross-platform compilation</li>
-<li><a href="http://www.libtiff.org/">tiff</a>: Tag Image File Format library</li>
-<li><a href="http://openmp.org/wp/">OpenMP</a>: Optional. Speeds up some of the operations.</li>
-<li><a href="https://github.com/UCL/GreatCMakeCookOff">UCL/GreatCMakeCookOff</a>: Collection of cmake recipes.
-Downloaded automatically if absent.</li>
-<li><a href="http://eigen.tuxfamily.org/index.php?title=Main_Page">Eigen 3</a>: Modern C++ linear algebra.
-Downloaded automatically if absent.</li>
-<li><a href="https://github.com/gabime/spdlog">spdlog</a>: Optional. Logging library. Downloaded automatically if
-absent.</li>
-<li><a href="https://github.com/philsquared/Catch">philsquared/Catch</a>: Optional - only for testing. A C++
-unit-testing framework. Downloaded automatically if absent.</li>
-<li><a href="https://github.com/google/benchmar">google/benchmark</a>: Optional - only for benchmarks. A C++
-micro-benchmarking framework. Downloaded automatically if absent.</li>
-</ul>
-
-   Please ensure the appropriate dependencies are installed on your system
-   before attempting to build <strong>SOPT</strong>.
-
-
-  <h4>Compiling</h4>
-
-  <p>Once the dependencies are present, the program can be built with:</p>
-
-<pre><code>>> cd /path/to/code
->> mkdir build
->> cd build
->> cmake -DCMAKE_BUILD_TYPE=Release ..
->> make
-</code></pre>
-
-<p>To test everything went all right:</p>
-
-<pre><code>>> cd /path/to/code/build
->> ctest .
-</code></pre>
-
-<p>To install in directory <code>/X</code>, with libraries going to <code>X/lib</code>, python modules to
-<code>X/lib/pythonA.B/site-packages/sopt</code>, etc, do:</p>
-
-<pre><code>>> cd /path/to/code/build
->> cmake -DCMAKE_INSTALL_PREFIX=/X ..
->> make install
-</code></pre>
-
 
 <!--------------------------------------------------------------->
 <a name="matlab"><h2>Matlab</h2></a>
@@ -243,9 +180,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 <!--------------------------------------------------------------->
 <a name="authors"><h2>About the authors</h2></a>
 
-<p> <strong>SOPT</strong> has been developed by Rafael Carrillo,
-Jason McEwen and Yves Wiaux.  See the authors' web pages for more
-information.</p>
+<p> <strong>SOPT</strong> was initially created by Rafael Carrillo, Jason
+McEwen and Yves Wiaux but major contributions have since been made by a number
+of others. The full list of contributors is as follows:
+</p>
 
   <p>
   <img src="images/photo_rafael.jpg" width="100"
@@ -278,6 +216,49 @@ information.</p>
   <a href="http://basp.eps.hw.ac.uk">Academic web page</a>
   &raquo;</p>
  
+
+  <br><br><br><br><br><br>
+
+  <p>
+  <img src="images/photo_vijay.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Vijay Kartik<br>
+  <a href="https://people.epfl.ch/vijay.kartik">Academic web page</a>
+  &raquo;</p>
+  <!-- </p> -->
+
+  <br><br><br><br><br><br>
+
+  <p>
+  <img src="images/photo_mayeul.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Mayeul d'Avezac<br>
+  <a href="https://github.com/mdavezac">Academic web page</a>
+  &raquo;</p>
+  <!-- </p> -->
+
+  <br><br><br><br>
+
+  <p>
+  <img src="images/photo_luke.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  Luke Pratley<br>
+  <a href="https://about.me/luke.pratley">Academic web page</a>
+  &raquo;</p>
+  <!-- </p> -->
+
+  <br><br><br><br><br>
+
+  <p>
+  <img src="images/photo_david.jpg" width="100"
+  alt="Example frontpage image" class="left photobox" />
+
+  David Perez-Suarez<br>
+  <a href="https://dpshelio.github.io">Academic web page</a>
+  &raquo;</p>
 
 <br><br><br><br><br><br><br>
 
