@@ -13,7 +13,7 @@ void set_level(std::string const &level, std::string const &name = "");
 //! \brief Initializes a logger.
 //! \details Logger only exists as long as return is kept alive.
 inline std::shared_ptr<spdlog::logger> initialize(std::string const &name = "") {
-  auto const result = spdlog::stdout_logger_mt(default_logger_name() + name, color_logger());
+  auto const result = spdlog::stdout_logger_mt(default_logger_name() + name);
   set_level(default_logging_level(), name);
   return result;
 }
