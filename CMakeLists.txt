@@ -19,7 +19,6 @@ option(examples       "Enable Examples"                        on)
 option(logging        "Enable logging"                         on)
 option(regressions    "Enable regressions"                     on)
 option(openmp         "Enable OpenMP"                          on)
-option(archer         "Compiling on ARCHER"                    off)
 
 if(regressions)
   enable_language(C)
